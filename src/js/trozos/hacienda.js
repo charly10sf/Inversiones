@@ -66,7 +66,7 @@ const HZ_CSS = `
 .hz-aviso { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 12px 14px; border-radius: var(--r-m); background: color-mix(in srgb, var(--texto) 4%, transparent); font-size: 13px; line-height: 1.5; color: var(--texto-2); }
 .hz-aviso .hz-ic { color: var(--tenue); margin-top: 1px; }
 .hz-aviso b { color: var(--texto); font-weight: 600; }
-.hz-tira { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 24px; padding: 18px 22px !important; }
+.hz-tira { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 18px 22px !important; }
 .hz-tira-p { display: grid; gap: 6px; } .hz-tira-p > b { font: 600 18px/1.2 var(--ui); } .hz-falta-t { color: var(--aviso); font-weight: 600; }
 .hz-seg { display: flex; gap: 4px; margin-top: 4px; }
 .hz-seg i { flex: 1; height: 6px; border-radius: 9px; background: var(--sep); }
@@ -121,11 +121,83 @@ const HZ_CSS = `
 @keyframes hzEntraD { from { transform: translateX(36px); opacity: .25; } }
 @keyframes hzEntraI { from { transform: translateX(-36px); opacity: .25; } }
 @media (prefers-reduced-motion: reduce) { .hz-panel.hz-entra-d, .hz-panel.hz-entra-i { animation: none; } }
+.hz-gratis { display: grid !important; gap: 12px !important; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.hz-gratis .hz-ey { display: block; font: 600 11px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
+.hz-gr-n { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.hz-gr-n > div { display: grid; gap: 4px; } .hz-gr-n b { font: 300 34px/1 var(--ui); letter-spacing: -.03em; } .hz-gr-n span { font-size: 12.5px; color: var(--tenue); }
+.hz-gr-n i { font-style: normal; font-size: 22px; color: var(--tenue); padding-bottom: 20px; }
+.hz-gr-n .z-tot b { font-weight: 400; }
+.hz-gr-de { display: flex; flex-wrap: wrap; gap: 6px 18px; padding-top: 12px; border-top: 1px solid var(--sep); font-size: 13px; color: var(--texto-2); }
+.hz-gr-de b { font-weight: 600; color: var(--texto); }
+@media (max-width: 599px) { .hz-gr-n { gap: 8px; flex-wrap: nowrap; } .hz-gr-n b { font-size: 25px; } .hz-gr-n i { font-size: 16px; padding-bottom: 18px; } .hz-gr-n span { font-size: 11.5px; } }
+.hz-tira-b { display: flex; gap: 8px; }
+.hz-falta-b { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.hz-falta-n { margin: 4px 0 0; font-size: 13px; color: var(--texto-2); }
+.hz-falta.z-hecho { grid-template-columns: auto 1fr auto; align-items: center; background: var(--sube-fondo); box-shadow: none; padding: 12px 14px; }
+.hz-falta.z-hecho > .hz-ic { color: var(--sube); }
+.hz-falta.z-hecho div { display: grid; gap: 2px; } .hz-falta.z-hecho b { font-size: 14px; font-weight: 600; } .hz-falta.z-hecho span { font-size: 13px; color: var(--texto-2); }
+.hz-cmp { display: grid; gap: 8px; padding: 14px; border-radius: var(--r-m); border: 1px dashed var(--aro); }
+.hz-cmp label { font: 600 13.5px/1.2 var(--ui); }
+.hz-cmp-f { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hz-cmp-f input { width: 150px; height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto); font: 500 15px/1 var(--ui); font-variant-numeric: tabular-nums; text-align: right; }
+.hz-cmp-f span { color: var(--tenue); }
+.hz-cmp-r { display: flex; gap: 8px; align-items: flex-start; margin: 2px 0 0; font-size: 13.5px; line-height: 1.5; }
+.hz-cmp-r.z-ok { color: var(--sube); } .hz-cmp-r.z-mal { color: var(--aviso); }
+.hz-cmp-r .hz-ic { margin-top: 1px; }
+.hz-hoja { display: grid; gap: 16px; }
+.hz-hoja-cab { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.hz-hoja-cab h3 { margin: 6px 0 4px; font: var(--titulo-estilo, normal) var(--titulo-peso, 500) 26px/1.15 var(--titulo); letter-spacing: var(--titulo-espacio, -.02em); }
+[data-tema="marfil"] .hz-hoja-cab h3 { font-family: var(--marca); letter-spacing: 0; }
+.hz-hoja-cab p { margin: 0; font-size: 13.5px; color: var(--tenue); }
+.hz-hoja-b { display: flex; gap: 8px; flex-wrap: wrap; }
+.hz-hoja-p { display: flex; align-items: center; gap: 12px; font: 600 12.5px/1 var(--ui); color: var(--texto-2); }
+.hz-prog { flex: 1; max-width: 240px; height: 6px; border-radius: 9px; background: var(--sep); overflow: hidden; }
+.hz-prog i { display: block; height: 100%; background: var(--primario); transition: width .3s; }
+.hz-hg { display: grid; padding: 12px 16px 6px; border-radius: var(--r-l); box-shadow: inset 0 0 0 1px var(--aro); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
+.hz-hg h4 { margin: 0; padding-bottom: 6px; font: 600 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.hz-hg.z-no { padding-bottom: 12px; box-shadow: inset 0 0 0 1px var(--sep); background: none; }
+.hz-hg.z-no p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--texto-2); }
+.hz-hf { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px 0 8px; border-top: 1px solid var(--sep); }
+.hz-hg h4 + .hz-hf { border-top: 0; }
+.hz-hf-t { display: grid; gap: 4px; } .hz-hf-t b { font-size: 14.5px; font-weight: 600; } .hz-hf-t small { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.hz-hf.z-hecho .hz-hf-t b { text-decoration: line-through; text-decoration-color: var(--tenue); color: var(--texto-2); }
+.hz-hf-tag { font: 600 11px/1 var(--ui); color: var(--texto-2); }
+.hz-hf-tag.z-tu { color: var(--oro-texto); } .hz-hf-tag.z-mira { color: var(--aviso); }
+.hz-hf-n { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 0; background: none; padding: 6px 8px; margin-right: -8px; border-radius: 8px; font: 600 15.5px/1 var(--ui); font-variant-numeric: tabular-nums; color: var(--texto); cursor: pointer; }
+.hz-hf-n .hz-ic { width: 14px; height: 14px; color: var(--tenue); }
+.hz-hf-n:hover { background: var(--primario-fondo); } .hz-hf-n:hover .hz-ic { color: var(--oro-texto); }
+.hz-hf-s { font-size: 13px; color: var(--tenue); padding-right: 8px; }
+.hz-hs { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 0 2px 40px; font-size: 13px; color: var(--texto-2); }
+.hz-hs .hz-hf-n { font-size: 14px; font-weight: 500; color: var(--texto-2); }
+.hz-ck { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; margin: -10px; cursor: pointer; }
+.hz-ck input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.hz-ck i { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; box-shadow: inset 0 0 0 1.5px var(--aro); color: transparent; }
+.hz-ck i .hz-ic { width: 14px; height: 14px; stroke-width: 2.4; }
+.hz-ck input:checked + i { background: var(--primario); box-shadow: none; color: var(--sobre-primario); }
+.hz-ck input:focus-visible + i { outline: 2px solid var(--primario); outline-offset: 2px; }
+.hz-hoja-pie { display: grid; gap: 4px; padding: 4px 2px 0; font-size: 13px; color: var(--texto-2); } .hz-hoja-pie b { color: var(--texto); }
+.hz-hoja.z-lado { max-width: 420px; }
+.hz-hoja.z-lado .hz-hoja-cab { flex-direction: column; align-items: flex-start; }
+.hz-B-hoja { display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: start; }
+.hz-B-hoja .hz-volver { grid-column: 1 / -1; justify-self: start; }
+.hz-B-hoja .hz-hoja { padding: 20px; border-radius: var(--r-xl); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--borde); }
+.hz-renta-web { position: sticky; top: 84px; display: grid; justify-items: start; align-content: start; gap: 10px; padding: 18px; border-radius: var(--r-l); border: 1.5px dashed var(--aro); color: var(--texto-2); }
+.hz-renta-web span { font: 600 11px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; } .hz-renta-web p { margin: 0; font-size: 13.5px; max-width: 46ch; line-height: 1.5; }
+@media (max-width: 899px) { .hz-solo-pc { display: none !important; } }
+@media print {
+  body * { visibility: hidden !important; }
+  #hzHoja, #hzHoja * { visibility: visible !important; }
+  #hzHoja { position: absolute; left: 0; top: 0; width: 100%; max-width: none; color: #000; background: #fff; }
+  #hzHoja .hz-hoja-b, #hzHoja .hz-ck, #hzHoja .hz-hf-n .hz-ic { display: none !important; }
+  #hzHoja .hz-hf { grid-template-columns: minmax(0, 1fr) auto; }
+  #hzHoja .hz-hg { box-shadow: none; border: 1px solid #bbb; break-inside: avoid; }
+}
 @media (max-width: 899px) {
   .hz-A { grid-template-columns: 1fr; }
   .hz-lista { position: static; max-height: none; }
   .hz-tira { grid-template-columns: 1fr; gap: 12px; }
   .hz-tira-r { padding-left: 0; border-left: 0; }
+  .hz-hs { padding-left: 20px; }
   .hz-panel { padding: 18px 16px !important; gap: 18px !important; }
   .hz-h2 { font-size: 27px; }
 }
@@ -142,6 +214,8 @@ const HZ_P = {
   der: '<path d="M9.5 6l6 6-6 6"/>', izq: '<path d="M14.5 6l-6 6 6 6"/>', abajo: '<path d="M6 9.5l6 6 6-6"/>',
   lista: '<path d="M9 7h11M9 12h11M9 17h11"/><path d="M4.5 7h.1M4.5 12h.1M4.5 17h.1"/>',
   reloj: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+  lado: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M14 4.5v15"/>',
+  imprimir: '<path d="M7.5 9V4.5h9V9"/><rect x="4" y="9" width="16" height="7.5" rx="2"/><path d="M7.5 14h9v6h-9z"/>',
   lapiz: '<path d="M5 19l1-4.2L15.6 5.2a1.9 1.9 0 0 1 2.7 0l.5.5a1.9 1.9 0 0 1 0 2.7L9.2 18z"/><path d="M13.8 7l3.2 3.2"/>',
 };
 const hzIc = (k, c = '') => `<svg class="hz-ic${c ? ' ' + c : ''}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${HZ_P[k]}</svg>`;
@@ -202,8 +276,11 @@ function hzCasillas(anio, M) {
 
   // los ETC: rendimiento del capital mobiliario (V0267-25), no ganancia patrimonial
   const etc = de('etc');
-  if (etc.length) add({ k: 'c0031', g: 'rcm', cas: '0031', t: etc.length === 1 ? `${nombreInst(etc[0].instrumento)} (ETC)` : 'Ventas de ETC', sub: resumenVentas(etc), v: fa.rcmVentas, o: origen(etc), e: 'listo', ventas: etc,
-    pone: [['Valor de transmisión', sum(etc, (m) => +m.importe || 0)], ['Valor de adquisición', sum(etc, (m) => +m.coste_vendido || 0)]],
+  // con ganancia, un intermediario español retiene el 19 %: se pregunta una vez (fiscal[año].hzRetEtc) y se suma a lo retenido
+  const gEtc = sum(etc, (m) => Math.max(0, hzNeto(m))), retEtc = d.hzRetEtc == null || d.hzRetEtc === '' ? null : +d.hzRetEtc;
+  if (etc.length) add({ k: 'c0031', g: 'rcm', cas: '0031', t: etc.length === 1 ? `${nombreInst(etc[0].instrumento)} (ETC)` : 'Ventas de ETC', sub: resumenVentas(etc), v: fa.rcmVentas, o: origen(etc), e: gEtc > 0.5 && retEtc == null ? 'falta' : 'listo', ventas: etc,
+    preg: gEtc > 0.5 ? { g: gEtc, r: retEtc, plats: yLista([...new Set(etc.map((m) => m.plataforma).filter(Boolean))]) } : null,
+    pone: [['Valor de transmisión', sum(etc, (m) => +m.importe || 0)], ['Valor de adquisición', sum(etc, (m) => +m.coste_vendido || 0)], ...(retEtc ? [['Retenciones', retEtc]] : [])],
     ojo: 'Un ETC es un título de deuda: lo que ganas al venderlo es rendimiento del capital mobiliario, no la venta de una acción. Por eso va aquí, en «transmisión de otros activos financieros», y no con las acciones.' });
   else if (tiene((f) => esRCMVenta(f.inst))) add({ k: 'c0031', g: 'rcm', cas: '0031', t: 'Ventas de ETC', sub: `No vendiste ningún ETC en ${anio}.`, e: 'no' });
 
@@ -251,6 +328,7 @@ function hzCasillas(anio, M) {
     : { k: 'm720', g: 'inf', cas: '720 y 721', t: 'Bienes y cripto fuera de España', sub: 'Lo que tienes fuera no pasa de 50.000 € en ningún bloque.', e: 'no' });
 
   add({ k: 'res', g: 'sale', t: 'Lo que pagas por tus inversiones', sub: 'Con lo que sabe Toisón', e: 'sale', nav: true });
+  add({ k: 'hoja', g: 'sale', t: 'Tu hoja para Renta Web', sub: 'Para tenerla al lado', e: 'sale', nav: true });
   return { anio, fa, d, L: L0 };
 }
 
@@ -287,10 +365,13 @@ const hzCampo = ([et, val], copia = true) => { const n = typeof val === 'number'
 const hzCuenta = (filas, tot) => `<div class="hz-cuenta">${filas.map(([t, n]) => `<div><span>${esc(t)}</span><b>${hzN(n)}</b></div>`).join('')}${tot ? `<div class="z-tot"><span>${esc(tot[0])}</span><b>${eur(tot[1], 2)}</b></div>` : ''}</div>`;
 function hzVenta(m, cripto) {
   const st = hzEstado(), i = S.inst[m.instrumento] || {}, on = st.abierta === m.id, ap = perdidaAplazada(m), r = hzNeto(m);
+  // las fechas de compra de lo que salió en esta venta (FIFO), si Toisón las tiene
+  const fx = [...new Set((Array.isArray(m.fifo) ? m.fifo : []).map((l) => l.f).filter((f) => /^\d{4}-\d\d-\d\d/.test(f || '')))].sort();
   return `<div class="hz-venta${on ? ' z-on' : ''}"><button type="button" class="hz-venta-cab" data-hz="abre" data-id="${esc(m.id)}" aria-expanded="${on}"><span><b>${esc(nombreInst(m.instrumento))}</b><small>${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} ${cripto ? (i.simbolo || 'uds.') : +m.uds === 1 ? 'ud.' : 'uds.'} · ${fechaCorta(m.fecha)} · ${esc(m.plataforma || '')}</small></span><b class="${r < 0 ? 'hz-baja' : 'hz-sube'}">${hzSg(r)}</b>${hzIc(on ? 'abajo' : 'der', 'hz-chev')}</button>
     ${on ? `<div class="hz-venta-c">${m.coste_vendido != null ? hzCuenta([['Lo cobraste al vender, ya sin comisiones', +m.importe || 0], ['Lo que te costó, con sus comisiones', -(+m.coste_vendido || 0)]], [m.resultado < 0 ? 'Pérdida' : 'Ganancia', m.resultado || 0]) : ''}
       ${ap ? `<p class="hz-ojo"><b>Esta pérdida no cuenta entera este año.</b> Volviste a comprar ${esc(nombreInst(m.instrumento))} el ${fechaCorta(ap.fecha)}, dentro de ${ap.r.plazo}: ${eur(-ap.importe, 2)} se aplazan hasta que vendas lo recomprado. Renta Web te lo pide como pérdida no computable.</p>` : ''}
-      <div class="hz-campos">${cripto ? hzCampo(['Moneda virtual', `${i.nombre || nombreInst(m.instrumento)}${i.simbolo ? ` (${i.simbolo})` : ''}`]) : hzCampo(['Entidad emisora', i.nombre || nombreInst(m.instrumento)])}${hzCampo(['Valor de transmisión', +m.importe || 0])}${m.coste_vendido != null ? hzCampo(['Valor de adquisición', +m.coste_vendido]) : ''}${hzCampo(['Fecha de transmisión', fechaEs(m.fecha)])}</div></div>` : ''}</div>`;
+      ${fx.length ? `<p class="hz-ojo">${fx.length === 1 ? `Hacienda cuenta que vendes primero lo que compraste antes: ${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} de tu compra del ${fechaLarga(fx[0])}.` : `Hacienda cuenta que vendes primero lo que compraste antes: salen de ${fx.length} compras, la primera del ${fechaLarga(fx[0])}.`}</p>` : ''}
+      <div class="hz-campos">${cripto ? hzCampo(['Moneda virtual', `${i.nombre || nombreInst(m.instrumento)}${i.simbolo ? ` (${i.simbolo})` : ''}`]) : hzCampo(['Entidad emisora', i.nombre || nombreInst(m.instrumento)])}${hzCampo(['Valor de transmisión', +m.importe || 0])}${m.coste_vendido != null ? hzCampo(['Valor de adquisición', +m.coste_vendido]) : ''}${hzCampo(['Fecha de transmisión', fechaEs(m.fecha)])}${fx.length === 1 ? hzCampo(['Fecha de adquisición', fechaEs(fx[0])]) : fx.length ? hzCampo(['Fechas de adquisición', fx.map(fechaEs).join(', ')], false) : ''}</div></div>` : ''}</div>`;
 }
 const fechaEs = (iso) => { const [a, m, d] = String(iso).slice(0, 10).split('-'); return `${d}/${m}/${a}`; };
 
@@ -317,14 +398,84 @@ function hzResPaso(R) {
     <p class="hz-aviso">${hzIc('reloj')}<span><b>Es una estimación.</b> Sale de lo que has apuntado en Toisón con la escala del ahorro de ${R.anio}. La cifra que vale es la de Renta Web.</span></p>`;
 }
 
+// lo que falta del ETC: ¿te retuvieron algo al venderlo?
+function hzPregEtc(c) {
+  const p = c.preg, st = hzEstado();
+  if (p.r != null) return `<div class="hz-falta z-hecho">${hzIc('ok')}<div><b>Contestado: ${p.r ? `te retuvieron ${eur(p.r, 2)}` : 'no te retuvieron nada'}.</b><span>${p.r ? 'Se resta de lo que pagas.' : 'Así queda: sin retención.'}</span></div><button type="button" class="hz-enl" data-hz="etc" data-r="borrar">Cambiar</button></div>`;
+  const r19 = Math.round(p.g * 19) / 100;
+  return `<div class="hz-falta"><span class="hz-falta-i">${hzIc('alerta')}</span><div class="hz-falta-c"><b>¿${esc(p.plats || 'Tu bróker')} te retuvo algo al vender?</b>
+    <span>Los brókeres españoles retienen el 19 % de lo que ganas con un ETC (aquí serían ${eur(r19, 2)}); los de fuera, normalmente nada. Sale en su informe fiscal, que publican en enero.</span>
+    <div class="hz-falta-b"><button type="button" class="btn peq" data-hz="etc" data-r="0">No, nada</button><button type="button" class="btn peq" data-hz="etc" data-r="${r19}">Sí, ${eur(r19, 2)}</button><button type="button" class="btn peq" data-hz="etc" data-r="otra">Otra cifra</button><button type="button" class="btn peq" data-hz="etc" data-r="nose">No lo sé</button></div>
+    ${st.etcOtra ? `<div class="hz-cmp-f"><input id="hzEtcOtra" inputmode="decimal" aria-label="Lo que te retuvieron, en euros" placeholder="${hzN(r19)}"><span>€</span><button type="button" class="btn pri peq" data-hz="etc" data-r="leer">Guardar</button></div>` : ''}
+    ${st.etcNose ? '<p class="hz-falta-n">Cuando llegue el informe de tu bróker, contéstalo aquí. Mientras, la cuenta va sin retención.</p>' : ''}</div></div>`;
+}
+// ¿qué pone tu borrador? Se compara con lo tuyo y se guarda (cifrado, con la cartera) por si vuelves
+function hzComparar(c, R) {
+  const obj = c.k === 'perd' ? -c.v : c.v, b = ((R.d.hzBorr || {})[c.k]) ?? '';
+  let res = '';
+  if (b !== '') {
+    const n = numero(String(b));
+    if (n != null && !Number.isNaN(n)) res = Math.abs(n - obj) < 0.005 ? `<p class="hz-cmp-r z-ok">${hzIc('ok')}Cuadra con lo tuyo.</p>`
+      : `<p class="hz-cmp-r z-mal">${hzIc('alerta')}<span>No cuadra: el borrador dice ${eur(n, 2)} y a ti te sale ${eur(obj, 2)} (${hzSg(obj - n)}). ${c.k === 'c0328' && Math.abs(n) < 0.005 ? 'Lo más probable: tu bróker las puso en la 0031. Míralo allí.' : 'Mira qué venta o qué cobro le falta o le sobra al borrador: la cifra de Toisón sale de tus movimientos.'}</span></p>`;
+  }
+  return `<div class="hz-cmp"><label for="hzCmp-${c.k}">¿Qué pone tu borrador?</label><div class="hz-cmp-f"><input id="hzCmp-${c.k}" inputmode="decimal" placeholder="${hzN(obj)}" value="${esc(b)}" data-hz-cmp="${c.k}"><span>€</span><button type="button" class="btn peq" data-hz="cmp" data-k="${c.k}">Comparar</button></div>${res}</div>`;
+}
+
 function hzCuerpo(c, R, M) {
   if (c.k === 'datos') return hzDatosPaso(R, M);
   if (c.k === 'res') return hzResPaso(R);
+  if (c.k === 'hoja') return hzHoja(R, { sinTit: true });
   const falta = c.falta ? `<div class="hz-falta"><span class="hz-falta-i">${hzIc('alerta')}</span><div class="hz-falta-c"><b>${esc(c.falta.t)}</b><span>${c.falta.x}</span><button type="button" class="btn peq" data-hz="datos">${esc(c.falta.b)}</button></div></div>` : '';
   const ventas = c.ventas ? `<div class="hz-sec"><h4>Venta a venta: lo que vas a ver en Renta Web</h4><div class="hz-ventas">${c.ventas.map((m) => hzVenta(m, c.cripto)).join('')}</div></div>` : '';
   const deSale = c.de ? `<div class="hz-sec"><h4>De dónde sale</h4>${hzCuenta(c.de, c.tot || (c.v != null ? ['Lo tuyo', c.v] : null))}</div>` : '';
   const pone = c.pone ? `<div class="hz-sec"><h4>${c.o === 'tu' ? 'Lo que vas a teclear' : 'Lo que tiene que poner'}</h4><div class="hz-campos">${c.pone.map((x) => hzCampo(x)).join('')}</div></div>` : '';
-  return `${falta}${deSale}${ventas}${pone}${c.ojo ? `<p class="hz-ojo">${c.ojo}</p>` : ''}`;
+  return `${falta}${deSale}${c.preg ? hzPregEtc(c) : ''}${ventas}${pone}${c.ojo ? `<p class="hz-ojo">${c.ojo}</p>` : ''}${c.o === 'borrador' && c.v != null && (c.k !== 'perd' || c.v) ? hzComparar(c, R) : ''}`;
+}
+
+/* ---------- la hoja para tener al lado de Renta Web: en su orden, con marcar, copiar todo e imprimir ---------- */
+const HZ_RENTA_WEB = 'https://sede.agenciatributaria.gob.es/Sede/Renta.html';
+function hzFilasHoja(R) {
+  const out = [];
+  for (const c of R.L) {
+    if (c.nav || c.e === 'no') continue;
+    const subs = [];
+    if (c.ventas) for (const m of c.ventas) { const n = nombreInst(m.instrumento); subs.push([`${n} · transmisión`, +m.importe || 0]); if (m.coste_vendido != null) subs.push([`${n} · adquisición`, +m.coste_vendido]); }
+    else if (c.pone) for (const [t, v] of c.pone) if (typeof v === 'number' && Math.abs(v - (c.v || 0)) > 0.004) subs.push([t, v]);
+    if (c.k === 'c0031' && c.preg && c.preg.r) subs.push(['Retenciones', c.preg.r]);
+    out.push({ c, subs, val: c.k === 'perd' ? (c.v ? -c.v : null) : c.v });
+  }
+  return out;
+}
+function hzHoja(R, { sinTit = false, lado = false } = {}) {
+  const fil = hzFilasHoja(R), hechos = new Set(R.d.hzHechos || []), n = fil.filter((f) => hechos.has(f.c.k)).length;
+  const neto = R.fa.cuota - R.fa.retenido, no = R.L.filter((c) => c.e === 'no');
+  const tag = (c) => (c.o === 'tu' ? '<span class="hz-hf-tag z-tu">mételo tú</span>' : c.e === 'comprueba' ? '<span class="hz-hf-tag z-mira">mira dónde la pone</span>' : c.e === 'falta' ? '<span class="hz-hf-tag z-mira">falta un dato</span>' : '<span class="hz-hf-tag">compruébalo</span>');
+  const num = (v, et) => `<button type="button" class="hz-hf-n" data-hz="copia" data-v="${hzCopiable(v)}" aria-label="Copiar ${esc(et)}">${hzN(v)}${hzIc('copiar')}</button>`;
+  const fila = ({ c, subs, val }) => `<div class="hz-hf${hechos.has(c.k) ? ' z-hecho' : ''}"><label class="hz-ck"><input type="checkbox" data-hz-hecho="${c.k}"${hechos.has(c.k) ? ' checked' : ''} aria-label="Hecho: ${esc(c.t)}"><i>${hzIc('ok')}</i></label>
+      <div class="hz-hf-t"><b>${esc(c.t)}</b><small>${hzCasN(c)} ${tag(c)}</small></div><div class="hz-hf-v">${val != null ? num(val, c.t) : '<span class="hz-hf-s">en el borrador</span>'}</div></div>
+    ${subs.map(([t, v]) => `<div class="hz-hs"><span>${esc(t)}</span>${num(v, t)}</div>`).join('')}`;
+  const grupos = []; for (const f of fil) { if (!grupos.length || grupos[grupos.length - 1].g !== f.c.g) grupos.push({ g: f.c.g, fs: [] }); grupos[grupos.length - 1].fs.push(f); }
+  return `<div class="hz-hoja${lado ? ' z-lado' : ''}" id="hzHoja">
+    <div class="hz-hoja-cab"><div>${sinTit ? '' : `<small class="hz-ey">Renta de ${R.anio}</small><h3>Lo que metes en Renta Web</h3>`}<p>En el orden de Renta Web. Ve marcando lo que ya está.</p></div>
+      <div class="hz-hoja-b">${lado ? '' : `<button type="button" class="btn peq hz-solo-pc" data-hz="lado">${hzIc('lado')}Para tener al lado</button>`}<button type="button" class="btn peq" data-hz="copiaTodo">${hzIc('copiar')}Copiar todo</button><button type="button" class="btn peq" data-hz="imprimir">${hzIc('imprimir')}Imprimir o PDF</button></div></div>
+    <div class="hz-hoja-p"><span>${n} de ${fil.length} hechas</span><div class="hz-prog" role="progressbar" aria-valuemin="0" aria-valuemax="${fil.length}" aria-valuenow="${n}" aria-label="Hechas"><i style="width:${fil.length ? (n / fil.length) * 100 : 0}%"></i></div></div>
+    ${grupos.map(({ g, fs }) => `<div class="hz-hg"><h4>${HZ_AP[g]}</h4>${fs.map(fila).join('')}</div>`).join('')}
+    ${no.length ? `<div class="hz-hg z-no"><h4>No te toca</h4><p>${esc(yLista(no.map((c) => c.t + (c.cas ? ` (${c.cas})` : ''))))}.</p></div>` : ''}
+    <div class="hz-hg z-no"><h4>Lo demás, en Renta Web</h4><p>Vivienda, alquiler, deducciones de tu comunidad, donativos, plan de pensiones: lo revisas allí.</p></div>
+    <div class="hz-hoja-pie"><span>Por tus inversiones: <b>${eur(Math.abs(neto), 0)} ${neto >= -0.5 ? 'a pagar' : 'retenidos de más'}</b>, sin contar tu sueldo.</span><span>Si el borrador no cuadra, mira qué venta o qué cobro le falta: la cifra de Toisón sale de tus movimientos.</span></div>
+  </div>`;
+}
+function hzTextoHoja(R) {
+  const L1 = [`Renta de ${R.anio} · lo que metes en Renta Web (Toisón)`];
+  for (const { c, subs, val } of hzFilasHoja(R)) {
+    L1.push(`${c.cas ? c.cas + ' ' : ''}${c.t}: ${val != null ? hzCopiable(val) : 'en el borrador'}`);
+    for (const [t, v] of subs) L1.push(`  ${t}: ${hzCopiable(v)}`);
+  }
+  return L1.join('\n');
+}
+function hzLado(R) {
+  return `<div class="hz-B-hoja"><button type="button" class="hz-enl hz-volver" data-hz="lado">${hzIc('izq')}Volver al recorrido</button>${hzHoja(R, { lado: true })}
+    <div class="hz-renta-web"><span>Renta Web, en otra ventana</span><p>Abre Renta Web en otra ventana y pon esta al lado: la hoja ocupa 420 px y cada cifra se copia con un toque.</p><a class="btn peq" href="${HZ_RENTA_WEB}" target="_blank" rel="noopener">Abrir Renta Web</a></div></div>`;
 }
 
 /* ---------- la pantalla ---------- */
@@ -346,7 +497,8 @@ function hzTira(R) {
   const cs = hzCuentan(R), f = cs.filter((c) => c.e === 'falta').length, n = cs.length - f, neto = R.fa.cuota - R.fa.retenido, res = R.L.find((c) => c.k === 'res');
   return `<section class="tarjeta hz-tira"><div class="hz-tira-p"><small class="hz-ey">Renta de ${R.anio}</small><b>${n} de ${cs.length} ${cs.length === 1 ? 'casilla lista' : 'casillas listas'}${f ? ` <span class="hz-falta-t">· ${f === 1 ? 'falta 1 dato' : `faltan ${f} datos`}</span>` : ''}</b>
       <div class="hz-seg" aria-hidden="true">${cs.map((c) => `<i class="z-${c.e === 'falta' ? 'falta' : 'listo'}"></i>`).join('')}</div></div>
-    <div class="hz-tira-r"><small>Por tus inversiones</small><b class="${neto > 0.5 ? 'hz-baja' : neto < -0.5 ? 'hz-sube' : ''}">${eur(Math.abs(neto), 0)} ${neto > 0.5 ? 'a pagar' : neto < -0.5 ? 'retenidos de más' : ''}</b>${res ? `<button type="button" class="hz-enl" data-hz="ir" data-k="res">Cómo sale</button>` : ''}</div></section>`;
+    <div class="hz-tira-r"><small>Por tus inversiones</small><b class="${neto > 0.5 ? 'hz-baja' : neto < -0.5 ? 'hz-sube' : ''}">${eur(Math.abs(neto), 0)} ${neto > 0.5 ? 'a pagar' : neto < -0.5 ? 'retenidos de más' : ''}</b>${res ? `<button type="button" class="hz-enl" data-hz="ir" data-k="res">Cómo sale</button>` : ''}</div>
+    <div class="hz-tira-b"><button type="button" class="btn peq" data-hz="ir" data-k="hoja">${hzIc('lado')}La hoja</button></div></section>`;
 }
 function hzPanel(R, M) {
   const st = hzEstado(), nav = hzNav(R), i = nav.findIndex((c) => c.k === st.k), c = nav[i], ant = nav[i - 1], sig = nav[i + 1];
@@ -361,15 +513,18 @@ function htmlHacienda(M) {
   const R = hzCasillas(anioRenta(), M);
   S.hzUlt = R;
   hzElegir(R);
+  if (hzEstado().lado && matchMedia('(min-width: 900px)').matches) return `<div id="hz" class="hz-pH">${hzLado(R)}</div>`;
   return `<div id="hz" class="hz-pH">${hzTira(R)}<div class="hz-A"><aside class="tarjeta hz-lista" aria-label="Las casillas de tu renta">${hzLista(R)}</aside><div class="hz-A-der">${hzPanel(R, M)}</div></div></div>`;
 }
+/* Hacienda tiene dos páginas, las dos en este trozo: Tu renta (el recorrido) y Cómo tributa y calendario (lo que
+   pagas este año, cómo tributa cada cosa, el calendario y lo de antes de «Lo que pagas») */
 function pintarHacienda() {
   const el = $('#panelHz'); if (!el || !S.M) return;
   ponerCssHz();
-  el.innerHTML = htmlHacienda(S.M);
+  el.innerHTML = el.dataset.hzPag === 'tu' ? htmlImpuestos(S.M) : htmlHacienda(S.M);
   el.removeAttribute('aria-busy');
   hzEstado().dir = null;
-  marcarCifras(el);
+  marcarCifras(el); ponerPreguntale(el); plegarNotas(el); marcarDeslizables(el);
 }
 
 document.addEventListener('click', (e) => {
@@ -379,6 +534,22 @@ document.addEventListener('click', (e) => {
   if (q === 'datos') { editarFiscal(R ? R.anio : anioRenta()); return; }
   if (q === 'ccaa') { cambiarComunidad(); return; }
   if (q === 'filtro') { st.filtro = b.dataset.f; pintarHacienda(); return; }
+  if (q === 'lado') { st.lado = !st.lado; pintarHacienda(); scrollTo(0, 0); return; }
+  if (q === 'copiaTodo') { if (R) { try { navigator.clipboard.writeText(hzTextoHoja(R)); } catch (x) { /* sin permiso */ } toast('Copiada la hoja entera', 1800); } return; }
+  if (q === 'imprimir') { print(); return; }
+  if (q === 'cmp') { hzGuardarBorr(b.dataset.k); return; }
+  if (q === 'etc') {
+    const r = b.dataset.r, y = scrollY;
+    if (r === 'otra') { st.etcOtra = true; st.etcNose = false; pintarHacienda(); scrollTo(0, y); const i = $('#hzEtcOtra'); if (i) i.focus(); return; }
+    if (r === 'nose') { st.etcNose = true; st.etcOtra = false; pintarHacienda(); scrollTo(0, y); return; }
+    let v = r === 'borrar' ? null : r === 'leer' ? numero(($('#hzEtcOtra') || {}).value) : +r;
+    if (r === 'leer' && (v == null || Number.isNaN(v) || v < 0)) { toast('Pon lo que te retuvieron, en euros', 2400); return; }
+    const d = hzFis(R);
+    if (v == null) delete d.hzRetEtc; else d.hzRetEtc = Math.round(v * 100) / 100;
+    st.etcOtra = false; st.etcNose = false;
+    guardarCartera('Tu renta').then(() => { S.M = calcular(); pintarHacienda(); scrollTo(0, y); });
+    return;
+  }
   if (q === 'abre') { st.abierta = st.abierta === b.dataset.id ? null : b.dataset.id; const y = scrollY; pintarHacienda(); scrollTo(0, y); return; }
   if (q === 'ir') {
     const nav = R ? hzNav(R) : [], de = nav.findIndex((c) => c.k === st.k), a = nav.findIndex((c) => c.k === b.dataset.k);
@@ -388,4 +559,213 @@ document.addEventListener('click', (e) => {
     pintarHacienda();
     const pn = $('#hzPanel'); if (pn && pn.getBoundingClientRect().top < 70) pn.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
+});
+/* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */
+function htmlFiscalRecom(M, fa) {
+  // 0.7g: en el modo de todos (estándar) GrowFolio no recomienda nada (CNMV): sin esta tabla ni lo que la anuncia
+  if (esPublico()) return '';
+  const anio = new Date().getFullYear(), filas = [];
+  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+  let gan = 0, ganR = 0; // lo que suman las ventas del plan: ganancias y, aparte, lo de los ETC (rendimiento del capital)
+  for (const pl of planes) {
+    const esR = esRCMVenta(pl.f.inst), antes = fiscalAnio(anio, gan, ganR).cuota;
+    if (esR) ganR += pl.ganancia; else gan += pl.ganancia;
+    const despues = fiscalAnio(anio, gan, ganR).cuota;
+    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `${pl.ganancia < 0 ? `pérdida de ${eur(-pl.ganancia, 0)}` : `ganancia de ${eur(pl.ganancia, 0)}`} por FIFO (se venden primero las más antiguas)`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
+    const top = pl.ideas[0];
+    if (pl.aIdea > 0 && top) {
+      const tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede), e = rentaEsperada(top, top.pot, 12);
+      filas.push({ q: `Comprar ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`, d: `${tasa ? `${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar'}; ${esc(fis.txt.replace(/^Dividendos: /, 'dividendos: '))}${e ? ` Si llega al objetivo en 12 meses, te quedas un ${pctS(e.netoP, 0)} neto.` : ''}`, v: tasa ? pl.aIdea * tasa.tipo : 0, c: tasa ? 'al comprar, suma a tu precio de compra' : '' });
+    }
+    if (pl.aColchon > 0.5) filas.push({ q: `Apartar ${eur(pl.aColchon, 0)} para tu colchón`, d: 'en efectivo remunerado (sus intereses tributan como los dividendos) o en un fondo monetario (no paga hasta que lo vendas)', v: 0, c: '' });
+    if (pl.aNucleo > 0.5) filas.push({ q: `Meter ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, d: 'fondo de acumulación: no reparte, no paga hasta que vendas, y si lo traspasas a otro fondo, tampoco', v: 0, c: '' });
+  }
+  const perd = restoEnPerdidas(M, planes);
+  if (new Date().getMonth() >= 6) for (const x of perd) {
+    const esR = esRCMVenta(x.f.inst);
+    const ahorro = fiscalAnio(anio, gan, ganR).cuota - fiscalAnio(anio, gan + (esR ? 0 : x.g), ganR + (esR ? x.g : 0)).cuota;
+    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
+  }
+  const ap = sum(aportacionesActivas(), ({ a }) => +a.importe || 0);
+  if (ap > 0) filas.push({ q: `Aportar ${eur(ap, 0)} al mes`, d: 'a fondos de acumulación: no reparten dividendos, no tributan hasta que vendas', v: 0, c: '' });
+  if (!filas.length) return '';
+  const tot = sum(filas.filter((x) => !x.opc), (x) => x.v);
+  return `<section style="margin-top:44px" aria-labelledby="hFisR"><div class="sec-cab"><h2 id="hFisR">Lo que costaría cada paso de tu plan</h2><span class="k">con lo que ya llevas en ${anio}</span></div>
+    <div class="tabla-w"><table class="resp"><thead><tr><th>Recomendación</th><th>Qué pasa con Hacienda</th><th class="r">Impuesto</th></tr></thead><tbody>
+      ${filas.map((x) => `<tr><td><b style="font-weight:600">${x.q}</b>${x.opc ? '<small>opcional</small>' : ''}</td><td class="txt">${x.d}${x.c ? `<small>${esc(x.c)}</small>` : ''}</td><td class="r ${x.v < 0 ? 'up' : ''}">${x.v ? (x.v < 0 ? `${eur(-x.v, 0)} ${L('menos', 'less')}<small>${L('te lo ahorras', 'you save it')}</small>` : eur(x.v, 0)) : '0\u00a0€'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="nota">Con todo lo que Toisón recomienda hacer ya, la renta de ${anio} sube unos ${eur(tot, 0)}${filas.some((x) => x.opc) ? '; con lo opcional, menos' : ''}. Cada cifra sale de tu tramo del ahorro (${pctTramo(fa.marginal)} % ahora) y de lo que ya llevas declarado este año.</p></section>`;
+}
+/* una sección con su título pasa a ser un plegable (para las tablas largas) */
+function plegarSec(html) {
+  const m = /^\s*<section[^>]*><div class="sec-cab"><h2[^>]*>([\s\S]*?)<\/h2>(?:<span class="k">([\s\S]*?)<\/span>)?<\/div>([\s\S]*)<\/section>\s*$/.exec(html || '');
+  if (!m) return html || '';
+  return `<details class="num-sec" style="margin-top:12px"><summary><span><b>${m[1]}</b>${m[2] ? `<small>${m[2]}</small>` : ''}</span></summary><div class="num-cuerpo">${m[3]}</div></details>`;
+}
+/* dividendos: lo que retiene el país de la sede, lo que recuperas en la renta y lo que te queda */
+function htmlFiscalDividendos(M) {
+  // 0.3.9: la misma empresa en dos brókers suma las dos (antes contaba una sola)
+  const t = tramoAhorro(), porInst = new Map();
+  for (const f of M.filas) if (f.p && f.p.dividendo_pct && f.inst.tipo === 'Acción') { const x = porInst.get(f.inst.id); if (x) x.valor += f.valor; else porInst.set(f.inst.id, { f, valor: f.valor }); }
+  const filas = [...porInst.values()].map(({ f, valor }) => {
+    const bruto = (valor * f.p.dividendo_pct) / 100, fis = fiscalidadSede(f.inst.pais, f.inst.tipo);
+    const pierde = bruto * (fis.pierde || 0) / 100;
+    return { f, bruto, fis, ret: bruto * ((fis.ret || 0) / 100), pierde, neto: bruto * (1 - t) - pierde };
+  });
+  if (!filas.length) return '';
+  return `<section style="margin-top:44px" aria-labelledby="hFisD"><div class="sec-cab"><h2 id="hFisD">Tus dividendos</h2><span class="k">al año, con el precio de hoy</span></div>
+    <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Bruto</th><th class="r">Retención en origen</th><th class="r">Pierdes</th><th class="r">Te queda</th></tr></thead><tbody>
+      ${filas.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto)}</b><small>sede en ${esc(PAISES[x.f.inst.pais] || x.f.inst.pais || '—')}, ${pct(x.f.p.dividendo_pct, 1)} al año</small></td><td class="r" data-l="Bruto">${eur(x.bruto, 0)}</td><td class="r" data-l="Retención en origen">${x.fis.ret == null ? '—' : `${eur(x.ret, 0)}<small>${fmtNum(x.fis.ret, 1)} %</small>`}</td><td class="r ${x.pierde > 0 ? 'down' : ''}" data-l="Pierdes">${x.pierde > 0 ? eur(x.pierde, 0) : '0 €'}</td><td class="r" data-l="Te queda">${eur(x.neto, 0)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="nota">«Te queda» es lo que cobras después de pagar tu tramo del ahorro (${pctTramo(t)} %). Lo que retiene el país de la sede se descuenta en la renta con la deducción por doble imposición hasta el tipo del convenio (casi siempre el 15 %); «Pierdes» es lo que pasa de ahí, que solo se recupera reclamándolo a ese país. Tus fondos de acumulación no reparten y no pagan hasta que vendas.</p></section>`;
+}
+/* lo gratis de arriba: lo que pagas este año por tus inversiones, en una cuenta (impuesto − retenido = lo que queda) */
+function hzGratis(fa) {
+  const queda = fa.cuota - fa.retenido, chip = (t, v) => `<span>${t} <b>${v}</b></span>`;
+  return `<section class="tarjeta hz-gratis" id="hzGratis"><small class="hz-ey">Este año, por tus inversiones</small>
+    <div class="hz-gr-n"><div><b>${eur(fa.cuota, 0)}</b><span>de impuesto</span></div>${fa.retenido ? `<i aria-hidden="true">−</i><div><b>${eur(fa.retenido, 0)}</b><span>ya retenidos</span></div><i aria-hidden="true">=</i><div class="z-tot"><b class="${queda > 0.5 ? 'hz-baja' : queda < -0.5 ? 'hz-sube' : ''}">${eur(Math.abs(queda), 0)}</b><span>${queda >= -0.5 ? 'a pagar en la renta' : 'retenidos de más'}</span></div>` : ''}</div>
+    <div class="hz-gr-de">${chip('Ventas', eurS(fa.gp, 0))}${fa.usadas ? chip('Pérdidas de otros años', eurS(-fa.usadas, 0)) : ''}${chip('Dividendos e intereses', eur(fa.rcm, 0))}${fa.nRCM ? chip(fa.nRCM === 1 ? 'Venta de ETC' : 'Ventas de ETC', eurS(fa.rcmVentas, 0)) : ''}${chip('Base del ahorro', `${eur(fa.base, 0)}</b>, tramo del <b>${pctTramo(fa.marginal)} %`)}${fa.sobra + fa.sobraRCM > 0 ? chip(`Pérdidas para hasta ${fa.anio + 4}`, eur(fa.sobra + fa.sobraRCM, 0)) : ''}</div></section>`;
+}
+function htmlImpuestos(M) {
+  const anio = new Date().getFullYear();
+  const fa = fiscalAnio(anio);
+  // lo que cuesta lo que recomienda GrowFolio (vacío en el modo de todos o si no hay nada): solo se anuncia si sale
+  const recom = htmlFiscalRecom(M, fa);
+  const nombreI = (id) => esc((S.inst[id] && S.inst[id].corto) || id);
+  // si vendieras cada posición hoy (FIFO sobre todo lo que tienes = valor menos coste total)
+  const latentes = M.filas.map((f) => {
+    const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0);
+    return { f, g, imp: g > 0 ? impuestoDeVenta(g, anio, f.inst).impuesto : 0 };
+  }).sort((a, b) => b.g - a.g);
+  const totLat = sum(latentes, (x) => x.g);
+  const todo = impuestoDeVentas(latentes.map((x) => ({ g: x.g, inst: x.f.inst })), anio).impuesto;
+  const perdidas = latentes.filter((x) => x.g < 0);
+  const fondos = M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || ''));
+  const tr = enElExtranjero(M);
+  const cripto = sum(M.filas.filter((f) => f.inst.clase === 'Cripto'), (f) => f.valor);
+  const divs = M.filas.filter((f) => f.p && f.p.dividendo_pct);
+  return `
+    <div class="sec-cab"><h2>Lo que pagas en la renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
+    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p>${recom ? '<p class="k">Más abajo, lo que supondría en la renta cada paso de tu plan.</p>' : ''}</div>` : `${hzGratis(fa)}`}
+    ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r" title="Hacienda cuenta que vendes primero las que compraste antes (FIFO)">Lo que te costó</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+
+    ${recom}
+    ${plegarSec(htmlFiscalDividendos(M))}
+    <div style="margin-top:28px">
+      <details class="num-sec"><summary><span><b>Si vendieras hoy</b><small>vender todo costaría unos ${eur(todo, 0)} en la renta de ${anio}; posición a posición</small></span></summary><div class="num-cuerpo">
+        <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Ganancia o pérdida</th><th class="r">Impuesto si vendes todo</th><th class="r">Tipo</th></tr></thead><tbody>
+          ${latentes.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto || x.f.inst.nombre)}</b><small>${esc(x.f.pos.plataforma || '')}${/^Fondo/.test(x.f.inst.tipo || '') ? ', se puede traspasar sin pagar' : ''}</small></td><td class="r ${cls(x.g)}">${eurS(x.g, 0)}</td><td class="r">${x.imp > 0 ? eur(x.imp, 0) : '—'}</td><td class="r">${x.g > 0 ? pct((x.imp / x.g) * 100, 1) : x.g < 0 ? '<span class="k">resta</span>' : '—'}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas.</p>
+      </div></details>
+    </div>
+    ${htmlFiscalGuia(M, fa, { tr, cripto, fondos, divs })}`;
+}
+function htmlFiscalComunidad() {
+  const c = comunidadUsuario();
+  if (!c) return `<section class="fis-ccaa sin" style="margin-top:44px" aria-labelledby="hCcaa"><div class="sec-cab"><h2 id="hCcaa">En tu comunidad</h2></div>
+    <p>Pon dónde vives y verás lo que cambia para ti: en País Vasco y Navarra la escala del ahorro es otra, y lo que pagas si tus padres te ayudan con dinero (la entrada de un piso, por ejemplo) va de casi nada a miles de euros según la comunidad.</p>
+    <label class="campo fis-ccaa-sel">Tu comunidad<select data-ccaa>${opcionesComunidad('')}</select></label></section>`;
+  const d = DONACIONES[c], ns = noticiasComunidad(c, 3);
+  return `<section class="fis-ccaa" style="margin-top:44px" aria-labelledby="hCcaa"><div class="sec-cab"><h2 id="hCcaa">${L('En', 'In')} ${esc(conArticulo(c))}</h2><button type="button" class="enlace" data-accion="ccaa-cambiar">Cambiar</button></div>
+    <div class="fis-como">
+      <div class="fis-c"><b>Tu escala del ahorro</b><small>ventas, dividendos e intereses</small><p>${TRAMOS_FORAL[c] ? L(`Régimen foral: ${textoTramos(c)}. Es la que usa Toisón en tus cálculos.`, `Foral regime: ${textoTramos(c, true)}. Toisón uses it in your figures.`) : 'La misma en toda España (la de arriba): la parte autonómica del ahorro no cambia de una comunidad a otra.'}</p></div>
+      ${d ? `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${esc(L(d[0], (DONACIONES_EN[c] || [])[0] || d[0]))} ${esc(L(d[1], (DONACIONES_EN[c] || [])[1] || d[1]))}</p><small class="fis-norma" data-no-trad>${esc(d[2])}</small></div>` : `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${L(`En ${esc(conArticulo(c))} se aplica la norma estatal del impuesto de donaciones, con sus bonificaciones para residentes. Antes de una donación grande, mira la cifra exacta en la Agencia Tributaria.`, `In ${esc(conArticulo(c))} the national gift tax rules apply, with their allowances for residents. Before a large gift, check the exact figure with the Spanish Tax Agency.`)}</p></div>`}
+      <div class="fis-c"><b>Cómo hacerlo bien</b><small>para no perder la rebaja</small><p>Por transferencia (que se vea de dónde sale el dinero), con escritura ante notario cuando la comunidad la pide, y presentando el modelo 651 (o el de tu comunidad) en el mes siguiente. Las donaciones del mismo padre en tres años se suman.</p></div>
+    </div>
+    ${ns.length ? `<h3 class="fis-ccaa-not">${L(`Noticias de ${esc(conArticulo(c))} que tocan tu dinero`, `News from ${esc(conArticulo(c))} that affects your money`)}</h3>${htmlNoticias(ns, false, 3)}` : ''}
+  </section>`;
+}
+/* la parte de consulta de Fiscalidad: tramos, cómo tributa cada cosa que tienes, la regla de los dos
+   meses en tus operaciones, el calendario y las formas legales de pagar menos */
+function htmlFiscalGuia(M, fa, x) {
+  const anio = fa.anio, hoy = hoyIso();
+  // tramos con tu base marcada
+  let desde = 0;
+  const TA = tramosAhorro(), nT = TA.length;
+  const tramos = TA.map(([h, t0]) => { const r = { desde, hasta: h, t: pctTramo(t0), tuyo: fa.base > desde && (fa.base <= h || h === Infinity) }; desde = h; return r; });
+  if (!fa.base) tramos[0].tuyo = true;
+  // cómo tributa lo que tienes
+  const tiene = (fn) => M.filas.filter(fn);
+  const accES = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'ES'), accEx = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais !== 'ES');
+  const etf = tiene((f) => f.inst.tipo === 'ETF'), etc = tiene((f) => esRCMVenta(f.inst)), cri = tiene((f) => f.inst.clase === 'Cripto' && !esRCMVenta(f.inst));
+  const lista = (v) => yLista(v.map((f) => esc(f.inst.corto)));
+  const como = [
+    x.fondos.length && ['Fondos de inversión', lista(x.fondos), 'Mientras no los vendas no pagas nada. Si pasas el dinero de un fondo a otro (traspaso) tampoco: el impuesto se aplaza hasta que lo saques de verdad. Al reembolsar te retienen el 19 % de la ganancia.'],
+    accES.length && ['Acciones españolas', lista(accES), 'Pagas por la ganancia al vender (FIFO: primero salen las más antiguas). Los dividendos llegan con el 19 % retenido, que se resta en la renta.'],
+    accEx.length && ['Acciones extranjeras', lista(accEx), 'Igual al vender. Los dividendos pueden traer la retención del país de la sede: en la renta recuperas hasta el 15 % con la deducción por doble imposición; lo que pase de ahí se pierde salvo que lo reclames allí.'],
+    etf.length && ['ETF', lista(etf), 'Al vender, como una acción: cada venta paga por la ganancia (FIFO) y no hay traspasos sin impuestos. En la renta van con los fondos, como «fondos cotizados».'],
+    etc.length && ['ETC (oro, materias primas…)', lista(etc), 'No es un fondo ni una acción: es un título de deuda. En una consulta de 2025 sobre un ETC de petróleo (V0267-25), Tributos dijo que lo que se gana o se pierde al venderlo es rendimiento del capital mobiliario, como los intereses, y no una ganancia patrimonial; no hay consulta expresa sobre los de oro, pero están hechos igual. Va en otro apartado de la renta, con las ganancias de acciones y fondos solo se compensa hasta un 25 % y, con un bróker español, puede llevar una retención del 19 % de la ganancia al vender. La recompra es de dos meses, cotice donde cotice, y tampoco hay traspasos sin impuestos.'],
+    cri.length && ['Criptomonedas', lista(cri), 'Paga al venderla a euros y también al cambiarla por otra cripto. Por encima de 50.000 € fuera de España hay que presentar el modelo 721.'],
+    ['Intereses del efectivo', 'Trade Republic y similares', 'Rendimiento del capital: tributa en la base del ahorro como los dividendos.'],
+  ].filter(Boolean);
+  // regla de los dos meses en tus operaciones
+  const movs = S.cartera.movimientos || [];
+  const dosMeses = [];
+  for (const v of movs.filter((m) => m.tipo === 'venta' && m.resultado < 0)) {
+    const r = reglaRecompra(S.inst[v.instrumento]);
+    if (!r || !r.meses) continue;
+    const ap = perdidaAplazada(v), libre = libreRecompra(S.inst[v.instrumento], v.fecha);
+    if (ap) dosMeses.push({ n: 'warn', t: ap.parte >= 0.999 ? `La pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}) no cuenta todavía` : `De la pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}), ${eurS(ap.importe, 0)} no cuentan todavía`, d: `${ap.aporte ? `Tu aportación automática del ${fechaLarga(ap.fecha)}` : `Compraste el ${fechaLarga(ap.fecha)}`}, a menos de ${r.plazo} de la venta${ap.parte < 0.999 ? `, un ${fmtNum(ap.parte * 100, 0)} % de lo que vendiste` : ''}. Esa parte contará cuando vendas lo recomprado; en lo que te calcula Toisón ya no resta.` });
+    else if (libre >= hoy) dosMeses.push({ n: 'info', t: `Si recompras ${nombreInst(v.instrumento)} antes del ${fechaLarga(libre)}, esa pérdida no resta este año`, d: `Lo vendiste con ${eurS(v.resultado, 0)} el ${fechaLarga(v.fecha)}; la regla de la recompra (${r.plazo}) la deja para cuando vendas lo recomprado.` });
+  }
+  // calendario
+  const cal = [
+    [`${anio}-12-31`, `31 dic ${anio}`, `El año fiscal se cierra el 31 de diciembre: lo que se vende hasta ese día, con ganancia o con pérdida, cuenta en la renta de ${anio}; lo de después, en la del siguiente (ese día la bolsa de Madrid cierra a las 14:00 y en los fondos cuenta la hora de corte). La recompra cuenta: si se compra lo mismo en los dos meses antes o después de vender (acciones y ETF de bolsas de la UE, y los ETC coticen donde coticen) o en el año antes o después (fondos, y acciones y ETF de fuera de la UE), esa pérdida no resta ese año, o solo en la parte que no se recompra. En cripto la regla de los dos meses no se aplica. Los traspasos entre fondos no cuentan.`],
+    [`${anio + 1}-02-15`, `ene-feb ${anio + 1}`, 'Los brókeres publican el informe fiscal del año en su app o su web (en Trade Republic: Perfil, Impuestos).'],
+    [`${anio + 1}-03-31`, `31 mar ${anio + 1}`, `Modelos 720 y 721, solo si te tocan. Son informativos (no se paga nada) y se presentan del 1 de enero al 31 de marzo. Tocan si a 31 de diciembre tenías fuera de España más de 50.000 € en alguno de estos bloques, cada uno por separado: cuentas (cuenta también el saldo medio del último trimestre); valores y fondos; inmuebles (los tres van en el 720); y cripto en plataformas extranjeras (el 721). Los años siguientes, solo si un bloque sube más de 20.000 € desde la última vez que lo presentaste, o si dejas de tener algo que declaraste. Hoy tienes ${eur(x.tr, 0)} en brókeres de fuera de España y ${eur(x.cripto, 0)} en cripto.`],
+    [`${anio + 1}-04-08`, `abril ${anio + 1}`, `Empieza la renta de ${anio}: revisa en el borrador ventas, dividendos e intereses.`],
+    [`${anio + 1}-06-30`, `30 jun ${anio + 1}`, 'Último día para presentarla (si sale a pagar y la domicilias, unos días antes).'],
+  ].filter(([d]) => d >= hoy);
+  // formas legales de pagar menos, según lo que tienes
+  const latentes = M.filas.map((f) => ({ f, g: f.valor - f.coste }));
+  const perd = latentes.filter((y) => y.g < -50), gan = latentes.filter((y) => y.g > 50);
+  const trucos = [
+    x.fondos.length && ['Los traspasos entre fondos no tributan', 'Al pasar el dinero de un fondo a otro con un traspaso no se paga nada hasta el día que se saca.'],
+    perd.length && gan.length && ['Ganancias y pérdidas del mismo año se compensan', 'Las pérdidas de lo que se vende restan de las ganancias de lo vendido ese mismo año.'],
+    ['Una ganancia grande, en uno o en dos años', `Los primeros ${fmtNum(TA[0][0], 0)} € de la base del ahorro pagan el ${pctTramo(TA[0][1])} %; de ahí a ${fmtNum(TA[1][0], 0)} €, el ${pctTramo(TA[1][1])} %. Una venta grande repartida entre dos años puede quedar en el tramo bajo.`],
+    ['Acumulación y reparto no tributan igual', 'Un fondo o ETF de acumulación reinvierte los dividendos sin que pagues por ellos cada año; uno de reparto te los da y tributan.'],
+    fa.sobra > 0 && ['Tienes pérdidas pendientes de compensar', `Te quedan ${eur(fa.sobra, 0)} para compensar en los próximos 4 años.`],
+  ].filter(Boolean);
+  return `
+    <section style="margin-top:44px" aria-labelledby="hTram"><div class="sec-cab"><h2 id="hTram">Cuánto pagas: los tramos del ahorro</h2><span class="k">ganancias de ventas, dividendos e intereses de ${anio}</span></div>
+      <div class="tramos2${nT > 6 ? ' muchos' : ''}">${tramos.map((t, i) => `<div class="tr2${t.tuyo ? ' tuyo' : ''}" style="--h:${(32 + (i * 68) / Math.max(1, nT - 1)).toFixed(0)}%"><i></i><b>${t.t} %</b><small>${t.hasta === Infinity ? `más de ${fmtNum(t.desde, 0)}\u00a0€` : t.desde ? `${fmtNum(t.desde, 0)} a ${fmtNum(t.hasta, 0)}\u00a0€` : `hasta ${fmtNum(t.hasta, 0)}\u00a0€`}</small>${t.tuyo ? '<span>tú</span>' : ''}</div>`).join('')}</div>
+      <p class="nota">${TRAMOS_FORAL[comunidadUsuario()] ? `<span data-no-trad>${L(`Es la escala foral de ${esc(nombreComunidad(comunidadUsuario()))}, distinta de la del resto de España.`, `This is the foral scale of ${esc(conArticulo(comunidadUsuario()))}, different from the rest of Spain.`)}</span> ` : ''}Cada tramo paga solo lo que cae dentro de él. Tu base del ahorro de ${anio} va por ${eur(fa.base, 0)}: ${eur(fa.cuota, 0)} de cuota. Las pérdidas de ventas se compensan con las ganancias del año${comunidadUsuario() === 'paisvasco' ? ' (en el País Vasco no se cruzan con los dividendos)' : ' y, si sobran, con hasta un 25 % de los dividendos e intereses'}; lo que quede, en los 4 años siguientes.</p>
+    </section>
+    ${htmlFiscalComunidad()}
+    <section style="margin-top:44px" aria-labelledby="hComo"><div class="sec-cab"><h2 id="hComo">Cómo tributa lo que tienes</h2></div>
+      <div class="fis-como">${como.map(([t, q, d]) => `<div class="fis-c"><b>${t}</b><small>${q}</small><p>${d}</p></div>`).join('')}</div>
+    </section>
+    ${dosMeses.length ? `<section style="margin-top:44px" aria-labelledby="hDos"><div class="sec-cab"><h2 id="hDos">Ventas con pérdidas y recompras</h2></div><ul class="lista">${dosMeses.map((a) => `<li class="${a.n}">${a.n === 'warn' ? ICONOS.alerta : ICONOS.info}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span></div></li>`).join('')}</ul></section>` : ''}
+    <div class="dos" style="margin-top:44px">
+      <section aria-labelledby="hCalF"><div class="sec-cab"><h2 id="hCalF">Calendario fiscal</h2></div>
+        <ul class="lista agenda">${cal.map(([d, c, t]) => `<li><div class="dia fis-dia"><b>${esc(c.split(' ')[0])}</b><span class="k">${esc(c.split(' ').slice(1).join(' '))}</span></div><div><span>${esc(t)}</span></div><span></span></li>`).join('')}</ul></section>
+      <aside class="lateral" aria-labelledby="hTruc"><div class="sec-cab"><h2 id="hTruc">Para pagar menos, sin trampas</h2></div>
+        <ul class="lista">${trucos.map(([t, d]) => `<li class="info">${ICONOS.info}<div><b>${esc(t)}</b><span>${esc(d)}</span></div></li>`).join('')}</ul></aside>
+    </div>
+    <p class="nota">Cálculo orientativo con la normativa de ${anio}: la cifra exacta sale en el borrador de la renta y en los informes fiscales de tus brókeres.</p>`;
+}
+
+/* lo que se guarda de Tu renta va en la cartera cifrada, en fiscal[año] (claves hz*: hzRetEtc, hzBorr, hzHechos) */
+const hzFis = (R) => { const f = (S.cartera.fiscal = S.cartera.fiscal || {}); return (f[R.anio] = f[R.anio] || {}); };
+function hzGuardarBorr(k) {
+  const R = S.hzUlt, inp = document.getElementById('hzCmp-' + k); if (!R || !inp) return;
+  const d = hzFis(R), v = inp.value.trim(), y = scrollY;
+  d.hzBorr = { ...(d.hzBorr || {}) }; if (v) d.hzBorr[k] = v; else delete d.hzBorr[k];
+  pintarHacienda(); scrollTo(0, y);
+  guardarCarteraCallada('Tu renta');
+}
+document.addEventListener('change', (e) => {
+  const t = e.target.closest && e.target.closest('#panelHz [data-hz-hecho]'); if (!t || !S.hzUlt) return;
+  const d = hzFis(S.hzUlt), h = new Set(d.hzHechos || []), y = scrollY;
+  if (t.checked) h.add(t.dataset.hzHecho); else h.delete(t.dataset.hzHecho);
+  d.hzHechos = [...h];
+  pintarHacienda(); scrollTo(0, y);
+  const otra = document.querySelector(`#panelHz [data-hz-hecho="${CSS.escape(t.dataset.hzHecho)}"]`); if (otra) otra.focus({ preventScroll: true });
+  guardarCarteraCallada('Tu renta');
+});
+document.addEventListener('keydown', (e) => {
+  const t = e.target; if (e.key !== 'Enter' || !t || !t.closest || !t.closest('#panelHz')) return;
+  if (t.dataset.hzCmp) { e.preventDefault(); hzGuardarBorr(t.dataset.hzCmp); }
+  else if (t.id === 'hzEtcOtra') { e.preventDefault(); const b = $('#panelHz [data-hz="etc"][data-r="leer"]'); if (b) b.click(); }
 });

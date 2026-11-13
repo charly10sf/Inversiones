@@ -93,13 +93,13 @@ test('el ETC cuenta como rendimiento del capital y su recompra es de dos meses',
   expect(r.rcmSinAplazar).toBe(-200);
   expect(r.sede).toContain('rendimiento del capital mobiliario');
   const vista = page.locator('#vista');
-  await expect(vista).toContainText('Lo que pagas');
+  await expect(vista).toContainText('Lo que pagas en la renta');
   await expect(vista).toContainText('ETC (oro, materias primas…)');
   await expect(vista).toContainText('es rendimiento del capital mobiliario');
   await expect(vista).not.toContainText('Como una acción: cada venta paga');
   await expect(vista).not.toContainText('ETF y ETC (oro)');
-  await expect(vista).toContainText('Ventas de ETC');
-  await expect(vista).toContainText('cuentan como rendimiento del capital');
+  // arriba, lo que pagas: la venta del ETC va aparte de las ventas (con los dividendos y los intereses)
+  await expect(page.locator('#hzGratis')).toContainText(/Ventas? de ETC/);
 });
 
 test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo para bolsas de España y la UE', async ({ page, errores }) => {
@@ -150,10 +150,40 @@ test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo p
   await expect(vista).not.toContainText(/pérdidas sin vender/i);
 });
 
-// Fase 2, sesión 2: el 720 y el 721 por bloques y el cierre del año pasan a «Cómo tributa y calendario». Hasta entonces,
-// lo que decía la Guía vieja (del 1 de enero al 31 de marzo, cada bloque por separado, inmuebles, 721, más de 20.000 €;
-// el cierre del 31 de diciembre con los ETC coticen donde coticen) queda apuntado aquí para volver a probarlo allí.
-test.fixme('Cómo tributa y calendario: el 720 y el 721 por bloques y el cierre del año, sin proponer ventas', async () => {});
+test('Cómo tributa y calendario: lo que pagas arriba, el 720 y el 721 por bloques y el cierre del año, sin proponer ventas', async ({ page, errores }) => {
+  // fecha fija (11 nov 2026) para que el cierre del año salga siempre en el calendario
+  await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+01:00'));
+  await crearCuenta(page);
+  await page.waitForSelector('.hoja-guia', { timeout: 10_000 }).catch(() => {});
+  await meterCartera(page); await quitarCapas(page);
+  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); });
+  await page.evaluate(() => {
+    const venta = (id, instrumento, resultado) => ({ id, tipo: 'venta', fecha: '2026-02-10', instrumento, plataforma: 'Trade Republic', uds: 3, importe: 1000 + resultado, coste_vendido: 1000, resultado });
+    S.cartera.movimientos = [venta('v2', 'repsol', 80), venta('v3', 'phau', 60)];
+    S.cartera.fiscal = { 2026: { rcm: 100, retenido: 19 } };
+    S.M = calcular();
+    location.hash = '#impuestos';
+  });
+  const vista = page.locator('#vista');
+  const g = page.locator('#hzGratis');
+  await expect(g).toContainText('Este año, por tus inversiones');
+  // base 80 + 100 + 60 = 240 al 19 % = 46 de impuesto, menos 19 retenidos = 27 a pagar
+  await expect(g).toContainText('46');
+  await expect(g).toContainText('a pagar en la renta');
+  await expect(g).toContainText('Venta de ETC');
+  await expect(vista).toContainText('Modelos 720 y 721, solo si te tocan');
+  await expect(vista).toContainText('más de 50.000 € en alguno de estos bloques, cada uno por separado');
+  await expect(vista).toContainText('inmuebles');
+  await expect(vista).toContainText('cripto en plataformas extranjeras (el 721)');
+  await expect(vista).toContainText('solo si un bloque sube más de 20.000 €');
+  await expect(vista).toContainText('El año fiscal se cierra el 31 de diciembre');
+  await expect(vista).toContainText('y los ETC coticen donde coticen');
+  await expect(vista).not.toContainText('Último día del año para vender con pérdidas');
+  await page.evaluate(() => { S.acceso = 'privado'; pintar(); });
+  await expect(page.locator('#hzGratis')).toBeVisible();
+  await expect(vista).not.toContainText('te compensa vender');
+  await expect(vista).not.toContainText('Cierra el año');
+});
 
 test('la IA lee la comisión de Interactive Brokers y lo del ETC igual que la app', async ({ page, errores }) => {
   await crearCuenta(page);

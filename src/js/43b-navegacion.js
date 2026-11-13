@@ -56,7 +56,7 @@ const PAGINAS = [
   { id: 'reparto', t: 'Reparto y X-Ray', en: 'Allocation and X-Ray', s: 'reparto', g: 'rr', v: 'av', p: 'reparto', kw: 'paises sectores temas xray' },
   { id: 'rebal', t: 'Tu reparto objetivo', en: 'Your target mix', s: 'reparto', g: 'rr', v: 'av', p: 'rebal', kw: 'rebalancear objetivo' },
   { id: 'renta', get t() { return `Tu renta ${anioRenta()}`; }, get en() { return `Your ${anioRenta()} tax return`; }, s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'renta', kw: 'declaracion renta guia casillas borrador renta web' },
-  { id: 'fiscal', t: 'Lo que pagas', en: 'What you pay', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'impuestos', kw: 'hacienda impuestos irpf plusvalias' },
+  { id: 'fiscal', t: 'Cómo tributa y calendario', en: 'How it is taxed and key dates', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'impuestos', kw: 'hacienda impuestos irpf plusvalias lo que pagas tramos calendario fechas 720 721' },
   { id: 'mercados', t: 'Mercados', en: 'Markets', s: 'mercados', g: 'mi', v: 'mercados', kw: 'bolsas tipos divisas materias primas buscar' },
   { id: 'ideas', t: 'Ideas', en: 'Ideas', s: 'ideas', g: 'mi', v: 'expertos', h: 'ideas', kw: 'radar analistas expertos seguimiento' },
   { id: 'tu', t: 'Tu cuenta', en: 'Your account', s: 'tuplan', g: 'tuyo', v: 'tu', kw: 'diseno tema perfil' },
