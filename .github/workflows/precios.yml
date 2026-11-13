@@ -18,6 +18,14 @@ on:
         description: "Ensayo: hace la pasada entera (con Claude de verdad, el informe y la decisión aunque no toquen) pero NO publica en la rama datos; dice lo que ha costado"
         type: boolean
         default: false
+      comparar:
+        description: "Solo con ensayo: otro modelo (claude-sonnet-5-5) con el que decidir las ideas sobre los mismos datos, para compararlo. Vacío: no compara"
+        type: string
+        default: ""
+      traduccion:
+        description: "Solo con ensayo: hasta dónde se traduce en esta pasada (todo, esencial o nada). Vacío: lo que diga la variable TRADUCIR_ALCANCE"
+        type: string
+        default: ""
   push:
     branches: [main]
     paths:
@@ -164,6 +172,8 @@ jobs:
         continue-on-error: true
         env:
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
+          # 13 nov 2026 (auditoría): todo, esencial o nada (scripts/traducir.py). Se cambia en Settings → Variables
+          TRADUCIR_ALCANCE: ${{ inputs.traduccion || vars.TRADUCIR_ALCANCE || 'todo' }}
         run: |
           python scripts/traducir.py instrumentos.json anterior salida || echo "sin traducción esta vez"
 
@@ -188,6 +198,26 @@ jobs:
         if: always()
         run: python scripts/coste_ia.py salida "$(date -u -d '-30 min' +%Y-%m-%dT%H:%M)"
 
+      # 13 nov 2026 (auditoría): el ensayo guarda lo que ha salido (7 días) para poder mirarlo y compararlo; son los mismos
+      # archivos que una pasada normal publica en la rama datos
+      - name: Reunir lo que deja el ensayo
+        if: ${{ inputs.ensayo }}
+        run: |
+          mkdir -p ensayo-pasada
+          for f in radar.json radar-mas.json precios.json noticias-cache.json escaneo.json informe.json fichas.json fichas-mas.json traduccion-en.json; do
+            [ -f salida/$f ] && cp salida/$f ensayo-pasada/ || true
+          done
+          [ -f anterior/escaneo.json ] && cp anterior/escaneo.json ensayo-pasada/escaneo-anterior.json || true
+          [ -f anterior/informe.json ] && cp anterior/informe.json ensayo-pasada/informe-anterior.json || true
+
+      - name: Guardar el ensayo
+        if: ${{ inputs.ensayo }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ensayo-pasada
+          path: ensayo-pasada
+          retention-days: 7
+
       - name: Publicar en la rama datos
         if: ${{ !inputs.ensayo }}
         working-directory: salida
@@ -199,3 +229,54 @@ jobs:
           git add -A
           git commit -q -m "Precios $(date -u +%Y-%m-%dT%H:%MZ)"
           git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" datos
+
+  # 13 nov 2026 (auditoría): con «ensayo» y «comparar», la decisión de las ideas y el informe de la cartera tres veces
+  # sobre los datos que acaba de dejar la pasada: con el código de main, con el de esta rama y con el de esta rama y el
+  # modelo de «comparar». Lado a lado, sin publicar nada; queda en el artefacto «ensayo-comparacion».
+  comparar:
+    needs: precios
+    if: ${{ inputs.ensayo && inputs.comparar != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r scripts/requirements.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ensayo-pasada
+          path: ensayo-pasada
+
+      - name: Los scripts de main, aparte
+        run: |
+          git fetch -q --depth=1 origin main
+          mkdir -p /tmp/main
+          git archive FETCH_HEAD scripts | tar -x -C /tmp/main
+
+      - name: Decidir e informar con main, con la rama y con el otro modelo
+        env:
+          ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
+          OTRO_MODELO: ${{ inputs.comparar }}
+        run: |
+          mkdir -p comparacion
+          python scripts/ensayo_comparar.py /tmp/main/scripts main instrumentos.json ensayo-pasada comparacion > comparacion/registro-main.txt 2>&1 &
+          python scripts/ensayo_comparar.py scripts rama instrumentos.json ensayo-pasada comparacion > comparacion/registro-rama.txt 2>&1 &
+          python scripts/ensayo_comparar.py scripts otro instrumentos.json ensayo-pasada comparacion "$OTRO_MODELO" solo-decision > comparacion/registro-otro.txt 2>&1 &
+          wait
+          tail -n 8 comparacion/registro-*.txt
+
+      - name: Guardar la comparación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ensayo-comparacion
+          path: comparacion
+          retention-days: 7

@@ -298,5 +298,73 @@ class CostePorDias(unittest.TestCase):
         self.assertIn("al mes: unos 9.98 US$", lineas[4])  # 0,4 × 21,7 + (0,2 + 0,1) × 4,35
 
 
+class AlcanceDeLaTraduccion(unittest.TestCase):
+    """La traducción al inglés se puede dejar en lo esencial o parar (TRADUCIR_ALCANCE); por defecto, todo, como siempre."""
+
+    def setUp(self):
+        import traducir as T
+        self.T = T
+        self.env = os.environ.get("TRADUCIR_ALCANCE")
+        self.hace_falta = {"El informe de hoy dice que la bolsa sube": 0, "La idea de la semana es esta empresa": 1,
+                           "Un titular de la prensa de hoy": 2, "La lectura de una empresa del resto del radar": 3,
+                           "Otra lectura que ya está traducida": 3}
+        self.t = {T.clave("Otra lectura que ya está traducida"): "Another reading"}
+
+    def tearDown(self):
+        os.environ.pop("TRADUCIR_ALCANCE", None)
+        if self.env is not None:
+            os.environ["TRADUCIR_ALCANCE"] = self.env
+
+    def falta(self, alcance=None):
+        return self.T.lo_que_falta(self.hace_falta, self.t, {}, {}, "2026-11-01", alcance)
+
+    def test_por_defecto_todo_como_siempre(self):
+        os.environ.pop("TRADUCIR_ALCANCE", None)
+        self.assertEqual(len(self.falta()), 4)
+        os.environ["TRADUCIR_ALCANCE"] = "una cosa rara"
+        self.assertEqual(len(self.falta()), 4)
+
+    def test_esencial_deja_fuera_el_resto_del_radar(self):
+        os.environ["TRADUCIR_ALCANCE"] = "Esencial"
+        self.assertEqual(self.falta(), ["El informe de hoy dice que la bolsa sube", "La idea de la semana es esta empresa", "Un titular de la prensa de hoy"])
+
+    def test_nada_no_pide_nada(self):
+        os.environ["TRADUCIR_ALCANCE"] = "nada"
+        self.assertEqual(self.falta(), [])
+        self.assertEqual(len(self.falta("todo")), 4)  # el alcance dado a mano manda sobre la variable
+
+    def test_la_action_lo_lee_de_la_variable_del_repositorio(self):
+        yml = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8")
+        self.assertIn("TRADUCIR_ALCANCE: ${{ inputs.traduccion || vars.TRADUCIR_ALCANCE || 'todo' }}", yml)
+
+
+class EnsayoLadoALado(unittest.TestCase):
+    """El ensayo guarda lo que sale y, con «comparar», decide con main, con la rama y con otro modelo sobre lo mismo."""
+
+    def test_el_ensayo_no_publica_y_guarda_el_artefacto(self):
+        yml = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8")
+        self.assertIn("name: ensayo-pasada", yml)
+        self.assertIn("if: ${{ inputs.ensayo && inputs.comparar != '' }}", yml)
+        publicar = yml.split("- name: Publicar en la rama datos")[1][:80]
+        self.assertIn("if: ${{ !inputs.ensayo }}", publicar)
+        # el modelo de «comparar» entra por una variable de entorno, no pegado en la orden
+        self.assertNotIn('"${{ inputs.comparar }}"', yml)
+
+    def test_el_script_carga_el_codigo_de_la_carpeta_que_se_le_da(self):
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            datos, sal = Path(d, "datos"), Path(d, "sal")
+            datos.mkdir()
+            (datos / "radar.json").write_text('{"valores": []}', encoding="utf-8")
+            inst = Path(d, "instrumentos.json"); inst.write_text('{"instrumentos": []}', encoding="utf-8")
+            env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_RADAR_KEY"}
+            r = subprocess.run([sys.executable, str(RAIZ / "scripts/ensayo_comparar.py"), str(RAIZ / "scripts"), "prueba", str(inst), str(datos), str(sal), "claude-sonnet-5-5", "solo-decision"],
+                               capture_output=True, text=True, env=env, timeout=120)
+            self.assertEqual(r.returncode, 0, r.stderr[-400:])
+            self.assertIn("prueba: en total 0.0000 US$", r.stdout)  # sin clave no gasta ni falla
+            self.assertTrue((sal / "uso-prueba.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

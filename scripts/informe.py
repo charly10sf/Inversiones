@@ -516,7 +516,7 @@ def hoy_madrid():
 def precio_y_dia(p, hoy=None):
     """El precio de una posición y lo que se movió, diciendo de qué día es si no es de hoy. 13 nov 2026 (auditoría): los
     fondos publican su valor con uno o dos días de retraso y se le pasaba a la IA como «hoy»: el informe decía «el fondo sube
-    un 1,87 % hoy, pero el S&P 500 baja» y ponía «mixto» en 8 de 15 posiciones (el dato era del día 11)."""
+    un 1,87 % hoy, pero el S&P 500 baja» y ponía «mixto» en 6 de los 8 fondos que traían el dato del día 11."""
     fecha = str(p.get("fecha") or "")[:10]
     if fecha and fecha < (hoy or hoy_madrid()):
         return [f"último precio {p.get('precio')} €, del {fecha} (no hay otro más nuevo)", f"ese día, el {fecha}, {p.get('variacion_dia')} % (no es de hoy)"]
