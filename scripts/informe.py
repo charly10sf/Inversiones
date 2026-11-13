@@ -716,13 +716,21 @@ def datos_idea(x, medianas):
     fav, con = P.contraste_idea(x, medianas)
     return (f"{x.get('n')} ({x['s']}, cotiza en {x.get('z')}, sede en {x.get('pais') or '?'}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
             f"consenso {x.get('r')}, objetivo medio a 12 meses {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
-            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, la acción en 12 meses {x.get('c1a')} %, "
+            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, {en_un_ano(x.get('c1a'))}, "
             f"contraste de la web {fav} señales a favor y {con} en contra")
 
 
-# 14 nov 2026 (ensayo de la auditoría): «1 año X %» pasó a «últimos 12 meses X %» y Haiku lo leyó dos veces como el beneficio
-# («su beneficio de los últimos 12 meses es casi cero (0,7 %)», Técnicas Reunidas): iba detrás de «beneficio esperado». Ahora
-# dice de qué es: «la acción en 12 meses».
+def en_un_ano(c1a):
+    """Lo que ha hecho la cotización en el último año, dicho con verbo y en pasado. 14 nov 2026 (ensayos de la auditoría):
+    «últimos 12 meses 0,7 %» Haiku lo leyó dos veces como el beneficio de Técnicas Reunidas (iba detrás de «beneficio
+    esperado»), y «la acción en 12 meses 0,7 %», una de tres veces como una previsión («la web solo calcula un 0,7 %»)."""
+    try:
+        v = float(c1a)
+    except (TypeError, ValueError):
+        return "sin dato de lo que ha hecho la acción en el último año"
+    return f"en el último año la acción ha {'subido' if v >= 0 else 'bajado'} un {abs(c1a)} % (ya pasado, no es una previsión)"
+
+
 def tendencia_idea(x):
     """La tendencia de la cotización, para la decisión: hoy, frente a sus medias de 50 y 200 sesiones y a su máximo de 52
     semanas. 13 nov 2026 (auditoría): el encargo de la decisión dice que las candidatas traen «tendencia» y no la traían;
