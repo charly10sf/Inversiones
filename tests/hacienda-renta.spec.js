@@ -125,6 +125,8 @@ test('el oro: la pregunta de la retención entra en la cuenta y se guarda cifrad
   const hz = page.locator('#hz');
   await expect(hz.locator('#hzTit')).toHaveText('Oro (ETC)');
   await expect(hz.locator('.hz-falta')).toContainText('¿MyInvestor te retuvo algo al vender?');
+  // nada se sale por los lados, tampoco en 360
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await hz.locator('.hz-falta [data-r="22.42"]').click();
   await expect(hz.locator('.hz-falta.z-hecho')).toContainText('te retuvieron 22,42');
   await expect(hz.locator('.hz-campos')).toContainText('Retenciones');
