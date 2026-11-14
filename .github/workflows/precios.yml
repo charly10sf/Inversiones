@@ -35,9 +35,13 @@ on:
         type: string
         default: "0"
       partes:
-        description: "Solo con ensayo y comparación: «todo», o «lecturas-rama» para repetir solo las lecturas con el código de la rama (tras afinar un encargo)"
+        description: "Solo con ensayo y comparación: «todo»; «lecturas», solo las lecturas lado a lado (main y rama, sin decisión ni informe); o «lecturas-rama» para repetir solo las lecturas con el código de la rama (tras afinar un encargo)"
         type: string
         default: "todo"
+      sin:
+        description: "Solo con partes=lecturas o lecturas-rama: partes del encargo de lectura que se quitan para ver cuál mueve el resultado (fecha, frase, pasada); varias variantes separadas por |. Cada variante se lee dos veces en lugar de la rama"
+        type: string
+        default: ""
   push:
     branches: [main]
     paths:
@@ -296,12 +300,15 @@ jobs:
           OTRO_MODELO: ${{ inputs.comparar }}
           LECTURAS: ${{ inputs.lecturas }}
           PARTES: ${{ inputs.partes }}
+          SIN: ${{ inputs.sin }}
           ENSAYO_SIEMPRE: "PEP,CTVA,NVDA"
         run: |
           mkdir -p comparacion
           N=1
           if [ "$PARTES" = "lecturas-rama" ]; then
             N=3   # las repetidas se llaman rama3 y rama4, para ponerlas al lado de las del ensayo anterior
+          elif [ "$PARTES" = "lecturas" ]; then
+            :     # solo las lecturas, main y rama en la misma tanda: ni decisión ni informe
           else
             python scripts/ensayo_comparar.py /tmp/main/scripts main instrumentos.json ensayo-pasada comparacion > comparacion/registro-main.txt 2>&1 &
             python scripts/ensayo_comparar.py scripts rama instrumentos.json ensayo-pasada comparacion > comparacion/registro-rama.txt 2>&1 &
@@ -314,7 +321,14 @@ jobs:
             if [ "$PARTES" != "lecturas-rama" ]; then
               for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
             fi
-            for e in rama$N rama$((N + 1)); do python scripts/ensayo_comparar.py --lecturas scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+            if [ -n "$SIN" ]; then
+              # una pareja de lecturas por variante, cada una sin esa parte del encargo (en lugar de la rama tal cual)
+              for v in $(echo "$SIN" | tr '|' ' '); do
+                for k in 1 2; do ENSAYO_SIN="$v" python scripts/ensayo_comparar.py --lecturas scripts "sin-$v-$k" ensayo-pasada comparacion > "comparacion/registro-lecturas-sin-$v-$k.txt" 2>&1 & done
+              done
+            else
+              for e in rama$N rama$((N + 1)); do python scripts/ensayo_comparar.py --lecturas scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+            fi
           fi
           wait
           tail -n 8 comparacion/registro-*.txt

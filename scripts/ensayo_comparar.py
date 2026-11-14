@@ -167,6 +167,18 @@ def lecturas(carpeta, etiqueta, datos, salida):
     sys.path.insert(0, os.path.abspath(carpeta))
     import informe as I  # noqa: E402
     import precios as P  # noqa: E402
+    # ENSAYO_SIN: para saber qué parte del encargo mueve un resultado, se le quita aquí (solo en el ensayo, nunca en la pasada
+    # de verdad): «fecha», la regla del día de publicación; «frase», la frase de las notas repetidas; «pasada», la de la
+    # mención de pasada. Varias, con comas.
+    quitar = {"fecha": getattr(I, "REGLA_FECHA", "\x00") + "\n",
+              "frase": "Cuando una noticia dice «la misma nota, repetida», es una sola noticia aunque salga en varios medios o varias veces: no\npesa más por repetirse.\n",
+              "pasada": 'Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa. Lo que solo se menciona\n'
+                        "de pasada en un artículo que va de otra cosa (una comparación entre dos acciones, una lista de acciones o de dividendos,\n"
+                        "lo que compra o vende un fondo) no pasa de 2 por sí solo, y dilo en la frase («lo menciona de pasada un artículo sobre…»).\n"}
+    for k in [x for x in os.environ.get("ENSAYO_SIN", "").replace(" ", "").split(",") if x]:
+        antes = I.LEER
+        I.LEER = I.LEER.replace(quitar.get(k, "\x00"), "")
+        print(f"{etiqueta}: sin «{k}» en el encargo de lectura" + ("" if I.LEER != antes else " (NO estaba: no se ha quitado nada)"))
     I.PRESUPUESTO = 10 ** 6
     I.INICIO = time.time()
     I.CLAUDE_ESPERA_LOTE = 1500

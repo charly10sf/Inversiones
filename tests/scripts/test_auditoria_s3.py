@@ -334,6 +334,26 @@ class EnsayoDeLasLecturas(unittest.TestCase):
         self.assertIn("for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts", comparar)
         self.assertIn("for e in rama$N rama$((N + 1)); do python scripts/ensayo_comparar.py --lecturas scripts", comparar)
         self.assertNotIn('"${{ inputs.lecturas }}"', yml)                # entra por una variable de entorno
+        self.assertNotIn("${{ inputs.sin }}\"", yml.replace("SIN: ${{ inputs.sin }}", ""))
+
+    def test_lecturas_sin_decision_ni_informe_y_las_variantes_en_lugar_de_la_rama(self):
+        """partes=lecturas: main dos veces y la rama (o cada variante de «sin») dos veces en la misma tanda, sin gastar en
+        la decisión ni en el informe."""
+        comparar = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8").split("\n  comparar:\n")[1]
+        paso = comparar.split('elif [ "$PARTES" = "lecturas" ]; then')[1].split("else")[0]
+        self.assertNotIn("ensayo_comparar.py", paso)                      # ni decisión ni informe
+        self.assertIn('if [ "$PARTES" != "lecturas-rama" ]; then\n              for e in main main2', comparar)
+        self.assertIn('ENSAYO_SIN="$v" python scripts/ensayo_comparar.py --lecturas scripts "sin-$v-$k"', comparar)
+
+    def test_lo_que_el_ensayo_sabe_quitar_esta_en_el_encargo(self):
+        """ENSAYO_SIN quita trozos del encargo de lectura por su texto: si el encargo cambia y el ensayo no, no quitaría nada."""
+        codigo = (RAIZ / "scripts/ensayo_comparar.py").read_text(encoding="utf-8")
+        for trozo in ("Cuando una noticia dice «la misma nota, repetida», es una sola noticia aunque salga en varios medios o varias veces: no\npesa más por repetirse.\n",
+                      'Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa. Lo que solo se menciona\n',
+                      I.REGLA_FECHA + "\n"):
+            self.assertIn(trozo, I.LEER)
+        self.assertIn("pesa más por repetirse.\\n", codigo)
+        self.assertIn('Para dar peso 3 o \\"rel\\" 3'.replace('\\"', '"'), codigo.replace('\\"', '"'))
 
     def test_la_muestra_y_la_lectura_con_el_codigo_que_se_le_da(self):
         import subprocess
