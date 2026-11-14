@@ -1521,6 +1521,97 @@ def radar_precios(valores, fx):
     return len(nuevos)
 
 
+# 14 nov 2026 (auditoría): la beta que se enseñaba era la de Yahoo, que no dice contra qué mide. En las de fuera de EEUU
+# no es su bolsa: Bankinter salía con 0,04 y CaixaBank con 0,12 (los bancos son un tercio del Ibex), y BAT con 0,09 cuando
+# contra el FTSE 100 da 0,9. Al lado ponía «cuánto se mueve una acción cuando se mueve el mercado», y la IA sacaba
+# conclusiones de ahí. Ahora la calcula Toisón con datos que ya tiene: el último año, semana a semana, de cada acción
+# (radar-hist.json, en su moneda) contra el índice de su bolsa, y dice cuál es. Si no se puede calcular, no hay beta.
+INDICE_BETA = {".MC": "^IBEX", ".L": "^FTSE", ".DE": "^GDAXI", ".F": "^GDAXI", ".PA": "^FCHI"}
+BETA_SEMANAS_MIN = 40
+
+
+def indice_beta(sim):
+    """El índice contra el que se mide la beta de una acción: el de su bolsa (Ibex 35, FTSE 100, DAX, CAC 40); el Euro
+    Stoxx 50 para el resto de Europa y el S&P 500 para las de EEUU (sin sufijo)."""
+    s = str(sim or "")
+    if "." not in s:
+        return "^GSPC"
+    return INDICE_BETA.get(s[s.rindex("."):].upper(), "^STOXX50E")
+
+
+def beta_propia(serie, hist_indice, minimo=None):
+    """La beta de una acción contra un índice, con cierres semanales. serie: {"d": lunes de la primera semana, "v": cierres
+    de cada semana}; hist_indice: [[fecha, cierre], …] diario. De cada semana del índice vale su último cierre. Regresión
+    simple de lo que hace la acción cada semana sobre lo que hace el índice. None si hay menos de BETA_SEMANAS_MIN semanas
+    con los dos datos o el índice no se ha movido."""
+    minimo = BETA_SEMANAS_MIN if minimo is None else minimo
+    try:
+        d0 = dt.date.fromisoformat(str((serie or {}).get("d"))[:10])
+    except ValueError:
+        return None
+    v = (serie or {}).get("v") or []
+    por_semana = {}
+    for fila in hist_indice or []:
+        try:
+            k = (dt.date.fromisoformat(str(fila[0])[:10]) - d0).days // 7
+        except (ValueError, TypeError, IndexError):
+            continue
+        if 0 <= k < len(v) and isinstance(fila[1], (int, float)) and fila[1] > 0:
+            por_semana[k] = fila[1]  # el histórico va por fecha: se queda el último cierre de la semana
+    ra, ri = [], []
+    for k in range(1, len(v)):
+        a0, a1, i0, i1 = v[k - 1], v[k], por_semana.get(k - 1), por_semana.get(k)
+        if not (isinstance(a0, (int, float)) and isinstance(a1, (int, float)) and a0 > 0 and a1 > 0 and i0 and i1):
+            continue
+        r = a1 / a0 - 1
+        if abs(r) > 0.75:
+            continue  # un salto así en una semana es casi siempre un dato roto o un cambio de acciones sin ajustar
+        ra.append(r)
+        ri.append(i1 / i0 - 1)
+    n = len(ra)
+    if n < minimo:
+        return None
+    ma, mi = sum(ra) / n, sum(ri) / n
+    var = sum((y - mi) ** 2 for y in ri)
+    if var <= 0:
+        return None
+    return num(sum((x - ma) * (y - mi) for x, y in zip(ra, ri)) / var, 2)
+
+
+def poner_betas(valores, instrumentos, radar_hist, mercados):
+    """Pone en cada empresa del radar («beta» y «bi», el índice) y en cada posición que sea una de ellas («beta»,
+    «beta_ref» y fundamentales.beta) la beta calculada aquí, y quita la de Yahoo donde no se puede calcular. Devuelve
+    cuántas tienen beta."""
+    series = (radar_hist or {}).get("s") or {}
+    hist = {sim: (m or {}).get("historico") for sim, m in (mercados or {}).items()}
+    n = 0
+    hechas = {}
+    for x in valores or []:
+        sim = x.get("s")
+        ind = indice_beta(sim)
+        b = beta_propia(series.get(sim), hist.get(ind))
+        x["beta"] = b
+        if b is None:
+            x.pop("bi", None)
+        else:
+            x["bi"] = ind
+            n += 1
+        hechas[sim] = (b, ind)
+    for v in (instrumentos or {}).values():
+        if not isinstance(v, dict) or ("beta" not in v and "beta" not in (v.get("fundamentales") or {})):
+            continue
+        sim = v.get("simbolo")
+        b, ind = hechas[sim] if sim in hechas else (beta_propia(series.get(sim), hist.get(indice_beta(sim))), indice_beta(sim))
+        v["beta"] = b
+        if isinstance(v.get("fundamentales"), dict):
+            v["fundamentales"]["beta"] = b
+        if b is None:
+            v.pop("beta_ref", None)
+        else:
+            v["beta_ref"] = ind
+    return n
+
+
 def radar_historico(valores):
     """Un año de cierres semanales de cada empresa del radar, en su moneda, para la gráfica de su ficha en la
     web (la de las que no tienes). En pocas consultas, de cien en cien. Las semanas sin dato toman el cierre
@@ -1789,6 +1880,12 @@ def main(ruta_inst, dir_anterior, dir_salida):
         # el núcleo (radar.json) y el resto (radar-mas.json); las descubiertas van de mayor a menor
         nucleo = {sim for simbolos in RADAR.values() for sim in simbolos} | pd | {s for s, _ in extra[:NUCLEO_DESCUBIERTAS]}
         todos = radar_sal["valores"]
+        # la beta propia, con el histórico semanal de la pasada anterior (se rehace una vez al día: para un año va de sobra)
+        try:
+            print(f"radar: beta propia en {poner_betas(todos, salida['instrumentos'], leer_json(f'{dir_anterior}/radar-hist.json'), salida['mercados'])} empresas")
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            errores.append(f"radar beta: {e}")
         radar_sal["valores"] = [x for x in todos if x.get("s") in nucleo]
         mas = [x for x in todos if x.get("s") not in nucleo]
         radar_sal["pedidas"] = pedidas

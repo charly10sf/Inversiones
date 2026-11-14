@@ -137,7 +137,7 @@ function pRadar(inst) {
     nombre_largo: r.n, sector: r.sector, industria: r.ind,
     analistas: r.na ? { recomendacion: CONSENSO[r.r] || null, clave: r.r, media: r.rm, num: r.na, objetivo: eur(r.obj), objetivo_alto: eur(r.ta), objetivo_bajo: eur(r.tb), votos: { ahora: votos(r.v0), hace3m: votos(r.v3) }, cambios: [] } : null,
     fundamentales: { capitalizacion: r.cap && S.precios && S.precios.fx ? r.cap * (r.m === 'EUR' ? 1 : S.precios.fx[r.m === 'GBp' ? 'GBP' : r.m] || 0) || null : null, per: r.per, per_futuro: r.perf, margen: r.mg, roe: r.roe, crec_ingresos: r.rg, deuda_capital: r.de, beta: r.beta },
-    per: r.per, per_futuro: r.perf, dividendo_pct: r.div || null, beta: r.beta, proximos_resultados: r.rd || null, ex_dividendo: r.xd || null,
+    per: r.per, per_futuro: r.perf, dividendo_pct: r.div || null, beta: r.beta, beta_ref: r.bi || null, proximos_resultados: r.rd || null, ex_dividendo: r.xd || null,
     estimaciones: r.epsg != null ? { este_anio: { crec: r.epsg } } : {},
   };
 }

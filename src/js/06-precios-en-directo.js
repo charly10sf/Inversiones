@@ -48,11 +48,12 @@ function aEuros(p, moneda) {
 /* 14 nov (auditoría): Bitvavo manda el cambio de las últimas 24 horas (ticker24h: «last» frente a «open»). En Mercados salía
    como «hoy», y la posición de bitcoin mide «hoy» desde su último cierre (0.8.6c, «hoy es hoy»): dos «hoy» distintos del
    mismo bitcoin, también en lo que lee la IA. Aquí, el de la posición: desde el cierre anterior de precios.json si su dato es
-   de hoy y, si es de un día anterior, desde ese último precio. */
+   de hoy y, si es de ayer, desde ese último precio; si no hay de dónde medir, sin cambio (y Mercados enseña el de precios.json con su día). */
 function varHoyMercado(sym, precio) {
   const m = S.precios && S.precios.mercados && S.precios.mercados[sym];
   if (!m || !(precio > 0)) return null;
-  const ref = m.fecha && m.fecha >= hoyIso() ? m.cierre_anterior : m.precio;
+  // con un dato de hace más de un día no hay de dónde medir «hoy»: mejor sin cifra que con la de las 24 horas
+  const hoy = hoyIso(), ref = !m.fecha ? null : m.fecha >= hoy ? m.cierre_anterior : m.fecha === sumarDias(hoy, -1) ? m.precio : null;
   return ref > 0 ? (precio / ref - 1) * 100 : null;
 }
 
@@ -141,7 +142,7 @@ const LIVE = {
     const id = this.mapaB[d.market];
     if (id) S.live[id] = v;
     // 14 nov (auditoría): en Mercados, lo de hoy y no lo de las últimas 24 horas (varHoyMercado)
-    if (this.mercB.has(d.market)) { const vh = varHoyMercado(d.market, last); S.liveM[d.market] = vh != null ? { ...v, var: vh } : v; }
+    if (this.mercB.has(d.market)) S.liveM[d.market] = { ...v, var: varHoyMercado(d.market, last) };
   },
   conectarBitvavo() {
     const mercados = [...new Set([...Object.keys(this.mapaB), ...this.mercB])];

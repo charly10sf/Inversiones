@@ -267,5 +267,68 @@ class PrensaEnEspanolDeLasEuropeas(unittest.TestCase):
         self.assertEqual(I.nombre_corto("Banco Santander, S.A.", "SAN.MC"), "Banco Santander")
 
 
+class BetaPropia(unittest.TestCase):
+    """La beta era la de Yahoo, que no dice contra qué mide: Bankinter 0,04, CaixaBank 0,12, BAT 0,09. Ahora la calcula
+    Toisón contra el índice de la bolsa de cada acción, con el último año semana a semana, y dice cuál es."""
+
+    LUNES = dt.date(2025, 11, 10)
+
+    def datos(self, veces, semanas=53, salto=None):
+        """Un índice que sube y baja y una acción que hace «veces» lo que el índice cada semana."""
+        ind, acc, hist = [100.0], [50.0], []
+        for k in range(1, semanas):
+            r = 0.02 if k % 3 else -0.03
+            ind.append(ind[-1] * (1 + r))
+            acc.append(acc[-1] * (1 + veces * r + (0.001 if k % 2 else -0.001)))
+        if salto:
+            acc[salto] = acc[salto] * 5  # un dato roto
+        for k, v in enumerate(ind):
+            lunes = self.LUNES + dt.timedelta(days=7 * k)
+            hist.append([(lunes + dt.timedelta(days=1)).isoformat(), v * 0.99])  # un cierre de entre semana, que no cuenta
+            hist.append([(lunes + dt.timedelta(days=4)).isoformat(), v])         # el del viernes
+        return {"d": self.LUNES.isoformat(), "v": acc}, hist
+
+    def test_se_mueve_vez_y_media_lo_que_el_indice(self):
+        serie, hist = self.datos(1.5)
+        self.assertAlmostEqual(P.beta_propia(serie, hist), 1.5, delta=0.02)
+
+    def test_al_reves_que_el_indice_sale_negativa(self):
+        serie, hist = self.datos(-0.5)
+        self.assertAlmostEqual(P.beta_propia(serie, hist), -0.5, delta=0.02)
+
+    def test_con_pocas_semanas_no_hay_beta(self):
+        serie, hist = self.datos(1.0, semanas=30)
+        self.assertIsNone(P.beta_propia(serie, hist))
+        self.assertIsNone(P.beta_propia(None, hist))
+        self.assertIsNone(P.beta_propia(serie, None))
+        self.assertIsNone(P.beta_propia({"d": "sin fecha", "v": [1, 2]}, hist))
+        self.assertIsNone(P.beta_propia(self.datos(1.0)[0], [[f, 100] for f, _ in hist]))  # un índice que no se mueve
+
+    def test_un_dato_roto_no_la_estropea(self):
+        serie, hist = self.datos(1.2, salto=20)
+        self.assertAlmostEqual(P.beta_propia(serie, hist), 1.2, delta=0.03)
+
+    def test_cada_accion_contra_el_indice_de_su_bolsa(self):
+        self.assertEqual([P.indice_beta(s) for s in ("REP.MC", "BATS.L", "SAP.DE", "MC.PA", "ASML.AS", "NOVO-B.CO", "NVDA", "BRK-B")],
+                         ["^IBEX", "^FTSE", "^GDAXI", "^FCHI", "^STOXX50E", "^STOXX50E", "^GSPC", "^GSPC"])
+
+    def test_se_pone_en_el_radar_y_en_la_posicion_y_se_quita_la_de_yahoo(self):
+        serie, hist = self.datos(1.15)
+        valores = [{"s": "BKT.MC", "beta": 0.04}, {"s": "NUEVA.MC", "beta": 0.5, "bi": "^IBEX"}]
+        inst = {"bankinter": {"simbolo": "BKT.MC", "beta": 0.04, "fundamentales": {"beta": 0.04, "per": 9}},
+                "otra": {"simbolo": "OTRA.MC", "beta": 0.7, "beta_ref": "^IBEX", "fundamentales": {"beta": 0.7}},
+                "fondo": {"simbolo": "0P0001.F", "precio": 10}}
+        n = P.poner_betas(valores, inst, {"s": {"BKT.MC": serie}}, {"^IBEX": {"historico": hist}})
+        self.assertEqual(n, 1)
+        self.assertAlmostEqual(valores[0]["beta"], 1.15, delta=0.02)
+        self.assertEqual(valores[0]["bi"], "^IBEX")
+        self.assertEqual(valores[1], {"s": "NUEVA.MC", "beta": None})  # sin histórico: ni la de Yahoo
+        self.assertEqual(inst["bankinter"]["beta"], valores[0]["beta"])
+        self.assertEqual(inst["bankinter"]["fundamentales"], {"beta": valores[0]["beta"], "per": 9})
+        self.assertEqual(inst["bankinter"]["beta_ref"], "^IBEX")
+        self.assertEqual(inst["otra"], {"simbolo": "OTRA.MC", "beta": None, "fundamentales": {"beta": None}})
+        self.assertEqual(inst["fondo"], {"simbolo": "0P0001.F", "precio": 10})  # un fondo no tenía beta: ni se toca
+
+
 if __name__ == "__main__":
     unittest.main()

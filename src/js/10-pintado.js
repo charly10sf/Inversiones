@@ -220,15 +220,27 @@ function datoMerc(sym) {
   return { precio: v ? v.precio : m.precio, var: v && v.var != null ? v.var : m.variacion_dia };
 }
 
+/* 14 nov (auditoría): la beta ya no es la de Yahoo (no decía contra qué medía: Bankinter 0,04, BAT 0,09). La calcula la
+   Action con el último año, semana a semana, contra el índice de la bolsa de cada acción (beta_ref en la posición, bi en el
+   radar). Aquí, el nombre de ese índice, para decirlo siempre al lado de la cifra. */
+function refBeta(p) {
+  const sim = p && (p.beta_ref || p.bi), m = sim && S.precios && S.precios.mercados && S.precios.mercados[sim];
+  return m ? m.nombre : '';
+}
+function etiquetaBeta(p) { const r = refBeta(p); return r ? L(`Beta frente al ${r} (último año)`, `Beta against the ${r} (last year)`) : 'Beta'; }
+
 /* 14 nov (auditoría): de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir);
    vacío si es de hoy. Lo usa lo que lee la IA: el sábado le llegaba «S&P 500 (hoy −0,4 %)» con el cierre del viernes, y la
    revisión escribía «Hoy caen Wall Street y Asia». */
 function diaDatoMerc(sym) {
   const m = (S.precios && S.precios.mercados && S.precios.mercados[sym]) || {};
   const v = S.liveM[sym], t = v && v.t ? (v.t < 1e12 ? v.t * 1000 : v.t) : 0;
-  const f = t ? iso(new Date(t)) : (m.fecha || '');
+  // el día del precio en directo solo vale si con él vino su cambio; si no, el % que se enseña es el de precios.json
+  const f = t && v.var != null ? iso(new Date(t)) : (m.fecha || '');
   return f && f < hoyIso() ? f : '';
 }
+// «viernes 13 nov»: el día de un dato que no es de hoy, igual en las posiciones que en los mercados
+function diaConSemana(s) { return s ? `${DIAS_LARGOS[deIso(s).getDay()]} ${fechaCorta(s)}` : '—'; }
 
 /* 14 nov (auditoría): el encargo de la revisión no decía la escala de las notas y Haiku las pone unas veces de 1 a 5 y otras
    de 1 a 10 (7 de 12 vueltas del banco de la revisión: «Costes 8», «Disciplina 7», «Riesgo 5»). La app las pinta «de 5»:
@@ -236,8 +248,8 @@ function diaDatoMerc(sym) {
    «8 de 5». Si alguna pasa de 5, es que van de 1 a 10: todas a la mitad. */
 function notasDe5(puntuaciones) {
   const l = (Array.isArray(puntuaciones) ? puntuaciones : []).filter((x) => x && typeof x === 'object');
-  const de10 = l.some((x) => +x.nota > 5);
-  return l.map((x) => ({ ...x, nota: Math.max(0, Math.min(5, Math.round((+x.nota || 0) / (de10 ? 2 : 1)))) }));
+  const n = (x) => parseFloat(x.nota) || 0, de10 = l.some((x) => n(x) > 5);   // parseFloat: «8/10» también es un 8
+  return l.map((x) => ({ ...x, nota: Math.max(0, Math.min(5, Math.round(n(x) / (de10 ? 2 : 1)))) }));
 }
 
 function porPlataforma(M) {
