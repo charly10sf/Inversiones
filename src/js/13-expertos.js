@@ -318,6 +318,19 @@ function vistaExpertos(M) {
    que mira tu cartera (sector, lo que ya llevan tus fondos, la misma apuesta que otra que tienes). El resultado es el mismo
    que antes, con los motivos y las pegas en el mismo orden */
 const ideaBaseMemo = new WeakMap();
+/* 14 nov 2026 (auditoría): las «mejores» miran la prensa. Salían solo de los números (recorrido, consenso, PER, contraste), y
+   los precios objetivo de los analistas tardan semanas en moverse: Nvidia seguía arriba, con un 76 % de recorrido, con su
+   consejero delegado fuera. Con la lectura de prensa de la última semana: 'fuera' si trae una noticia que cambia la tesis
+   (relevancia 3) y no es buena (negativa o mixta), y la empresa sale de las mejores salvo que la IA, que sí ha leído esa
+   prensa, la proponga; 'resta' si hay una negativa importante (relevancia 2). Es la misma regla que prensa_en_contra en
+   scripts/informe.py: si se toca aquí, allí también. */
+const PRENSA_DIAS = 7, PRENSA_RESTA = 0.6;
+function prensaEnContra(sim) {
+  const le = lecturaDe(sim), t = le && le.d ? new Date(le.d).getTime() : NaN;
+  if (!le || !(Date.now() - t <= PRENSA_DIAS * 864e5)) return null;
+  if ((le.rel || 0) >= 3 && (le.imp === 'negativo' || le.imp === 'mixto')) return 'fuera';
+  return (le.rel || 0) >= 2 && le.imp === 'negativo' ? 'resta' : null;
+}
 function puntuarBase(x) {
   const c = ideaBaseMemo.get(x), lang = typeof IDIOMA !== 'undefined' ? IDIOMA : 'es';
   if (c && c.ver === S.radarVer && c.esc === S.escaneo && c.lang === lang) return c.r;
@@ -348,6 +361,9 @@ function puntuarBase(x) {
   p += 0.22 * ctr.favor - 0.3 * ctr.contra;
   motivos.push(L(`contrastada: ${ctr.favor} de ${ctr.total} señales a favor`, `checked: ${ctr.favor} of ${ctr.total} signals in favour`));
   for (const c of ctr.checks) if (c.ok === -1) pegasA.push(`${c.k.toLowerCase()} en contra: ${c.txt}`);
+  const prensa = prensaEnContra(x.s);
+  if (prensa === 'fuera') { p -= 2 * PRENSA_RESTA; pegasA.unshift(L('su prensa de estos días trae una noticia que lo cambia todo y no es buena: los objetivos de los analistas pueden haberse quedado viejos', 'this week\'s press brings news that changes the picture, and not for the better: analyst targets may be out of date')); }
+  else if (prensa === 'resta') { p -= PRENSA_RESTA; pegasA.unshift(L('su prensa de estos días es mala', 'this week\'s press on it is bad')); }
   if (x.z === 'EEUU') pegasB.push(L('cotiza en dólares: el cambio euro/dólar también cuenta', 'priced in dollars: the euro/dollar rate also counts'));
   const tc = tasaRadar(x);
   if (tc) pegasB.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
@@ -429,7 +445,8 @@ function mejoresIdeas0(M, excluir = {}) {
   const out = r
     // 0.8.3: el contraste va antes de puntuar (está en caché y es lo que más descarta): de las ~1.700 que pasan los números,
     // solo se puntúan las que luego pueden quedar (el mismo filtro de abajo, con el margen de las ya propuestas)
-    .filter((x) => { if (tuyas.has(x.s) || evita.has(x.s) || !pasa(x) || (excluir.sector && x.sector === excluir.sector)) return false; const c = contraste(x); return c.favor >= 2 && c.contra <= 3; })
+    // 14 nov 2026 (auditoría): y fuera las que tienen la prensa en contra con una noticia gorda (prensaEnContra), salvo las de la IA
+    .filter((x) => { if (tuyas.has(x.s) || evita.has(x.s) || !pasa(x) || (excluir.sector && x.sector === excluir.sector) || (!deGrowIA.has(x.s) && prensaEnContra(x.s) === 'fuera')) return false; const c = contraste(x); return c.favor >= 2 && c.contra <= 3; })
     .map((x) => { const y = puntuarIdea(x, ctx); if (yaPropuesta(x.s)) { y.puntos += 0.8; y.sigue = true; } if (deGrowIA.has(x.s)) y.puntos += 0.6; return y; })
     .filter((x) => (x.sigue ? x.ctr.favor >= 2 && x.ctr.contra <= 3 : x.ctr.favor >= 3 && x.ctr.contra <= 2))
     .sort((a, b) => b.puntos - a.puntos);

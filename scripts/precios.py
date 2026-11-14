@@ -626,12 +626,12 @@ def palabras_nota(t):
     return {w for w in re.findall(r"[a-z0-9]+(?:[.,][0-9]+)*", s) if (len(w) >= 3 or w[0].isdigit()) and w not in _VACIAS}
 
 
-def misma_nota(a, b):
+def misma_nota(a, b, sin=()):
     """Si dos titulares cuentan lo mismo: comparten 4 palabras o más y al menos el 60 % de las del más corto. Dos titulares
-    iguales, siempre."""
+    iguales, siempre. `sin`: palabras que no cuentan (las del nombre de la empresa, que salen en todos sus titulares)."""
     if re.sub(r"\W+", "", str(a or "").lower())[:60] == re.sub(r"\W+", "", str(b or "").lower())[:60]:
         return True
-    pa, pb = palabras_nota(a), palabras_nota(b)
+    pa, pb = palabras_nota(a) - set(sin), palabras_nota(b) - set(sin)
     comun, menor = len(pa & pb), min(len(pa), len(pb))
     return menor >= 4 and comun >= 4 and comun / menor >= 0.6
 
