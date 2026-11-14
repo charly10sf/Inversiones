@@ -1146,9 +1146,6 @@ con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni mal
 {REGLA_FECHA}
 Cuando una noticia dice «la misma nota, repetida», es una sola noticia aunque salga en varios medios o varias veces: no
 pesa más por repetirse.
-Lo que una noticia solo menciona de pasada, porque va de otra cosa (una comparación entre dos acciones, una lista de
-acciones o de dividendos, lo que compra o vende un fondo), no da por sí solo peso 3 ni "rel" 3: como mucho 2, y dilo en la
-frase («lo menciona de pasada un artículo sobre…»).
 Responde con un objeto JSON:
 {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "lo que puede moverla y cuándo, o vacío", "fuentes": [números],
   "tit": {"<número>": ["factor", "signo", peso]},
