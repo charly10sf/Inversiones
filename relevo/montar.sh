@@ -11,8 +11,9 @@
 #   1. crea el proyecto y le pone la facturación;
 #   2. enciende las APIs justas;
 #   3. tres cuentas de servicio: relevo (con la que corre el relevo, SIN NINGÚN PAPEL), relevo-publica (la que usa la
-#      Action «Relevo» de GitHub para publicar, sin clave: entra con Workload Identity, solo desde main del repo) y
-#      corte (la que quita la facturación si se llega al tope; solo puede eso, y solo en este proyecto);
+#      Action «Relevo» de GitHub para publicar, sin clave: entra con Workload Identity, y solo desde relevo.yml en main
+#      de charly10sf/Inversiones) y corte-gasto (la que quita la facturación si se llega al tope; solo puede eso y ver
+#      el proyecto, y solo en este proyecto);
 #   4. el corte del gasto: el servicio privado toison-corte, un tema de Pub/Sub y un presupuesto de 5 € al mes con
 #      avisos al correo al 20 % (1 €), 50 %, 90 % y 100 %; al 100 %, toison-corte quita la facturación y Google para
 #      el relevo (no puede cobrar más; Google avisa con horas de retraso: se puede pasar un poco);
@@ -27,6 +28,8 @@ FACT="${1:?Falta el ID de la cuenta de facturación (Facturación → ID de la c
 P="${2:-toison-relevo}"
 R="europe-southwest1"
 REPO="charly10sf/Inversiones"
+REPO_ID="1423240718"        # el id de GitHub del repo (no cambia aunque se renombre)
+DUENO_ID="227480622"        # el de charly10sf
 RAMA="${RAMA:-v0.8.3d-ia}"
 TOPE="${TOPE:-5}"
 WORKER="https://growfolio.growfolio-web-app.workers.dev"
@@ -51,7 +54,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregi
   billingbudgets.googleapis.com logging.googleapis.com cloudresourcemanager.googleapis.com
 
 paso "3. Cuentas de servicio"
-for sa in relevo relevo-publica corte; do
+for sa in relevo relevo-publica corte-gasto; do
   gcloud iam service-accounts describe "$(cuenta $sa)" >/dev/null 2>&1 || gcloud iam service-accounts create "$sa" --display-name="Toison $sa"
 done
 # Google tarda unos segundos en ver las cuentas nuevas
@@ -59,7 +62,9 @@ sleep 15
 papel() { gcloud projects add-iam-policy-binding "$P" --member="serviceAccount:$1" --role="$2" --condition=None >/dev/null; }
 papel "$(cuenta relevo-publica)" roles/run.sourceDeveloper
 papel "$(cuenta relevo-publica)" roles/serviceusage.serviceUsageConsumer
-papel "$(cuenta corte)" roles/billing.projectManager
+# corte-gasto: quitar la facturación (projectManager) y poder leer si la tiene (browser)
+papel "$(cuenta corte-gasto)" roles/billing.projectManager
+papel "$(cuenta corte-gasto)" roles/browser
 # la que construye en «--source» (la de Compute por defecto) necesita construir para Cloud Run
 COMPUTE="$N-compute@developer.gserviceaccount.com"
 papel "$COMPUTE" roles/run.builder
@@ -68,16 +73,22 @@ for sa in "$(cuenta relevo)" "$COMPUTE"; do
   gcloud iam service-accounts add-iam-policy-binding "$sa" --member="serviceAccount:$(cuenta relevo-publica)" --role=roles/iam.serviceAccountUser >/dev/null
 done
 
-paso "3b. Entrada de GitHub sin clave (Workload Identity): solo la Action de main de $REPO"
+paso "3b. Entrada de GitHub sin clave (Workload Identity): solo relevo.yml en main de $REPO"
+# solo ese workflow en main: ni otra rama, ni otro workflow del mismo repo (Pages hace npm ci en main)
+MAPEO="google.subject=assertion.sub,attribute.repository_id=assertion.repository_id,attribute.workflow_ref=assertion.workflow_ref"
+CONDICION="assertion.workflow_ref=='$REPO/.github/workflows/relevo.yml@refs/heads/main' && assertion.repository_id=='$REPO_ID' && assertion.repository_owner_id=='$DUENO_ID'"
 gcloud iam workload-identity-pools describe github --location=global >/dev/null 2>&1 || \
   gcloud iam workload-identity-pools create github --location=global --display-name="GitHub"
-gcloud iam workload-identity-pools providers describe github --location=global --workload-identity-pool=github >/dev/null 2>&1 || \
+if gcloud iam workload-identity-pools providers describe github --location=global --workload-identity-pool=github >/dev/null 2>&1; then
+  gcloud iam workload-identity-pools providers update-oidc github --location=global --workload-identity-pool=github \
+    --attribute-mapping="$MAPEO" --attribute-condition="$CONDICION"
+else
   gcloud iam workload-identity-pools providers create-oidc github --location=global --workload-identity-pool=github \
     --display-name="GitHub Actions" --issuer-uri="https://token.actions.githubusercontent.com" \
-    --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
-    --attribute-condition="assertion.repository=='$REPO' && assertion.ref=='refs/heads/main'"
+    --attribute-mapping="$MAPEO" --attribute-condition="$CONDICION"
+fi
 gcloud iam service-accounts add-iam-policy-binding "$(cuenta relevo-publica)" --role=roles/iam.workloadIdentityUser \
-  --member="principalSet://iam.googleapis.com/projects/$N/locations/global/workloadIdentityPools/github/attribute.repository/$REPO" >/dev/null
+  --member="principalSet://iam.googleapis.com/projects/$N/locations/global/workloadIdentityPools/github/attribute.repository_id/$REPO_ID" >/dev/null
 WIF="projects/$N/locations/global/workloadIdentityPools/github/providers/github"
 
 paso "Código (rama $RAMA)"
@@ -87,27 +98,38 @@ git clone --quiet --depth 1 --branch "$RAMA" "https://github.com/$REPO" "$SRC"
 
 paso "4. El corte del gasto (tope $TOPE $MONEDA al mes)"
 gcloud run deploy toison-corte --source "$SRC/relevo/corte" --region "$R" --no-allow-unauthenticated \
-  --service-account "$(cuenta corte)" --cpu 1 --memory 256Mi --min-instances 0 --max-instances 1 --timeout 60 \
+  --service-account "$(cuenta corte-gasto)" --cpu 1 --memory 256Mi --min-instances 0 --max-instances 1 --timeout 60 \
   --set-env-vars "PROYECTO=$P,TOPE=$TOPE" --quiet
 CORTE="$(gcloud run services describe toison-corte --region "$R" --format='value(status.url)')"
-gcloud run services add-iam-policy-binding toison-corte --region "$R" --member="serviceAccount:$(cuenta corte)" --role=roles/run.invoker >/dev/null
-# Pub/Sub firma la llamada como corte@ (para proyectos viejos hay que dárselo a mano; en los nuevos ya viene)
-gcloud iam service-accounts add-iam-policy-binding "$(cuenta corte)" --role=roles/iam.serviceAccountTokenCreator \
-  --member="serviceAccount:service-$N@gcp-sa-pubsub.iam.gserviceaccount.com" >/dev/null
+gcloud run services add-iam-policy-binding toison-corte --region "$R" --member="serviceAccount:$(cuenta corte-gasto)" --role=roles/run.invoker >/dev/null
+# Pub/Sub firma la llamada como corte-gasto@ (en los proyectos nuevos ya viene; si su agente aún no existe, se crea)
+gcloud beta services identity create --service=pubsub.googleapis.com >/dev/null 2>&1 || true
+gcloud iam service-accounts add-iam-policy-binding "$(cuenta corte-gasto)" --role=roles/iam.serviceAccountTokenCreator \
+  --member="serviceAccount:service-$N@gcp-sa-pubsub.iam.gserviceaccount.com" >/dev/null || echo "(sin el papel del agente de Pub/Sub: en proyectos nuevos no hace falta)"
 gcloud pubsub topics describe gasto-relevo >/dev/null 2>&1 || gcloud pubsub topics create gasto-relevo
-gcloud pubsub subscriptions describe gasto-relevo-corte >/dev/null 2>&1 || \
-  gcloud pubsub subscriptions create gasto-relevo-corte --topic gasto-relevo --push-endpoint="$CORTE" \
-    --push-auth-service-account="$(cuenta corte)" --ack-deadline=60
-if ! gcloud billing budgets list --billing-account="$FACT" --format='value(displayName)' | grep -qx "Relevo Toison"; then
-  gcloud billing budgets create --billing-account="$FACT" --display-name="Relevo Toison" \
+SUSC=(--push-endpoint="$CORTE" --push-auth-service-account="$(cuenta corte-gasto)" --ack-deadline=60 --min-retry-delay=10s --max-retry-delay=600s)
+if gcloud pubsub subscriptions describe gasto-relevo-corte >/dev/null 2>&1; then
+  gcloud pubsub subscriptions update gasto-relevo-corte "${SUSC[@]}"
+else
+  gcloud pubsub subscriptions create gasto-relevo-corte --topic gasto-relevo "${SUSC[@]}"
+fi
+PRESUPUESTOS="$(gcloud billing budgets list --billing-account="$FACT" --billing-project="$P" --format='value(displayName)')"
+if ! printf '%s\n' "$PRESUPUESTOS" | grep -qx "Relevo Toison"; then
+  gcloud billing budgets create --billing-account="$FACT" --billing-project="$P" --display-name="Relevo Toison" \
     --budget-amount="${TOPE}${MONEDA}" --filter-projects="projects/$P" \
     --threshold-rule=percent=0.2 --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0 \
     --notifications-rule-pubsub-topic="projects/$P/topics/gasto-relevo"
 fi
 
 paso "5. Que Google no apunte las direcciones del relevo"
-gcloud logging sinks update _Default --add-exclusion=name=relevo,filter='resource.type="cloud_run_revision" AND resource.labels.service_name="toison-relevo" AND logName:"requests"' >/dev/null 2>&1 \
-  || echo "(la exclusión ya estaba)"
+if gcloud logging sinks describe _Default --format='value(exclusions[].name)' | tr ';,' '\n\n' | grep -qx relevo; then
+  echo "(la exclusión ya estaba)"
+else
+  gcloud logging sinks update _Default --add-exclusion=name=relevo,filter='resource.type="cloud_run_revision" AND resource.labels.service_name="toison-relevo" AND logName:"requests"'
+fi
+# sin ella, Google guardaría 30 días cada dirección (con lo que va detrás de «?»: qué tiene cada uno) y su IP: se para
+gcloud logging sinks describe _Default --format='value(exclusions[].name)' | tr ';,' '\n\n' | grep -qx relevo \
+  || { echo "ERROR: la exclusión de registros no ha quedado puesta. No se publica el relevo."; exit 1; }
 
 paso "6. El relevo"
 gcloud run deploy toison-relevo --source "$SRC/relevo" --region "$R" --allow-unauthenticated \

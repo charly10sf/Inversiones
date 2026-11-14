@@ -57,7 +57,7 @@ jobs:
         run: |
           gcloud run deploy toison-relevo \
             --project "$P" --region europe-southwest1 \
-            --source relevo --allow-unauthenticated \
+            --source relevo \
             --cpu 1 --memory 256Mi --concurrency 80 \
             --min-instances 0 --max-instances 1 --timeout 300 \
             --cpu-boost \

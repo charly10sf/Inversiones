@@ -5,7 +5,7 @@
 import { test, expect } from '@playwright/test';
 import { createServer, request as pedirHttp } from 'node:http';
 import { gzipSync } from 'node:zlib';
-import { crearRelevo } from '../relevo/servidor.mjs';
+import { crearRelevo, claveIp } from '../relevo/servidor.mjs';
 
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'una vez basta'));
 
@@ -188,5 +188,19 @@ test('pocas conexiones lentas no lo llenan: tope de abiertas a la vez por IP; la
       q.write('{"a":');
     });
     expect(codigo).toBe(408);
+  } finally { m.cerrar(); }
+});
+
+test('los topes por IP cuentan las IPv6 por su /64 (cambiar de IP dentro de su red no sirve para gastar)', async () => {
+  expect(claveIp('2a01:4f8:0:1::5')).toBe(claveIp('2a01:04f8:0000:0001:aaaa:bbbb:cccc:dddd'));
+  expect(claveIp('2a01:4f8:0:2::5')).not.toBe(claveIp('2a01:4f8:0:1::5'));
+  expect(claveIp('::ffff:1.2.3.4')).toBe('1.2.3.4');
+  const m = await montar({ porMinuto: 2 });
+  try {
+    const pedir = (ip) => fetch(`${m.url}/salud`, { headers: { 'X-Forwarded-For': ip } }).then((r) => r.status);
+    expect(await pedir('2a01:4f8:0:1::1')).toBe(200);
+    expect(await pedir('2a01:4f8:0:1::2')).toBe(200);
+    expect(await pedir('2a01:4f8:0:1::3'), 'la tercera de la misma /64').toBe(429);
+    expect(await pedir('2a01:4f8:0:9::1'), 'otra /64, sí').toBe(200);
   } finally { m.cerrar(); }
 });

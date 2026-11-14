@@ -8,9 +8,14 @@
    gasto llega al tope, pregunta a Cloud Billing si el proyecto tiene facturación y, si la tiene, la quita. Si no
    llega, no hace nada. No ve ni toca nada de la app: ni tokens, ni carteras, ni el Worker.
 
-   Solo puede quitar la facturación de su proyecto: corre con la cuenta de servicio corte@…, que solo tiene «Gestor de
-   facturación del proyecto» (roles/billing.projectManager) en el proyecto del relevo. Para volver a ponerla, a mano en
-   la consola (Facturación → Mis proyectos) y volver a publicar el relevo (relevo/LEEME.md).
+   Solo puede quitar la facturación de su proyecto: corre con la cuenta de servicio corte-gasto@…, que solo tiene
+   «Gestor de facturación del proyecto» (roles/billing.projectManager) y «Navegador» (roles/browser, para poder leer si
+   tiene facturación) en el proyecto del relevo. Para volver a ponerla, relevo/LEEME.md.
+
+   No hace caso a los avisos viejos: Google manda el gasto ACUMULADO del mes varias veces al día, y Pub/Sub guarda hasta
+   7 días los que no pudo entregar (con la facturación quitada, este servicio está parado). Sin eso, al volver a poner
+   la facturación el mismo mes, la quitaría otra vez con un aviso atrasado. Se descartan los de hace más de una hora y
+   los de otro mes.
 
    Sin dependencias: Node 22. Google avisa con unas horas de retraso: el gasto se puede pasar un poco del tope.
    ===================================================================== */
@@ -19,15 +24,26 @@ import { createServer } from 'node:http';
 const METADATA = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
 const BILLING = 'https://cloudbilling.googleapis.com/v1';
 
-// lo que llega de Pub/Sub (push): { message: { data: base64(JSON del presupuesto) } }
+// lo que llega de Pub/Sub (push): { message: { data: base64(JSON del presupuesto), publishTime } }
 export function leerAviso(cuerpo) {
   try {
     const m = JSON.parse(cuerpo).message || {};
     const d = JSON.parse(Buffer.from(String(m.data || ''), 'base64').toString('utf8'));
     const gasto = Number(d.costAmount), tope = Number(d.budgetAmount);
     if (!Number.isFinite(gasto)) return null;
-    return { gasto, tope: Number.isFinite(tope) ? tope : null, moneda: String(d.currencyCode || '') };
+    const cuando = Date.parse(m.publishTime || ''), desde = Date.parse(d.costIntervalStart || '');
+    return { gasto, tope: Number.isFinite(tope) ? tope : null, moneda: String(d.currencyCode || ''),
+      cuando: Number.isFinite(cuando) ? cuando : null, desde: Number.isFinite(desde) ? desde : null };
   } catch (e) { return null; }
+}
+// un aviso viejo (más de una hora) o de otro mes no cuenta
+export function avisoViejo(aviso, ahora = Date.now()) {
+  if (aviso.cuando != null && ahora - aviso.cuando > 3600e3) return true;
+  if (aviso.desde != null) {
+    const a = new Date(aviso.desde), h = new Date(ahora);
+    if (a.getUTCFullYear() !== h.getUTCFullYear() || a.getUTCMonth() !== h.getUTCMonth()) return true;
+  }
+  return false;
 }
 
 export function crearCorte({
@@ -37,7 +53,9 @@ export function crearCorte({
   billing = BILLING,
   pedir = fetch,
   registrar = (linea) => console.log(linea),
+  ahora = () => Date.now(),
 } = {}) {
+  if (tope != null && !(tope > 0)) throw new Error('TOPE no es un número mayor que 0');
   const token = async () => {
     const r = await pedir(metadata, { headers: { 'Metadata-Flavor': 'Google' } });
     if (!r.ok) throw new Error(`metadata ${r.status}`);
@@ -49,9 +67,9 @@ export function crearCorte({
     if (!(limite > 0) || aviso.gasto < limite) return 'nada';
     const t = await token();
     const cab = { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' };
-    const info = await pedir(`${billing}/projects/${proyecto}/billingInfo`, { headers: cab });
-    if (!info.ok) throw new Error(`billingInfo ${info.status}`);
-    if (!(await info.json()).billingEnabled) return 'ya';
+    // si no se puede leer (papel, fallo de Google), se quita igual: quitarla dos veces no rompe nada
+    const info = await pedir(`${billing}/projects/${proyecto}/billingInfo`, { headers: cab }).catch(() => null);
+    if (info && info.ok && (await info.json().catch(() => ({ billingEnabled: true }))).billingEnabled === false) return 'ya';
     const r = await pedir(`${billing}/projects/${proyecto}/billingInfo`, { method: 'PUT', headers: cab, body: JSON.stringify({ billingAccountName: '' }) });
     if (!r.ok) throw new Error(`quitar ${r.status}`);
     return 'cortado';
@@ -65,6 +83,7 @@ export function crearCorte({
     const aviso = leerAviso(Buffer.concat(trozos).toString('utf8'));
     // un aviso que no se entiende: 204 para que Pub/Sub no lo repita sin fin
     if (!aviso) { registrar('aviso ilegible'); res.writeHead(204); return res.end(); }
+    if (avisoViejo(aviso, ahora())) { registrar(`aviso viejo (gasto ${aviso.gasto}): no cuenta`); res.writeHead(204); return res.end(); }
     try {
       const hecho = await decidir(aviso);
       registrar(`gasto ${aviso.gasto} ${aviso.moneda} de ${tope ?? aviso.tope}: ${hecho}`);

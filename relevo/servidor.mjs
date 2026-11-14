@@ -30,6 +30,20 @@ const CABECERAS_IDA = ['authorization', 'content-type', 'origin', 'user-agent', 
 const CABECERAS_VUELTA = (k) => k === 'content-type' || k === 'cache-control' || k === 'retry-after' || (k.startsWith('x-') && k !== 'x-powered-by');
 const MB = 1024 * 1024;
 
+// la clave de cada IP para los topes: la IPv4 tal cual; la IPv6, su /64 (los primeros cuatro grupos), porque quien
+// tiene una IPv6 tiene a mano todas las de su /64
+export function claveIp(ip) {
+  ip = String(ip || '').trim().toLowerCase();
+  const v4 = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (v4) return v4[1];
+  if (!ip.includes(':')) return ip;
+  ip = ip.split('%')[0];
+  const [izq, der] = ip.split('::');
+  const a = izq ? izq.split(':') : [], b = der != null ? (der ? der.split(':') : []) : [];
+  const todo = der != null ? [...a, ...Array(Math.max(0, 8 - a.length - b.length)).fill('0'), ...b] : a;
+  return todo.slice(0, 4).map((g) => (g || '0').replace(/^0+(?=.)/, '')).join(':') + '::/64';
+}
+
 export function crearRelevo({
   destino = process.env.DESTINO || DESTINO_POR_DEFECTO,
   // los sitios desde los que se acepta (los mismos que el Worker); vacío, cualquiera (lo decide el Worker)
@@ -39,8 +53,9 @@ export function crearRelevo({
   esperaCabeceras = Number(process.env.ESPERA_CABECERAS_S || 45) * 1000,
   // sin un solo byte nuevo en este tiempo, se corta (la app corta a los 60 s)
   esperaHilo = Number(process.env.ESPERA_HILO_S || 75) * 1000,
-  // cuántas peticiones por minuto deja a cada IP (en cada instancia): frena que alguien lo use para gastar
-  porMinuto = Number(process.env.POR_MINUTO || 120),
+  // cuántas peticiones por minuto deja a cada IP (en cada instancia; las IPv6, por su /64): frena que alguien lo use
+  // para gastar (la salida a internet de Cloud Run se paga)
+  porMinuto = Number(process.env.POR_MINUTO || 60),
   // y cuántas abiertas a la vez (una respuesta de la IA dura 60–100 s): que pocas conexiones lentas no lo llenen
   aLaVez = Number(process.env.A_LA_VEZ || 8),
   // para terminar de subir el cuerpo (una pregunta con la cartera, o capturas, en segundos)
@@ -60,7 +75,7 @@ export function crearRelevo({
   };
   const abiertas = new Map();
   // la IP solo para el límite de arriba (en memoria, un minuto); no se manda al Worker ni se apunta
-  const ipDe = (req) => String(req.headers['x-forwarded-for'] || '').split(',').map((x) => x.trim()).filter(Boolean).pop() || req.socket.remoteAddress || '';
+  const ipDe = (req) => claveIp(String(req.headers['x-forwarded-for'] || '').split(',').map((x) => x.trim()).filter(Boolean).pop() || req.socket.remoteAddress || '');
   const cors = (req) => {
     const o = req.headers.origin || '';
     return { 'Access-Control-Allow-Origin': !origenes.length || origenes.includes(o) ? o || '*' : origenes[0], 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
