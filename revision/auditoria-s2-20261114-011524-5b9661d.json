@@ -1,0 +1,243 @@
+{
+ "v": 1,
+ "generado": "2026-11-14T01:15:24.721Z",
+ "variantes": [
+  "app"
+ ],
+ "vueltas": [
+  {
+   "variante": "app",
+   "ok": true,
+   "error": null,
+   "segundos": 51,
+   "coste": 0.0094,
+   "entrada": 27792,
+   "salida": 11849,
+   "repetida": false,
+   "arreglo": false,
+   "llamadas": [
+    {
+     "estado": 200,
+     "segundos": 50.4,
+     "max_tokens": 24000,
+     "esfuerzo": "low",
+     "pensar_api": null,
+     "bytes_peticion": 58140,
+     "uso": {
+      "input_tokens": 4,
+      "cache_creation_input_tokens": 27788,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 27788,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 11849,
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard",
+      "output_tokens_details": {
+       "thinking_tokens": 6922
+      }
+     },
+     "stop": "end_turn",
+     "pensar": 0,
+     "texto": 9992,
+     "coste": 0.0093984
+    }
+   ],
+   "consejo": [],
+   "diario": [
+    "Haiku 5.5, por análisis: entrada 27.792 (caché 0) · salida 11.849 (mediana de 1 análisis, 1 ronda)",
+    "14/11, 02:14:32 Revisión de la cartera (automática)",
+    "14/11, 02:15:22 Haiku 5.5 · ronda 1: primer dato a los 50.5 s, acaba a los 50.5 s · entrada 27.792 (caché 0) · salida 11.849",
+    "14/11, 02:15:22 Tokens del análisis · Haiku 5.5: entrada 27.792 (caché 0) · salida 11.849 (1 ronda) · ~0,009 US$",
+    "14/11, 02:15:22 Revisión hecha en 51 s"
+   ],
+   "modelo": null,
+   "texto_largo": 0,
+   "json": {
+    "titular": "Cartera en **89.004,69 €**, con ganancia latente de **+8.523,89 €** (+10,6 %) y **−148,93 €** hoy. Todo dentro de tus límites. Lo que más pesa: el petróleo y la posible subida de tipos de la Fed.",
+    "resumen": [
+     "Hoy la cartera baja **148,93 €** (−0,2 %). Las bolsas europeas están cerca de máximos y el Ibex supera los 20.000 puntos. Wall Street cae con Nvidia tras la salida de Jensen Huang como consejero delegado. El Nasdaq 100 baja un 1,2 %. Bitcoin baja un 3,9 % hoy y un 15,3 % en el mes.",
+     "Lo mejor frente a su coste: Repsol (**+4.160,76 €**, +143,4 %), MSCI Europe (**+7.070,00 €**, +41,8 %) y BAT (**+1.398,89 €**, +38,8 %). Lo que más resta: el S&P 500 (**−6.915,76 €**, −19,8 %) y Bitcoin (**−1.254,74 €**, −25,8 %). El oro tiene +67,8 % frente a coste, pero −22,2 % desde su máximo de 52 semanas.",
+     "El dato a vigilar es el de tipos. La prensa da un 93,5 % de probabilidad de subida de tipos de la Fed en diciembre, y el bono a 10 años de EEUU rinde 5,15 %. Según la lectura automática de prensa, eso presiona a bolsas, bonos y oro. El Brent sube a 96,08 dólares (+57,9 % en el año): ayuda a Repsol y encarece el combustible de IAG."
+    ],
+    "puntuaciones": [
+     {
+      "k": "Diversificación",
+      "nota": 4,
+      "txt": "Quince valores entre fondos, acciones, oro, cripto y renta fija. Europa pesa **52,7 %** y EEUU **37,4 %**; tecnología, 21,3 %."
+     },
+     {
+      "k": "Costes",
+      "nota": 4,
+      "txt": "Gastos de fondos de **101 €** al año (TER medio 0,15 %). Las comisiones de compra de Trade Republic y Bitvavo no se incluyen en esa cifra."
+     },
+     {
+      "k": "Riesgo",
+      "nota": 2,
+      "txt": "El **28,9 %** de la cartera está en nivel 7 de 7 (**25.743 €**). Con acciones sueltas, cripto y oro, la volatilidad es alta."
+     },
+     {
+      "k": "Disciplina",
+      "nota": 3,
+      "txt": "Aportación automática de **600 €** al mes al S&P 500. Pero sin perfil ni metas en Toisón no se puede medir la disciplina frente a un objetivo."
+     },
+     {
+      "k": "Impuestos",
+      "nota": 3,
+      "txt": "No hay ventas registradas, así que el impuesto de este año es **0 €**. Faltan dividendos y operaciones hechas fuera de Toisón, y eso puede cambiar el cálculo."
+     }
+    ],
+    "mejorar": [
+     {
+      "titulo": "Sin perfil ni metas en Toisón",
+      "texto": "No has rellenado tu perfil ni has puesto una meta. Así no hay forma de contrastar la cartera con tus objetivos, ni de dar distancia a ninguno.",
+      "impacto": "Sin meta, no hay proyección ajustada a un objetivo concreto. Las proyecciones actuales usan solo la aportación de 600 € al mes y una bolsa al 7 % anual.",
+      "cuando": "Cuando quieras."
+     },
+     {
+      "titulo": "Impuestos calculados con datos incompletos",
+      "texto": "No has apuntado dividendos ni ventas hechas fuera de Toisón. Con los datos actuales, el impuesto de este año sale a **0 €**.",
+      "impacto": "Si vendieras hoy cada posición entera, el impuesto total sería de **3.234 €** (MSCI Europe 1.365 €, Repsol 790 €, oro 501 €, Emergentes 250 €, BAT 266 €, IAG 62 €). Las pérdidas latentes (S&P 500 −6.916 €, Bitcoin −1.255 €, renta fija −218 €) solo cuentan al vender.",
+      "cuando": "Antes de presentar la renta, entre abril y junio de 2027."
+     },
+     {
+      "titulo": "Petróleo en dos sentidos",
+      "texto": "Repsol e IAG suman **10.598 €** (11,9 % de la cartera). Repsol se beneficia cuando sube el petróleo y IAG se perjudica.",
+      "impacto": "Si el petróleo sube, Repsol gana y IAG pierde. Si baja, pasa al revés. Con el Brent en 96,08 dólares, el efecto contrario ya se nota en las dos posiciones.",
+      "cuando": "Según el precio del Brent y las tensiones entre EEUU e Irán."
+     }
+    ],
+    "mantener": [
+     {
+      "titulo": "Límites de la cartera",
+      "texto": "Acciones sueltas 17,5 % (límite 20 %), cripto 4,1 % (límite 5 %) y la mayor empresa, Repsol, 7,9 % (límite 10 %). Todo dentro de lo que has fijado."
+     },
+     {
+      "titulo": "Aportación automática",
+      "texto": "Los **600 €** mensuales al S&P 500 se hacen el día 1 de cada mes, sin cambios."
+     },
+     {
+      "titulo": "Renta fija corto plazo",
+      "texto": "Volatilidad del 2 % y riesgo 2 de 7. Hoy apenas se mueve (−0,04 %), y las subidas de tipos le afectan menos que a los bonos largos."
+     }
+    ],
+    "riesgos": [
+     {
+      "titulo": "Subida de tipos de la Fed",
+      "texto": "Probabilidad del 93,5 % en diciembre, según la lectura automática de prensa. Los tipos altos suelen frenar bolsas, bonos y oro. Tu S&P 500 (31,6 %) y tu oro (7,3 %) son los más expuestos."
+     },
+     {
+      "titulo": "Tecnología y Nvidia",
+      "texto": "Nvidia tiene su peor semana desde abril de 2025 tras la salida de su consejero delegado. El S&P 500 contiene **2.128 €** de Nvidia, **2.161 €** de Apple y **1.665 €** de Microsoft."
+     },
+     {
+      "titulo": "Bitcoin con salidas de dinero",
+      "texto": "Las salidas de los ETF de bitcoin superan los 1.500 millones de dólares en el año. Bitcoin está 25,5 % por debajo de su máximo de 52 semanas y el RSI está en 28."
+     },
+     {
+      "titulo": "Inflación europea",
+      "texto": "La inflación de la zona euro está en el 4 %, según la prensa. Impide que el BCE baje tipos y pesa sobre el consumo europeo, donde tienes la mayor parte de tu renta variable."
+     }
+    ],
+    "calendario": [
+     {
+      "d": "2026-12-01",
+      "t": "Aportación automática de **600 €** al S&P 500 en MyInvestor."
+     },
+     {
+      "d": "2026-12-03",
+      "t": "Ex-dividendo de IAG: **25 € netos** (31 € brutos)."
+     },
+     {
+      "d": "2026-12-24",
+      "t": "Ex-dividendo de BAT: **52 € netos** (65 € brutos)."
+     },
+     {
+      "d": "2027-01-12",
+      "t": "Ex-dividendo de Repsol: **93 € netos** (114 € brutos)."
+     }
+    ],
+    "posiciones": {
+     "ishares-us": {
+      "texto": "Vale **28.084,24 €** (31,6 %), con pérdida latente de **−6.915,76 €** (−19,8 %) frente a su coste de **35.000 €**. Último precio el 12 de noviembre (−0,1 %). Este mes baja un 1,6 %; en el año sube un 17,5 %. Nvidia pesa **2.128 €** dentro del fondo.",
+      "vigilar": "Decisión de la Fed en diciembre. Resultados de Nvidia (sin fecha). La aportación del 1 de diciembre.",
+      "confianza": "media"
+     },
+     "amundi-europe": {
+      "texto": "Vale **23.970,00 €** (26,9 %), con ganancia latente de **+7.070,00 €** (+41,8 %). Sube un 4,5 % en el mes y un 15,5 % en el año. Está en su máximo de 52 semanas (399,50 €).",
+      "vigilar": "Máximo de 52 semanas (399,50 €). Decisiones del BCE, sin fecha confirmada.",
+      "confianza": "media"
+     },
+     "vanguard-em": {
+      "texto": "Vale **7.414,80 €** (8,3 %), con ganancia latente de **+1.314,80 €** (+21,6 %). Baja un 5,2 % en el mes y está un 10 % por debajo de su máximo. Hoy el Hang Seng baja un 1,6 % y el Nifty un 0,6 %.",
+      "vigilar": "Hang Seng en 23.638 puntos. Si cae más, el fondo sigue la caída de Asia. Riesgo 6 de 7.",
+      "confianza": "media"
+     },
+     "repsol": {
+      "texto": "Vale **7.061,76 €** (7,9 %), con ganancia latente de **+4.160,76 €** (+143,4 %) frente a un coste de **2.901,00 €**. Hoy sube un 3,3 % y cotiza a **30,89 €**, cerca del precio objetivo medio de los analistas (**31,08 €**, +0,6 %). Los analistas: 10 comprar, 10 mantener y 3 vender. La prensa lo atribuye al petróleo y a su beneficio del tercer trimestre.",
+      "vigilar": "Precio objetivo medio de 31,08 €. Ex-dividendo el 12 de enero de 2027.",
+      "confianza": "media"
+     },
+     "phau": {
+      "texto": "Vale **6.527,93 €** (7,3 %), con ganancia latente de **+2.637,93 €** (+67,8 %). Baja un 3,5 % en el mes y está un 22,2 % por debajo de su máximo de 52 semanas. El oro en dólares toca un mínimo de 13 meses (**3.888 $**), según la prensa por el dólar fuerte y las apuestas a subida de tipos.",
+      "vigilar": "Que el oro recupere los 4.000 $. Decisión de la Fed en diciembre.",
+      "confianza": "media"
+     },
+     "bat": {
+      "texto": "Vale **5.000,89 €** (5,6 %), con ganancia latente de **+1.398,89 €** (+38,8 %). Sube un 10,7 % en el mes. La empresa prevé un BPA un 5 % a 8 % mayor y una recompra de 1.300 millones de dólares. JPMorgan vuelve a dar sobreponderar. El precio objetivo medio es 62,24 € (+11,5 %).",
+      "vigilar": "Ex-dividendo el 24 de diciembre de 2026. Subidas de tipos, que la prensa lee como negativas para empresas de dividendo.",
+      "confianza": "media"
+     },
+     "btc": {
+      "texto": "Vale **3.615,26 €** (4,1 %), con pérdida latente de **−1.254,74 €** (−25,8 %) frente a un coste de **4.870,00 €**. Hoy baja un 4 % y en el mes un 15,3 %. Lleva seis semanas de pérdidas, con el RSI en 28.",
+      "vigilar": "Mínimo de 52 semanas (51.308 $). Los 68.000 $ que citan las noticias. Salidas de los ETF de bitcoin.",
+      "confianza": "baja"
+     },
+     "nb-short": {
+      "texto": "Vale **3.552,30 €** (4,0 %), con pérdida latente de **−217,70 €** (−5,8 %). Apenas se mueve hoy (−0,04 %) y sube un 0,3 % en el año. Volatilidad del 2 %.",
+      "vigilar": "Subida de tipos en diciembre. Aunque los de corto plazo sufren menos, la prensa lo lee como riesgo para todos los bonos.",
+      "confianza": "alta"
+     },
+     "iag": {
+      "texto": "Vale **3.536,71 €** (4,0 %), con ganancia latente de **+329,71 €** (+10,3 %). Hoy sube un 0,2 % hasta **5,42 €**. El beneficio operativo del tercer trimestre cae un 16 % por el combustible. Deutsche Bank rebaja su precio objetivo a 600 peniques y mantiene la recomendación de compra. El precio objetivo medio es 6,00 € (+10,8 %).",
+      "vigilar": "Brent en 96,08 dólares. Ex-dividendo el 3 de diciembre (25 € netos). Resultados de fin de año, sin fecha.",
+      "confianza": "media"
+     }
+    },
+    "preguntas": [
+     {
+      "q": "¿Cuál es tu meta principal y en cuántos años?",
+      "por_que": "Con una meta, Toisón puede dar la distancia hasta ella y ajustar la proyección.",
+      "opciones": [
+       "Jubilación",
+       "Comprar casa",
+       "Otra"
+      ]
+     },
+     {
+      "q": "¿Has vendido o cobrado dividendos fuera de Toisón este año?",
+      "por_que": "Cambiaría el impuesto calculado, que hoy sale en 0 €.",
+      "opciones": [
+       "Sí",
+       "No"
+      ]
+     },
+     {
+      "q": "¿Desde qué fecha tienes cada fondo y acción?",
+      "por_que": "Con la fecha de inicio, Toisón puede calcular la rentabilidad real de la cartera.",
+      "opciones": [
+       "Desde 2025",
+       "Antes de 2025",
+       "No lo sé"
+      ]
+     }
+    ],
+    "fuentes": [],
+    "publico": true,
+    "modo": "publico"
+   }
+  }
+ ]
+}
