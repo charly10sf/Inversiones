@@ -1,0 +1,292 @@
+{
+ "v": 1,
+ "generado": "2026-11-14T10:05:36.981Z",
+ "variantes": [
+  "app"
+ ],
+ "vueltas": [
+  {
+   "variante": "app",
+   "ok": true,
+   "error": null,
+   "segundos": 51,
+   "coste": 0.0093,
+   "entrada": 27622,
+   "salida": 11794,
+   "repetida": false,
+   "arreglo": false,
+   "llamadas": [
+    {
+     "estado": 200,
+     "segundos": 50.3,
+     "max_tokens": 24000,
+     "esfuerzo": "low",
+     "pensar_api": null,
+     "bytes_peticion": 57597,
+     "uso": {
+      "input_tokens": 4,
+      "cache_creation_input_tokens": 27618,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 27618,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 11794,
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard",
+      "output_tokens_details": {
+       "thinking_tokens": 5611
+      }
+     },
+     "stop": "end_turn",
+     "pensar": 0,
+     "texto": 12926,
+     "coste": 0.00934965
+    }
+   ],
+   "consejo": [],
+   "diario": [
+    "Haiku 5.5, por análisis: entrada 27.622 (caché 0) · salida 11.794 (mediana de 1 análisis, 1 ronda)",
+    "14/11, 11:04:44 Revisión de la cartera (automática)",
+    "14/11, 11:05:34 Haiku 5.5 · ronda 1: primer dato a los 50.3 s, acaba a los 50.3 s · entrada 27.622 (caché 0) · salida 11.794",
+    "14/11, 11:05:34 Tokens del análisis · Haiku 5.5: entrada 27.622 (caché 0) · salida 11.794 (1 ronda) · ~0,009 US$",
+    "14/11, 11:05:34 Revisión hecha en 50 s"
+   ],
+   "modelo": null,
+   "texto_largo": 0,
+   "json": {
+    "titular": "Cartera de **88.948,17 €** con una ganancia latente de **+8.467,37 €** (+10,6 %). En la última sesión (viernes 13 de noviembre) bajó un 0,1 % y Wall Street cayó por Nvidia y las tecnológicas.",
+    "resumen": [
+     "Patrimonio de **88.948,17 €** frente a un coste de **80.240,00 €**. Dentro de la cartera, S&P 500 (**−6.915,76 €**, −19,8 %), bitcoin (**−1.311,27 €**, −26,9 %) y renta fija corta (**−217,70 €**, −5,8 %) están en pérdidas. MSCI Europe (**+7.070,00 €**, +41,8 %) y Repsol (**+4.160,76 €**, +143,4 %) sostienen la ganancia.",
+     "Lo que más pesó en la última sesión fueron las tecnológicas de EEUU. El S&P 500 cerró en 7.562 (−0,4 %) y el Nasdaq 100 en 27.944 (−1,2 %), con Nvidia a la baja. La prensa recoge que su consejero delegado deja el cargo, pero solo lo confirma una fuente. El petróleo (Brent a 95,84 $, +57,5 % en el año) favorece a Repsol y penaliza a IAG. El oro toca mínimos de 13 meses y el bono de EEUU a 10 años rinde un 5,15 %. El mercado descuenta una subida de tipos de la Fed en diciembre, sin fecha en las noticias.",
+     "Sus límites: acciones sueltas en **17,5 %** (límite 20 %, quedan unos **2.190 €**), cripto en **4,0 %** (límite 5 %, quedan unos **890 €**) y la mayor empresa, Repsol, en **7,9 %** (límite 10 %). Los dividendos previstos en 12 meses son **459 €** netos (566 € brutos). Toisón no tiene apuntados dividendos ni ventas, así que el cálculo de impuestos está incompleto."
+    ],
+    "puntuaciones": [
+     {
+      "k": "Diversificación",
+      "nota": 3,
+      "txt": "Reparto en tres bolsas (Europa 52,7 %, EEUU 37,4 %, emergentes 9,9 %) y en seis tipos de activo. Tecnología pesa un 21,3 % y las acciones sueltas, un 17,5 %."
+     },
+     {
+      "k": "Costes",
+      "nota": 4,
+      "txt": "Gastos de fondos de unos **101 €** al año (TER medio 0,15 %). Las acciones y el bitcoin tienen comisiones por operación que dependen del bróker."
+     },
+     {
+      "k": "Riesgo",
+      "nota": 2,
+      "txt": "El 28,9 % de la cartera está en nivel 7 de 7 (Repsol, BAT, IAG, bitcoin y oro), y el 58,5 % en nivel 5. Las caídas de las tecnológicas y del bitcoin pesan más en el total."
+     },
+     {
+      "k": "Disciplina",
+      "nota": 3,
+      "txt": "La aportación de **600 €** al mes al S&P 500 está automatizada el día 1. No hay un perfil ni metas escritos, así que no se puede medir la disciplina contra un objetivo."
+     },
+     {
+      "k": "Impuestos",
+      "nota": 2,
+      "txt": "No hay ventas, dividendos ni retenciones apuntados. Las pérdidas pendientes son **0 €**, así que el cálculo no refleja tu situación real."
+     }
+    ],
+    "mejorar": [
+     {
+      "titulo": "Datos fiscales incompletos",
+      "texto": "No has apuntado dividendos ni ventas hechas fuera de Toisón. Por eso el impuesto calculado puede salir alto. Toisón calcula la base del ahorro con lo que tiene apuntado.",
+      "impacto": "Si vendiera hoy cada posición entera, Toisón calcula un impuesto de **790 €** en Repsol, **1.365 €** en MSCI Europe, **501 €** en el oro, **266 €** en BAT, **250 €** en emergentes y **62 €** en IAG. Los importes cambiarían con lo que tengas apuntado.",
+      "cuando": "Antes de presentar la renta (abril a junio de 2027)."
+     },
+     {
+      "titulo": "Sin perfil ni metas",
+      "texto": "No has rellenado tu perfil ni fijado una meta de patrimonio. Sin meta, no sé a qué distancia estás de ella ni puedo medir el avance.",
+      "impacto": "Con la aportación actual de 600 € al mes, la proyección de Toisón da unos **250.965 €** a 10 años en el escenario probable. Ese número no tiene referencia sin una meta.",
+      "cuando": "Cuando quieras; con una meta lo comparo en cada revisión."
+     },
+     {
+      "titulo": "Colchón de efectivo bajo",
+      "texto": "Solo tienes **240,80 €** en efectivo, el 0,3 % de la cartera. Cualquier gasto imprevisto tendría que salir de las posiciones.",
+      "impacto": "Para tener un colchón de un 1 % harían falta unos **890 €** más de efectivo, sin contar la aportación mensual.",
+      "cuando": "Sin fecha."
+     },
+     {
+      "titulo": "Acciones sueltas cerca de su límite",
+      "texto": "Repsol, BAT e IAG suman **15.599 €**, el 17,5 %. Tu límite es el 20 %.",
+      "impacto": "Quedan unos **2.190 €** hasta el límite. Cualquier compra de una acción suelta, o una subida de precio de las ya tenidas, lo acercaría o lo superaría.",
+      "cuando": "Siempre que cambien los precios o haya una operación."
+     },
+     {
+      "titulo": "Bitcoin con un precio que no cuadra",
+      "texto": "La posición marca **61.041,70 €** por bitcoin. La prensa habla de 68.000 $ y el dato de mercado es 61.112 $. Parece que el precio está en dólares, no en euros.",
+      "impacto": "Si el precio en euros fuera unos 55.400 €, el valor de la posición bajaría unos **200 €** y la pérdida pasaría de **−1.311 €** a unos **−1.510 €**.",
+      "cuando": "Antes de tomar cualquier decisión sobre esta posición."
+     },
+     {
+      "titulo": "Rentabilidad real sin calcular",
+      "texto": "Toisón no puede calcular tu rentabilidad real porque no tiene la fecha de compra de cada posición. Solo muestra la ganancia latente.",
+      "impacto": "La ganancia latente de **+8.467,37 €** no mide el rendimiento anual. Con las fechas, Toisón lo calcula.",
+      "cuando": "Cuando añadas las fechas."
+     }
+    ],
+    "mantener": [
+     {
+      "titulo": "Límites por debajo del tope",
+      "texto": "Repsol (7,9 %), cripto (4,0 %) y acciones sueltas (17,5 %) están por debajo de sus límites."
+     },
+     {
+      "titulo": "Costes bajos en los fondos",
+      "texto": "Los fondos indexados tienen un TER de 0,05 % a 0,23 %. El total de gastos de fondos son unos 101 € al año."
+     },
+     {
+      "titulo": "Aportación automática",
+      "texto": "Los 600 € al mes al S&P 500 se hacen el día 1 sin que tengas que actuar cada mes."
+     },
+     {
+      "titulo": "Sin obligación de modelos 720 ni 721",
+      "texto": "Ningún bloque supera 50.000 € a fin de año. Trade Republic tiene 15.840 € en valores y Bitvavo, 3.559 € en cripto."
+     }
+    ],
+    "riesgos": [
+     {
+      "titulo": "Tecnológicas bajo presión",
+      "texto": "El Nasdaq 100 cae un 6,7 % en el mes. Nvidia, el escándalo de su CEO y los temores sobre la inversión en IA afectan al S&P 500 (**−19,8 %** en tu posición) y al MSCI Europe por el sector."
+     },
+     {
+      "titulo": "Tipos de interés al alza",
+      "texto": "El bono de EEUU a 10 años rinde un 5,15 % y el mercado descuenta una subida de la Fed en diciembre. Eso suele presionar al oro, al bitcoin y a las bolsas."
+     },
+     {
+      "titulo": "Petróleo alto",
+      "texto": "El Brent está en 95,84 $. Repsol (13,1 % del sector energía) gana con el precio, mientras que IAG, con costes de combustible, pierde beneficios: el BPA de este año se espera −6,9 %."
+     },
+     {
+      "titulo": "Oro en mínimos",
+      "texto": "El oro está en 3.886 $ y en mínimos de 13 meses. Tu posición pierde un 3,5 % en el mes y un 22,2 % desde su máximo de 52 semanas."
+     },
+     {
+      "titulo": "Emergentes y Brasil",
+      "texto": "El Bovespa cae un 16,5 % en el mes tras la victoria de Lula. Tu fondo de emergentes cae un 5,2 % en el mes y está un 10 % por debajo de su máximo de 52 semanas."
+     },
+     {
+      "titulo": "Bitcoin con seis semanas de caídas",
+      "texto": "El bitcoin cae un 26,9 % sobre tu coste y un 18,2 % en el año. La prensa lo atribuye a la salida a bolsa de Anthropic, aún sin fecha."
+     }
+    ],
+    "calendario": [
+     {
+      "d": "2026-12-01",
+      "t": "Aportación de **600 €** al S&P 500 en MyInvestor (día 1 de cada mes)."
+     },
+     {
+      "d": "2026-12-03",
+      "t": "Ex-dividendo de IAG: **25 €** netos (31 € brutos) por tus 652,53 acciones."
+     },
+     {
+      "d": "2026-12-24",
+      "t": "Ex-dividendo de BAT: **52 €** netos (65 € brutos)."
+     },
+     {
+      "d": "2027-01-12",
+      "t": "Ex-dividendo de Repsol: **93 €** netos (114 € brutos)."
+     }
+    ],
+    "posiciones": {
+     "ishares-us": {
+      "texto": "Valor **28.084,24 €** (31,6 %), con una pérdida de **−6.915,76 €** (−19,8 %). Precio **12,5860 €** el 12 de noviembre, un 1,8 % por debajo de su máximo de 52 semanas. Su tendencia sigue alcista, con un 8,1 % por encima de su media de 200 sesiones. El 13 de noviembre el S&P 500 cerró a la baja.",
+      "vigilar": "Nvidia y los resultados del sector tecnológico. Si el S&P 500 sigue por debajo de 7.562, la pérdida de tu posición seguirá creciendo.",
+      "confianza": "media"
+     },
+     "amundi-europe": {
+      "texto": "Valor **23.970,00 €** (26,9 %), con una ganancia de **+7.070,00 €** (+41,8 %). Precio **399,50 €**, en su máximo de 52 semanas. Está un 6,5 % por encima de su media de 200 sesiones. El Euro Stoxx 50 y el DAX marcaron máximos esta semana.",
+      "vigilar": "El rango de 52 semanas (328,26 a 399,50 €) y el peso de tecnología y de Europa en el índice.",
+      "confianza": "media"
+     },
+     "vanguard-em": {
+      "texto": "Valor **7.414,80 €** (8,3 %), con una ganancia de **+1.314,80 €** (+21,6 %). Precio **296,59 €** el 12 de noviembre, un 10 % por debajo de su máximo de 52 semanas. Cae un 5,2 % en el mes, con la volatilidad en 23 %.",
+      "vigilar": "Brasil (Bovespa −16,5 % en el mes) y China (Shanghái −3,5 % en el mes). Su media de 200 sesiones está en 296,97 €, justo en el precio actual.",
+      "confianza": "media"
+     },
+     "repsol": {
+      "texto": "Valor **7.061,76 €** (7,9 %), con una ganancia de **+4.160,76 €** (+143,4 %). Precio **30,89 €**, tras subir un 3,3 % el 13 de noviembre. Los analistas tienen un precio objetivo medio de **31,08 €** (+0,6 %), dentro de un rango de 23,70 a 38,00 €. El consenso es favorable, aunque 3 analistas recomiendan vender.",
+      "vigilar": "El precio del Brent, que sostiene a la empresa, y el ex-dividendo del 12 de enero de 2027.",
+      "confianza": "media"
+     },
+     "phau": {
+      "texto": "Valor **6.527,93 €** (7,3 %), con una ganancia de **+2.637,93 €** (+67,8 %). Precio **326,40 €** el 13 de noviembre, un 22,2 % por debajo de su máximo de 52 semanas. Cae un 3,5 % en el mes y un 7,4 % en tres meses. Su tendencia es bajista.",
+      "vigilar": "La reunión de la Fed de diciembre (sin fecha en las noticias) y si el oro vuelve a 4.000 $.",
+      "confianza": "media"
+     },
+     "bat": {
+      "texto": "Valor **5.000,89 €** (5,6 %), con una ganancia de **+1.398,89 €** (+38,8 %). Precio **55,81 €** el 13 de noviembre. El precio objetivo medio de los analistas es **62,24 €** (+11,5 %), y el consenso es favorable. La prensa recoge la previsión de BPA de +5 % a +8 % y el plan de recompra de 1.300 millones de dólares.",
+      "vigilar": "El ex-dividendo del 24 de diciembre y la confirmación de la aprobación de la FDA, que solo aparece en una fuente.",
+      "confianza": "media"
+     },
+     "btc": {
+      "texto": "Valor **3.558,73 €** (4,0 %), con una pérdida de **−1.311,27 €** (−26,9 %). Precio **61.041,70 €**, hoy −1,4 %. Lleva seis semanas seguidas a la baja y cae un 16,7 % en el mes.",
+      "vigilar": "El precio en euros: la prensa habla de 68.000 $ y el dato de mercado parece estar en dólares. Conviene revisarlo.",
+      "confianza": "baja"
+     },
+     "nb-short": {
+      "texto": "Valor **3.552,30 €** (4,0 %), con una pérdida de **−217,70 €** (−5,8 %). Precio **118,41 €** el 12 de noviembre. Su rentabilidad en el año es +0,3 % y su riesgo es 2 de 7. No tiene noticias propias.",
+      "vigilar": "La subida de tipos de la Fed en diciembre, que afectaría a los bonos a largo, aunque este fondo tiene plazo corto.",
+      "confianza": "alta"
+     },
+     "iag": {
+      "texto": "Valor **3.536,71 €** (4,0 %), con una ganancia de **+329,71 €** (+10,3 %). Precio **5,42 €** el 13 de noviembre, tras rebotar más de un 10 % en noviembre. Su precio objetivo medio es **6,00 €** (+10,8 %). El beneficio del tercer trimestre cayó un 16 % por el combustible, y Deutsche Bank y BofA recortaron el precio objetivo.",
+      "vigilar": "El Brent (95,84 $) y el ex-dividendo del 3 de diciembre.",
+      "confianza": "media"
+     }
+    },
+    "preguntas": [
+     {
+      "q": "¿Quieres fijar una meta de patrimonio y un plazo?",
+      "por_que": "Sin meta no puedo decirte a qué distancia estás de ella ni recalcular la proyección.",
+      "opciones": [
+       "Sí, te digo la cifra y el plazo",
+       "No, de momento no"
+      ]
+     },
+     {
+      "q": "¿Desde qué fecha tienes cada posición?",
+      "por_que": "Con las fechas, Toisón calcula tu rentabilidad real anual y no solo la ganancia latente.",
+      "opciones": [
+       "Sí, te las digo",
+       "Solo algunas"
+      ]
+     },
+     {
+      "q": "¿Has cobrado dividendos o vendido algo fuera de Toisón este año?",
+      "por_que": "Cambiaría el cálculo de impuestos de 2026, que ahora está en 0 €.",
+      "opciones": [
+       "Sí, los apunto",
+       "No"
+      ]
+     },
+     {
+      "q": "¿Cuánto vale tu bitcoin en euros en Bitvavo?",
+      "por_que": "Si el precio en euros es distinto de 61.041,70 €, cambiaría el valor y la pérdida de esa posición.",
+      "opciones": [
+       "Lo miro y te lo digo",
+       "Lo reviso yo en la app"
+      ]
+     }
+    ],
+    "fuentes": [
+     {
+      "t": "Prensa citada en el informe de Toisón (portada de Yahoo Finance)",
+      "u": "https://finance.yahoo.com"
+     },
+     {
+      "t": "Bolsamania (noticias de mercados)",
+      "u": "https://www.bolsamania.com"
+     },
+     {
+      "t": "El Economista (noticias de economía)",
+      "u": "https://www.eleconomista.es"
+     }
+    ],
+    "publico": true,
+    "modo": "publico"
+   }
+  }
+ ]
+}
