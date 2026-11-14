@@ -258,8 +258,9 @@ class RelevanciaTresConUnaMencionDePasada(Base):
         self.assertFalse(I.gorda(lectura, "PEP"))
 
     def test_el_encargo_lo_pide(self):
-        self.assertIn("Lo que una noticia solo menciona de pasada, porque va de otra cosa", I.LEER)
-        self.assertIn('no da por sí solo peso 3 ni "rel" 3: como mucho 2', I.LEER)
+        self.assertIn('Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa', I.LEER)
+        self.assertIn("Lo que solo se menciona\nde pasada en un artículo que va de otra cosa", I.LEER)
+        self.assertIn("no pasa de 2 por sí solo", I.LEER)
         # y no le pide ser más duro con todo lo demás: en el primer ensayo «son la excepción» bajó la relevancia de todo
         self.assertNotIn("son la excepción", I.LEER)
 
