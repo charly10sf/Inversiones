@@ -26,7 +26,7 @@ gratis en vez de cobrar.
   para el relevo: ya no puede cobrar más. Google avisa con unas horas de retraso, así que el gasto se puede pasar algo
   del tope. Tras montarlo hay que probar que corta de verdad (abajo).
 - Si se corta: la app sigue; sin relevo sale el aviso del bloqueo. Para volver:
-  - El mes siguiente: Facturación → Mis proyectos → poner la cuenta al proyecto y lanzar `montar.sh` otra vez.
+  - El mes siguiente: Facturación → Mis proyectos → poner la cuenta al proyecto (o `gcloud billing projects link toison-relevo --billing-account=…`). El relevo vuelve solo en unos 5 minutos (probado el 14 nov); si no, lanzar `montar.sh` otra vez.
   - El mismo mes: el gasto del mes ya pasa del tope, así que antes hay que subirlo (si no, el próximo aviso lo vuelve a
     cortar): `gcloud run services update toison-corte --region europe-southwest1 --update-env-vars TOPE=10` y subir
     también el presupuesto «Relevo Toison» en la consola. Luego vaciar los avisos atrasados:

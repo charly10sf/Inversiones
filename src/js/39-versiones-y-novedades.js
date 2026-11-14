@@ -7,6 +7,10 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6d', f: '2026-11-14', h: '19:45', t: 'La IA, también con fútbol', arreglos: [
+    'Durante los partidos de LaLiga, algunos operadores bloquean parte de internet y la IA, la conexión con el banco, la búsqueda por ISIN y las gráficas de 1D a Máx se quedaban sin respuesta. Ahora, si no llegan al servidor de siempre, van por otro camino y siguen funcionando.',
+    'Si aun así no llegan, Toisón te dice que puede ser ese bloqueo y qué hacer (probar al acabar el partido o con los datos de otro operador), en vez de un error sin explicar.',
+  ] },
   { v: '0.8.6c', f: '2026-11-12', h: '08:30', t: 'Una sola cifra para hoy', arreglos: [
     'La cifra de hoy es la misma en todas partes: arriba en Hoy, en Buenos días, en la pastilla de 1D, en la casilla de hoy del calendario de Análisis y en el widget. Antes cada sitio la contaba a su manera y salían cifras distintas.',
     'Hoy es lo que ha cambiado desde el cierre de ayer. Antes de que abra la bolsa solo se mueve la cripto, y los fondos, que publican su valor uno o dos días después, cuentan en el día de ese valor. Buenos días enseña debajo cómo acabó el último día de bolsa, con la misma cifra que su casilla del calendario.',

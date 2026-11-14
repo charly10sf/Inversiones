@@ -101,6 +101,13 @@ test('sin relevo configurado, todo va al Worker como siempre (ni se espera ni se
   expect(await page.evaluate(() => [VIA_WORKER, porRelevo()])).toEqual(['worker', false]);
 });
 
+test('la app de verdad lleva la dirección del relevo de Cloud Run (Madrid); las pruebas, sin él salvo que lo pidan', async ({ page }) => {
+  await preparada(page);
+  const r = await page.evaluate(() => { const antes = urlRelevo(); LS.del('inv-sin-relevo'); const ahora = urlRelevo(); LS.set('inv-sin-relevo', true); return { antes, ahora }; });
+  expect(r.antes).toBe('');
+  expect(r.ahora).toBe('https://toison-relevo-538254811177.europe-southwest1.run.app');
+});
+
 test('opción 2: con el Worker colgado, la pregunta va por el relevo, contesta y se recuerda media hora', async ({ page, context }) => {
   await preparada(page);
   await conRelevo(page);

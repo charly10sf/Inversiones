@@ -8,16 +8,17 @@
       bloqueo) y devuelve la respuesta en directo. Por dónde ir lo decide un sondeo barato (GET /salud, sin cuerpo ni
       token), nunca cortando una petición de verdad a mitad: así una petición lenta no se manda dos veces (el código de un
       solo uso del banco, un correo, una ronda de la IA). Si el Worker llega, se recuerda 10 minutos; si no, se va por el
-      relevo media hora. Mientras RELEVO esté vacío (aún no existe el servicio), todo va al Worker como siempre.
+      relevo media hora. Con RELEVO vacío, todo iría al Worker como antes.
    2. El aviso claro: si al final no se llega, se mira si llega nuestra propia página (version.json, fuera de Cloudflare).
       Si llega la página y no el Worker (ni el relevo), se dice que no llega al servidor y, en España, que puede ser el
       bloqueo del fútbol, con qué hacer.
    ===================================================================== */
-// la dirección del relevo en Cloud Run (…run.app), cuando exista. Vacía: no hay relevo
-const RELEVO = '';
-// en pruebas (?dev, o RELEVO_PRUEBA desde Playwright) se puede apuntar a otro
+// la dirección del relevo en Cloud Run (proyecto toison-relevo, Madrid; relevo/LEEME.md). Vacía: no hay relevo
+const RELEVO = 'https://toison-relevo-538254811177.europe-southwest1.run.app';
+// en pruebas (?dev, o RELEVO_PRUEBA desde Playwright) se puede apuntar a otro; las pruebas van sin relevo
+// (inv-sin-relevo, que pone tests/ayuda.js) salvo las que lo prueban
 let RELEVO_PRUEBA = '';
-const urlRelevo = () => (CFG.dev && LS.get('inv-relevo-dev', '')) || RELEVO_PRUEBA || RELEVO;
+const urlRelevo = () => (CFG.dev && LS.get('inv-relevo-dev', '')) || RELEVO_PRUEBA || (LS.get('inv-sin-relevo', false) ? '' : RELEVO);
 const LS_RUTA_WORKER = 'inv-ruta-worker';
 const RUTA_MS = { relevo: 30 * 6e4, worker: 10 * 6e4 };
 // lo que espera el sondeo de la ruta (GET /salud) antes de dar el Worker por no llegado
