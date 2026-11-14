@@ -34,6 +34,10 @@ on:
         description: "Solo con ensayo y comparación: cuántas empresas se leen de cero lado a lado, dos veces con cada código (0: ninguna)"
         type: string
         default: "0"
+      partes:
+        description: "Solo con ensayo y comparación: «todo», o «lecturas-rama» para repetir solo las lecturas con el código de la rama (tras afinar un encargo)"
+        type: string
+        default: "todo"
   push:
     branches: [main]
     paths:
@@ -291,18 +295,26 @@ jobs:
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
           OTRO_MODELO: ${{ inputs.comparar }}
           LECTURAS: ${{ inputs.lecturas }}
+          PARTES: ${{ inputs.partes }}
           ENSAYO_SIEMPRE: "PEP,CTVA,NVDA"
         run: |
           mkdir -p comparacion
-          python scripts/ensayo_comparar.py /tmp/main/scripts main instrumentos.json ensayo-pasada comparacion > comparacion/registro-main.txt 2>&1 &
-          python scripts/ensayo_comparar.py scripts rama instrumentos.json ensayo-pasada comparacion > comparacion/registro-rama.txt 2>&1 &
-          if [ -n "$OTRO_MODELO" ]; then
-            python scripts/ensayo_comparar.py scripts otro instrumentos.json ensayo-pasada comparacion "$OTRO_MODELO" solo-decision > comparacion/registro-otro.txt 2>&1 &
+          N=1
+          if [ "$PARTES" = "lecturas-rama" ]; then
+            N=3   # las repetidas se llaman rama3 y rama4, para ponerlas al lado de las del ensayo anterior
+          else
+            python scripts/ensayo_comparar.py /tmp/main/scripts main instrumentos.json ensayo-pasada comparacion > comparacion/registro-main.txt 2>&1 &
+            python scripts/ensayo_comparar.py scripts rama instrumentos.json ensayo-pasada comparacion > comparacion/registro-rama.txt 2>&1 &
+            if [ -n "$OTRO_MODELO" ]; then
+              python scripts/ensayo_comparar.py scripts otro instrumentos.json ensayo-pasada comparacion "$OTRO_MODELO" solo-decision > comparacion/registro-otro.txt 2>&1 &
+            fi
           fi
           if [ "${LECTURAS:-0}" -gt 0 ] 2>/dev/null; then
             python scripts/ensayo_comparar.py --muestra scripts ensayo-pasada comparacion/muestra.json "$LECTURAS" | tee comparacion/registro-muestra.txt
-            for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
-            for e in rama rama2; do python scripts/ensayo_comparar.py --lecturas scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+            if [ "$PARTES" != "lecturas-rama" ]; then
+              for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+            fi
+            for e in rama$N rama$((N + 1)); do python scripts/ensayo_comparar.py --lecturas scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
           fi
           wait
           tail -n 8 comparacion/registro-*.txt

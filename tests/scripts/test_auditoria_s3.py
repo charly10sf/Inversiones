@@ -191,6 +191,9 @@ class FechaDelHecho(Base):
         for encargo in (I.LEER, I.DECIDIR, I.INSTRUCCIONES):
             self.assertIn("es el día en que se publicó (con su día de la semana), no el día del hecho", encargo)
             self.assertIn("no escribas «el 13 de noviembre hizo X»", encargo)
+            self.assertIn("ponlo al final entre paréntesis: «(noticias del 13 de noviembre)»", encargo)
+            # en el primer ensayo «di según noticias del…» hizo que 108 de 120 lecturas empezaran así
+            self.assertNotIn("di «según noticias", encargo)
             self.assertNotIn("{REGLA_FECHA}", encargo)
 
 
@@ -255,9 +258,11 @@ class RelevanciaTresConUnaMencionDePasada(Base):
         self.assertFalse(I.gorda(lectura, "PEP"))
 
     def test_el_encargo_lo_pide(self):
-        self.assertIn('El peso 3 y "rel" 3 son la excepción', I.LEER)
-        self.assertIn("Lo que solo se menciona de pasada en un artículo que va de otra cosa", I.LEER)
-        self.assertIn("no pasa de 2", I.LEER)
+        self.assertIn('Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa', I.LEER)
+        self.assertIn("Lo que solo se menciona\nde pasada en un artículo que va de otra cosa", I.LEER)
+        self.assertIn("no pasa de 2 por sí solo", I.LEER)
+        # y no le pide ser más duro con todo lo demás: en el primer ensayo «son la excepción» bajó la relevancia de todo
+        self.assertNotIn("son la excepción", I.LEER)
 
 
 # ------------------------------------------------------------------ 4. las «mejores de la web» miran la prensa
@@ -326,8 +331,8 @@ class EnsayoDeLasLecturas(unittest.TestCase):
         self.assertIn("if: ${{ !(inputs.ensayo && inputs.solo_comparar) }}", precios.split("jobs:")[1][:400])
         self.assertNotIn("git push", comparar)                            # la comparación no publica nada
         self.assertIn("git archive FETCH_HEAD radar.json radar-mas.json precios.json noticias-cache.json escaneo.json", comparar)
-        for e in ("main main2", "rama rama2"):
-            self.assertIn(f"for e in {e}; do python scripts/ensayo_comparar.py --lecturas", comparar)
+        self.assertIn("for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts", comparar)
+        self.assertIn("for e in rama$N rama$((N + 1)); do python scripts/ensayo_comparar.py --lecturas scripts", comparar)
         self.assertNotIn('"${{ inputs.lecturas }}"', yml)                # entra por una variable de entorno
 
     def test_la_muestra_y_la_lectura_con_el_codigo_que_se_le_da(self):

@@ -562,7 +562,7 @@ DIAS_SEMANA = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 REGLA_FECHA = """La fecha que lleva delante cada noticia es el día en que se publicó (con su día de la semana), no el día del hecho: muchas
 cuentan lo que pasó el día anterior. Pon el día de un hecho solo si la noticia dice cuándo fue («ayer», «el jueves»,
 «el 12 de noviembre»), contándolo desde el día de publicación. Si no lo dice, no escribas «el 13 de noviembre hizo X»:
-di «según noticias del 13 de noviembre» o no pongas día."""
+cuenta el hecho sin día y, si quieres decir de cuándo es, ponlo al final entre paréntesis: «(noticias del 13 de noviembre)»."""
 
 
 INSTRUCCIONES = """Eres el analista de prensa de una web privada de inversión de un inversor particular español.
@@ -1083,6 +1083,10 @@ def citadas_por_peso(r, fuentes, s):
 # en el encargo se comprueba aquí: tiene que apoyarse en alguna noticia de peso que no sea una comparación entre acciones,
 # una lista o lo que hace un fondo. Con los datos del 14 nov, 9 de 12.164 titulares marcados son de esos y llevan peso 3, y
 # ninguna de las 173 lecturas de relevancia 3 se apoya solo en ellos: es una red para un caso raro, no un filtro.
+# OJO con el encargo: en el primer ensayo decía además «el peso 3 y "rel" 3 son la excepción», y Haiku bajó la relevancia de
+# todo (de 27 y 32 lecturas con 3, de 120, a 12 y 8; una opa de exclusión se quedó en 2). Ahora solo habla de la mención de
+# pasada. Lo que sí enseñó ese ensayo: la relevancia 3 baila (de 30 lecturas publicadas con 3, releídas con el mismo código
+# salieron 3 solo 12 y 16).
 DE_PASADA = re.compile(
     r"\bvs\.?(?!\w)"                                                             # «Abbott vs. Medtronic»
     r"|^[^:?]{2,60}\b(or|o)\b[^:?]{2,60}[:?]"                                     # «Visa or Mastercard: I Can Only Pick One…»
@@ -1142,11 +1146,9 @@ con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni mal
 {REGLA_FECHA}
 Cuando una noticia dice «la misma nota, repetida», es una sola noticia aunque salga en varios medios o varias veces: no
 pesa más por repetirse.
-El peso 3 y "rel" 3 son la excepción: un hecho que cambia lo que vale la empresa (por ejemplo, resultados o previsiones
-muy lejos de lo esperado, una opa, un fraude, una sanción grave, la salida de su primer ejecutivo) y que es el asunto de
-al menos una de sus noticias. Lo que solo se menciona de pasada en un artículo que va de otra cosa (una comparación entre dos
-acciones, una lista de acciones o de dividendos, lo que compra o vende un fondo) no pasa de 2, y dilo en la frase («lo
-menciona de pasada un artículo sobre…»).
+Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa. Lo que solo se menciona
+de pasada en un artículo que va de otra cosa (una comparación entre dos acciones, una lista de acciones o de dividendos,
+lo que compra o vende un fondo) no pasa de 2 por sí solo, y dilo en la frase («lo menciona de pasada un artículo sobre…»).
 Responde con un objeto JSON:
 {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "lo que puede moverla y cuándo, o vacío", "fuentes": [números],
   "tit": {"<número>": ["factor", "signo", peso]},
