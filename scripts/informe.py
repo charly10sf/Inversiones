@@ -532,7 +532,7 @@ def unidad_mercado(sim, v):
 def dia_del_dato(v, hoy=None):
     """«hoy», o de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir)."""
     fecha = str(v.get("fecha") or "")[:10]
-    return f"el {fecha}, su última sesión (no es de hoy)" if fecha and fecha < (hoy or hoy_madrid()) else "hoy"
+    return f"el {fecha}, su última sesión" if fecha and fecha < (hoy or hoy_madrid()) else "hoy"
 
 
 def hoy_madrid():
@@ -593,12 +593,15 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
 - Cada dato de mercado lleva su unidad (puntos, %, dólares por barril, euros…) y los precios de las posiciones van en
   euros. La prensa suele dar el bitcoin, el oro o el petróleo en dólares: no es un error ni un dato que no cuadre; con
   «Euros por cada unidad de» sale la cuenta (70.000 dólares × 0,907 = 63.500 euros). No avises de que un precio «parece
-  estar en otra moneda». Si un dato de mercado dice de qué día es («el 2026-11-13, su última sesión»), tampoco es de hoy.
+  estar en otra moneda». Si un dato de mercado dice de qué día es («el 2026-11-13, su última sesión»), no es de hoy: di
+  el día («el viernes el S&P 500 bajó un 0,4 %»), no «hoy».
 - Fuentes: cuando una noticia dice «la misma nota sale también en…», es una sola fuente aunque la publiquen varios medios;
   dos fuentes son dos medios que lo cuentan cada uno por su lado.
-- Alertas: «alta» solo si lo cuentan dos fuentes distintas (ponlas en "fuentes") o lo confirma un dato de los que te doy
-  (un precio o un movimiento de «Datos» o de la posición, no una cifra de un titular): cópialo en "dato". Con una sola
-  fuente y sin dato propio, «media», y dilo en el texto («según un solo medio»).
+- Alertas: la urgencia «alta» es la excepción, para lo que puede cambiar en pocos días lo que vale una posición; como
+  mucho dos, y lo demás «media». Y «alta» solo si lo cuentan dos fuentes distintas (ponlas en "fuentes") o lo confirma un
+  dato de los que te doy (un precio o un movimiento de «Datos» o de la posición, no una cifra de un titular): copia en
+  "dato" solo esa cifra («Bitcoin -3,94 % hoy»). Con una sola fuente y sin dato propio, «media», y dilo en el texto
+  («según un solo medio»).
 - "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
   positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
@@ -661,6 +664,9 @@ def dato_propio(dato, datos_txt):
     return False
 
 
+ALTAS_MAX = 2
+
+
 def asentar_alertas(inf, fuentes, texto):
     """14 nov 2026 (auditoría): una alerta alta pide dos fuentes o un dato propio. La primera alerta del informe del 13 nov
     («la Fed podría subir tipos en diciembre, probabilidad del 93,5 %», urgencia alta) salía de un solo titular de
@@ -686,6 +692,11 @@ def asentar_alertas(inf, fuentes, texto):
         if a.get("urgencia") == "alta" and fuentes_distintas(fs) < 2 and not con_dato:
             a["urgencia"] = "media"
             a["rebajada"] = 1
+        # y como mucho ALTAS_MAX altas (las primeras): en el primer ensayo, con la regla nueva, la IA puso «alta» a todo lo que
+        # tenía dos fuentes (4 de 4 alertas; con el encargo de antes daba 2)
+        elif a.get("urgencia") == "alta" and sum(1 for x in out if x.get("urgencia") == "alta") >= ALTAS_MAX:
+            a["urgencia"] = "media"
+            a["rebajada"] = 2
         out.append(a)
     inf["alertas"] = out
     return inf
@@ -1393,7 +1404,8 @@ def contexto_zonas(precios):
     grupos = {}
     for v in (precios.get("mercados") or {}).values():
         r = v.get("rent") or {}
-        grupos.setdefault(v.get("grupo") or "Otros", []).append(f"{v.get('nombre')} {v.get('variacion_dia')} % hoy, {r.get('1m')} % mes, {r.get('ytd')} % año")
+        # 14 nov 2026 (auditoría): con el día del dato si no es de hoy (el sábado decía «hoy» del cierre del viernes)
+        grupos.setdefault(v.get("grupo") or "Otros", []).append(f"{v.get('nombre')} {v.get('variacion_dia')} % {dia_del_dato(v)}, {r.get('1m')} % mes, {r.get('ytd')} % año")
     return "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
 
 

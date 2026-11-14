@@ -144,6 +144,13 @@ class AlertaAlta(unittest.TestCase):
         # ni un número redondo pequeño que sale en cualquier parte («S&P 500», «10 años»)
         self.assertEqual(self.alerta(dato="el S&P 500 y el bono a 10 años")["urgencia"], "media")
 
+    def test_como_mucho_dos_altas(self):
+        inf = {"alertas": [{"t": f"alerta {k}", "id": "btc", "urgencia": "alta", "fuentes": [1, 2]} for k in range(4)]}
+        out = I.asentar_alertas(inf, self.FUENTES, self.TEXTO)["alertas"]
+        self.assertEqual([a["urgencia"] for a in out], ["alta", "alta", "media", "media"])
+        self.assertEqual([a.get("rebajada") for a in out], [None, None, 2, 2])
+        self.assertIn("como\n  mucho dos", I.INSTRUCCIONES)
+
     def test_una_alerta_media_no_se_toca(self):
         inf = I.asentar_alertas({"alertas": [{"t": "x", "id": "btc", "urgencia": "media"}, "rota", {"id": "sin texto"}]}, self.FUENTES, self.TEXTO)
         self.assertEqual(inf["alertas"], [{"t": "x", "id": "btc", "urgencia": "media", "fuentes": []}])
@@ -188,8 +195,19 @@ class UnidadesDeMercado(unittest.TestCase):
 
     def test_el_dato_del_viernes_no_es_de_hoy_el_sabado(self):
         t = self.material()
-        self.assertIn("S&P 500 7561.67 puntos (-0.4 % el 2026-11-13, su última sesión (no es de hoy),", t)
+        self.assertIn("S&P 500 7561.67 puntos (-0.4 % el 2026-11-13, su última sesión,", t)
+        self.assertIn("no es de hoy: di\n  el día", I.INSTRUCCIONES)
         self.assertIn("Bitcoin 61957.5 euros (-4.0 % hoy,", t)
+
+    def test_la_decision_tampoco_llama_hoy_al_cierre_del_viernes(self):
+        guard = I.hoy_madrid
+        I.hoy_madrid = lambda: "2026-11-14"
+        try:
+            z = I.contexto_zonas({"mercados": self.MERCADOS})
+        finally:
+            I.hoy_madrid = guard
+        self.assertIn("S&P 500 -0.4 % el 2026-11-13, su última sesión,", z)
+        self.assertIn("Bitcoin -4.0 % hoy,", z)
 
     def test_el_encargo_lo_explica(self):
         self.assertIn("los precios de las posiciones van en\n  euros", I.INSTRUCCIONES)
