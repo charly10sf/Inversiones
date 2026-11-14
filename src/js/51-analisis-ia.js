@@ -227,6 +227,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     if (turno.estandar && pedido) await arreglarConsejosRevision(json, { ...pedido, texto, idPregunta, turno });
+    if (json.puntuaciones) json.puntuaciones = notasDe5(json.puntuaciones);
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
     // publico: hecha con las reglas del estándar; modo: el de la app cuando se hizo (para rehacerla si cambias de modo)

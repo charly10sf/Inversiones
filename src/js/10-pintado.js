@@ -220,6 +220,16 @@ function datoMerc(sym) {
   return { precio: v ? v.precio : m.precio, var: v && v.var != null ? v.var : m.variacion_dia };
 }
 
+/* 14 nov (auditoría): el encargo de la revisión no decía la escala de las notas y Haiku las pone unas veces de 1 a 5 y otras
+   de 1 a 10 (7 de 12 vueltas del banco de la revisión: «Costes 8», «Disciplina 7», «Riesgo 5»). La app las pinta «de 5»:
+   Inicio las recortaba a 5 (un «Riesgo 5» sobre 10 salía con los cinco puntos encendidos) y la pestaña de la IA decía
+   «8 de 5». Si alguna pasa de 5, es que van de 1 a 10: todas a la mitad. */
+function notasDe5(puntuaciones) {
+  const l = (Array.isArray(puntuaciones) ? puntuaciones : []).filter((x) => x && typeof x === 'object');
+  const de10 = l.some((x) => +x.nota > 5);
+  return l.map((x) => ({ ...x, nota: Math.max(0, Math.min(5, Math.round((+x.nota || 0) / (de10 ? 2 : 1)))) }));
+}
+
 function porPlataforma(M) {
   const m = new Map();
   const add = (k, v, dia) => { const o = m.get(k) || { v: 0, dia: 0 }; o.v += v; o.dia += dia; m.set(k, o); };

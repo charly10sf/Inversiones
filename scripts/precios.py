@@ -30,6 +30,7 @@ import email.utils
 import json
 import math
 import re
+import unicodedata
 import sys
 import time
 import traceback
@@ -610,18 +611,67 @@ def web_medio(it):
     return re.sub(r"^www\.", "", host.lower()) or None
 
 
+# 14 nov 2026 (auditoría): la misma nota en varios medios contaba como varias fuentes. Los repetidos se quitaban por los 60
+# primeros caracteres del titular, y «El secretario del Tesoro de EEUU rechaza más subidas de tipos de la Fed» (El Boletín),
+# «…, contrario a subir tipos: "No es algo que yo haría…"» (El Confidencial) y «… rechaza más subidas de tipos: No es algo
+# que yo haría…» (Demócrata) pasaban por tres. Ahora dos titulares son la misma nota si comparten casi todas sus palabras.
+_VACIAS = set("el la los las un una unos unas de del al y o u en por para con sin que se su sus lo a e es no mas como tras ante "
+              "sobre entre desde hasta hoy ayer enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre "
+              "diciembre the of and to in on for as at by is its with from after amid".split())
+
+
+def palabras_nota(t):
+    """Las palabras que cuentan de un titular: sin tildes, sin artículos ni preposiciones, con las cifras enteras (3,36)."""
+    s = "".join(c for c in unicodedata.normalize("NFD", str(t or "").lower()) if unicodedata.category(c) != "Mn")
+    return {w for w in re.findall(r"[a-z0-9]+(?:[.,][0-9]+)*", s) if (len(w) >= 3 or w[0].isdigit()) and w not in _VACIAS}
+
+
+def misma_nota(a, b):
+    """Si dos titulares cuentan lo mismo: comparten 4 palabras o más y al menos el 60 % de las del más corto. Dos titulares
+    iguales, siempre."""
+    if re.sub(r"\W+", "", str(a or "").lower())[:60] == re.sub(r"\W+", "", str(b or "").lower())[:60]:
+        return True
+    pa, pb = palabras_nota(a), palabras_nota(b)
+    comun, menor = len(pa & pb), min(len(pa), len(pb))
+    return menor >= 4 and comun >= 4 and comun / menor >= 0.6
+
+
+def agrupar_notas(lista):
+    """La lista sin las notas repetidas, en el mismo orden: de cada nota se queda el primer titular y en «mas» los otros
+    medios que la traen (hasta 4)."""
+    grupos = []
+    for x in lista:
+        if not isinstance(x, dict) or not x.get("t"):
+            continue
+        for g in grupos:
+            if any(misma_nota(x["t"], y["t"]) for y in g):
+                g.append(x)
+                break
+        else:
+            grupos.append([x])
+    out = []
+    for g in grupos:
+        uno = dict(g[0])
+        medios = []
+        for y in g:
+            for m in [y.get("f")] + list(y.get("mas") or []):
+                if m and m != uno.get("f") and m not in medios:
+                    medios.append(m)
+        if medios:
+            uno["mas"] = medios[:4]
+        else:
+            uno.pop("mas", None)
+        out.append(uno)
+    return out
+
+
 def elegir_mercado(lista, por_zona=None, total=None):
-    """Los titulares de mercado que se guardan: sin repetidos, hasta por_zona de cada zona (los más nuevos) y el resto por
-    fecha hasta total; de más nuevo a más viejo."""
+    """Los titulares de mercado que se guardan: sin notas repetidas (agrupar_notas), hasta por_zona de cada zona (los más
+    nuevos) y el resto por fecha hasta total; de más nuevo a más viejo."""
     por_zona = NOTICIAS_POR_ZONA if por_zona is None else por_zona
     total = NOTICIAS_MERCADO_MAX if total is None else total
     m = sorted(lista, key=lambda x: x.get("d") or "", reverse=True)
-    vistos, unicos = set(), []
-    for x in m:
-        k = re.sub(r"\W+", "", x["t"].lower())[:60]
-        if k not in vistos:
-            vistos.add(k)
-            unicos.append(x)
+    unicos = agrupar_notas(m)
     zonas = {}
     for x in unicos:
         zonas.setdefault(x.get("z"), []).append(x)

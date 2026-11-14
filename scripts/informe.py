@@ -47,6 +47,7 @@ import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
 # 9 nov 2026: precios.json guarda ahora hasta 60 titulares de mercado (para la página de Noticias); la IA sigue leyendo
 # 30, hasta 3 por zona, como antes: ni más gasto ni menos zonas
 elegir_mercado = P.elegir_mercado
+agrupar_notas = P.agrupar_notas
 import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
@@ -450,11 +451,13 @@ def material(instrumentos, precios, radar):
 
     def citar(lista):
         lineas = []
-        for x in lista:
-            fuentes.append({"t": x["t"], "u": x.get("u"), "f": x.get("f"), "d": x.get("d")})
+        # 14 nov 2026 (auditoría): la misma nota en varios medios va una sola vez y dice en cuáles más sale
+        for x in agrupar_notas(lista):
+            fuentes.append({"t": x["t"], "u": x.get("u"), "f": x.get("f"), "d": x.get("d"), **({"mas": x["mas"]} if x.get("mas") else {})})
             n = len(fuentes)
             zona = f" ({x['z']})" if x.get("z") else ""
-            lineas.append(f"[{n}] {(x.get('d') or '')[:10]} {x.get('f') or ''}{zona}: {x['t']}" + (f" — {x['r']}" if x.get("r") else ""))
+            mas = f" [la misma nota sale también en {', '.join(x['mas'])}: es una sola fuente]" if x.get("mas") else ""
+            lineas.append(f"[{n}] {(x.get('d') or '')[:10]} {x.get('f') or ''}{zona}: {x['t']}" + (f" — {x['r']}" if x.get("r") else "") + mas)
         return lineas
 
     N = precios.get("noticias") or {}
@@ -465,10 +468,11 @@ def material(instrumentos, precios, radar):
         merc += noticias_yahoo(s, 3)
     mm = precios.get("mercados") or {}
     grupos = {}
-    for v in mm.values():
+    hoy = hoy_madrid()
+    for sim, v in mm.items():
         r = v.get("rent") or {}
         grupos.setdefault(v.get("grupo") or "Otros", []).append(
-            f"{v.get('nombre')} {round(v['precio'], 4) if isinstance(v.get('precio'), (int, float)) else v.get('precio')} ({v.get('variacion_dia')} % hoy, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
+            f"{v.get('nombre')} {round(v['precio'], 4) if isinstance(v.get('precio'), (int, float)) else v.get('precio')}{unidad_mercado(sim, v)} ({v.get('variacion_dia')} % {dia_del_dato(v, hoy)}, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
     datos_m = "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
     fx = precios.get("fx") or {}
     if fx:
@@ -503,6 +507,32 @@ def material(instrumentos, precios, radar):
         lista = list(NI.get(s) or [])[:5] + noticias_yahoo(s, 5)
         bloques.append(f"## Idea {s}\n{datos}\n" + "\n".join(citar(lista)))
     return "\n\n".join(bloques), fuentes
+
+
+# 14 nov 2026 (auditoría): los datos de mercado iban sin unidad («Bitcoin 62.576,99» en euros y «Brent 95,94» en dólares).
+# El informe del 13 nov sacó una alerta alta: «el precio en euros de la posición [de bitcoin] parece estar en dólares», porque
+# la prensa hablaba de 70.000 dólares y el dato decía 61.963 sin más.
+UNIDAD_MERCADO = {"^TNX": " % (rentabilidad del bono, no un precio)", "^IRX": " % (rentabilidad de la letra, no un precio)", "^VIX": " puntos",
+                  "DX-Y.NYB": " puntos", "EURUSD=X": " dólares por euro", "EURGBP=X": " libras por euro", "JPY=X": " yenes por dólar",
+                  "BZ=F": " dólares por barril", "GC=F": " dólares por onza", "SI=F": " dólares por onza", "HG=F": " dólares por libra de peso",
+                  "NG=F": " dólares por millón de BTU", "BTC-EUR": " euros"}
+MONEDA_PALABRA = {"EUR": "euros", "USD": "dólares", "GBP": "libras", "JPY": "yenes", "CHF": "francos suizos"}
+
+
+def unidad_mercado(sim, v):
+    """En qué va la cifra de un dato de mercado: los índices, en puntos; los tipos, en %; las divisas, las materias primas y
+    la cripto, en su moneda."""
+    if sim in UNIDAD_MERCADO:
+        return UNIDAD_MERCADO[sim]
+    if str(sim).startswith("^") or v.get("grupo") in ("Europa", "EEUU", "Asia y emergentes"):
+        return " puntos"
+    return f" {MONEDA_PALABRA.get(v.get('moneda'), v.get('moneda'))}" if v.get("moneda") else ""
+
+
+def dia_del_dato(v, hoy=None):
+    """«hoy», o de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir)."""
+    fecha = str(v.get("fecha") or "")[:10]
+    return f"el {fecha}, su última sesión (no es de hoy)" if fecha and fecha < (hoy or hoy_madrid()) else "hoy"
 
 
 def hoy_madrid():
@@ -560,6 +590,15 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   con uno o dos días de retraso. Ese movimiento no es de hoy: no lo llames «hoy» ni lo compares con lo que hacen hoy los
   índices; di de qué día es («su último valor, del 11 de noviembre, subió un 1,9 %») y, para hoy, lo que hacen los
   mercados que sigue. No digas que el dato no cuadra.
+- Cada dato de mercado lleva su unidad (puntos, %, dólares por barril, euros…) y los precios de las posiciones van en
+  euros. La prensa suele dar el bitcoin, el oro o el petróleo en dólares: no es un error ni un dato que no cuadre; con
+  «Euros por cada unidad de» sale la cuenta (70.000 dólares × 0,907 = 63.500 euros). No avises de que un precio «parece
+  estar en otra moneda». Si un dato de mercado dice de qué día es («el 2026-11-13, su última sesión»), tampoco es de hoy.
+- Fuentes: cuando una noticia dice «la misma nota sale también en…», es una sola fuente aunque la publiquen varios medios;
+  dos fuentes son dos medios que lo cuentan cada uno por su lado.
+- Alertas: «alta» solo si lo cuentan dos fuentes distintas (ponlas en "fuentes") o lo confirma un dato de los que te doy
+  (un precio o un movimiento de «Datos» o de la posición, no una cifra de un titular): cópialo en "dato". Con una sola
+  fuente y sin dato propio, «media», y dilo en el texto («según un solo medio»).
 - "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
   positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
@@ -568,10 +607,88 @@ Responde solo con un bloque ```json con este formato:
   "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral|mixto", "fuentes": [1, 2]}],
   "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra, escrita a la española: coma decimal y espacio antes del % (5,12 %; 1,1235)", "lectura": "una frase"}],
   "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
-  "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
+  "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media", "fuentes": [1, 2], "dato": "el dato propio que lo confirma, tal cual viene, o vacío"}]
 }
 Una entrada en "posiciones" por cada posición. "mercado": de 4 a 7, de al menos tres zonas distintas si
 hay noticias de ellas. "macro": de 0 a 5, solo los que tengan su cifra en los datos, en las noticias o en lo que encuentres. "alertas": de 0 a 4."""
+
+
+def fuentes_distintas(fs):
+    """Cuántas fuentes de verdad hay en una lista de noticias: dos del mismo medio, o la misma nota en dos medios, cuentan
+    como una."""
+    fs = [f for f in fs if isinstance(f, dict) and f.get("t")]
+    grupo = list(range(len(fs)))
+
+    def raiz(i):
+        while grupo[i] != i:
+            i = grupo[i]
+        return i
+    for i in range(len(fs)):
+        for j in range(i):
+            mi, mj = _llano(fs[i].get("f")).strip(), _llano(fs[j].get("f")).strip()
+            # Yahoo Finance no es un medio: reúne los de otros
+            mismo_medio = mi and mi == mj and mi != "yahoo finance"
+            if mismo_medio or P.misma_nota(fs[i]["t"], fs[j]["t"]):
+                grupo[raiz(i)] = raiz(j)
+    return len({raiz(i) for i in range(len(fs))})
+
+
+def _cifras(texto, a_la_espanola=False):
+    """Las cifras de un texto, con sus decimales: [(valor, decimales)]. A la española, «62.576,99» y «5,15»."""
+    out = []
+    for m in re.findall(r"\d[\d.,]*", str(texto or "")):
+        m = m.rstrip(".,")
+        cands = [m.replace(".", "").replace(",", ".")] if a_la_espanola else []
+        cands.append(m.replace(",", "") if not a_la_espanola else m.replace(",", "."))
+        for c in cands:
+            try:
+                out.append((float(c), len(c.split(".")[1]) if "." in c else 0))
+            except ValueError:
+                continue
+    return out
+
+
+def dato_propio(dato, datos_txt):
+    """Si el «dato» de una alerta está de verdad en los datos que se le dieron a la IA (no en los titulares): alguna de sus
+    cifras, con decimales o de cuatro dígitos o más, coincide con una de los datos al redondear."""
+    propios = [abs(v) for v, _ in _cifras(datos_txt)]
+    for v, dec in _cifras(dato, a_la_espanola=True):
+        if dec == 0 and v < 1000:
+            continue  # «10 años», «S&P 500», «3 meses»: no son un dato
+        margen = 0.5 * 10 ** -dec + 1e-9
+        if any(abs(p - v) <= margen for p in propios):
+            return True
+    return False
+
+
+def asentar_alertas(inf, fuentes, texto):
+    """14 nov 2026 (auditoría): una alerta alta pide dos fuentes o un dato propio. La primera alerta del informe del 13 nov
+    («la Fed podría subir tipos en diciembre, probabilidad del 93,5 %», urgencia alta) salía de un solo titular de
+    Cryptonews.net. La IA cita ahora las noticias de cada alerta y el dato que la confirma; aquí se comprueba: con menos de
+    dos fuentes distintas y sin un dato que esté en lo que se le dio, la alerta baja a «media»."""
+    datos_txt = "\n".join(x for x in str(texto or "").splitlines() if not re.match(r"\s*\[\d+\]", x))
+    out = []
+    for a in inf.get("alertas") or []:
+        if not isinstance(a, dict) or not a.get("t"):
+            continue
+        fs = []
+        for n in a.get("fuentes") or []:
+            try:
+                f = fuentes[int(n) - 1]
+            except (ValueError, IndexError, TypeError):
+                continue
+            if f not in fs:
+                fs.append(f)
+        a = {**a, "fuentes": [f for f in fs if f.get("u")][:4]}
+        con_dato = bool(a.get("dato")) and dato_propio(a.get("dato"), datos_txt)
+        if not con_dato:
+            a.pop("dato", None)
+        if a.get("urgencia") == "alta" and fuentes_distintas(fs) < 2 and not con_dato:
+            a["urgencia"] = "media"
+            a["rebajada"] = 1
+        out.append(a)
+    inf["alertas"] = out
+    return inf
 
 
 def marcar(dir_salida, clave_id, valor):
@@ -645,6 +762,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
     for v in inf.get("mercado") or []:
         if isinstance(v, dict):
             v["fuentes"] = fuentes_de(v.get("fuentes"))
+    asentar_alertas(inf, fuentes, texto)
     inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda": busqueda, "web": web[:15]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
@@ -656,7 +774,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
 # ---------------------------------------------------------------- escaneo de toda la bolsa
 
 def nombre_corto(n, s):
-    n = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company)\b.*$", "", n or "")
+    n = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|p\.l\.c\.|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company|Aktiengesellschaft|A/S|KGaA|SGPS|\(publ\))(?![\w])(.*)$", "", n or "")
     return n.split(",")[0].strip() or s
 
 
@@ -688,13 +806,48 @@ def mezclar(cache, sim, nuevas, campo):
     e[campo] = ahora()
 
 
+# 14 nov 2026 (auditoría): la prensa en español (Google Noticias) solo la veían las 98 españolas, cada 50 minutos; las otras
+# 2.716 empresas, nunca. Y de las europeas, 330 de 1.063 no tienen en Yahoo ni un titular que las nombre (E.ON, Prosus,
+# Beiersdorf, British American Tobacco, Prudential, Ørsted…): la IA no tenía nada suyo que leer. Ahora las españolas se
+# repasan cada 3 horas y el resto del cupo de cada pasada es para esas europeas, cada 12 horas. El mismo número de consultas.
+HORAS_GOOGLE_ES = 3
+HORAS_GOOGLE_EU = 12
+
+
+def de_google(n):
+    return "news.google." in str(n.get("u") or "")
+
+
+def sin_titular_propio(cache, x):
+    """Si a la empresa ya la ha mirado Yahoo y no tiene de allí ni un titular que la nombre."""
+    e = cache.get(x["s"]) or {}
+    return bool(e.get("fy")) and not any(nombra(x, n) for n in (e.get("n") or []) if not de_google(n))
+
+
+def lote_google(cache, valores, ahora_dt=None):
+    """Las empresas a las que toca mirar la prensa en español en esta pasada: primero las españolas que llevan más de
+    HORAS_GOOGLE_ES sin mirarse y, con lo que quede del cupo, las europeas sin titulares propios en Yahoo que llevan más de
+    HORAS_GOOGLE_EU; en los dos grupos, antes las que más tiempo llevan."""
+    ahora_dt = ahora_dt or dt.datetime.now(dt.timezone.utc)
+
+    def fg(x):
+        return (cache.get(x["s"]) or {}).get("fg") or ""
+
+    def toca(x, horas):
+        d = cuando(fg(x)) if fg(x) else None
+        return d is None or ahora_dt - d >= dt.timedelta(hours=horas)
+    es = sorted((x for x in valores if x.get("z") == "España" and toca(x, HORAS_GOOGLE_ES)), key=fg)[:LOTE_GOOGLE]
+    eu = sorted((x for x in valores if x.get("z") == "Europa" and toca(x, HORAS_GOOGLE_EU) and sin_titular_propio(cache, x)), key=fg)
+    return es + eu[: max(0, LOTE_GOOGLE - len(es))]
+
+
 def actualizar_noticias(cache, valores):
     """Noticias de las empresas que más tiempo llevan sin mirar (las nuevas, primero)."""
     lote = sorted(valores, key=lambda x: (cache.get(x["s"]) or {}).get("fy") or "")[:LOTE_YAHOO]
     with cf.ThreadPoolExecutor(max_workers=HILOS_YAHOO) as ex:
         for x, ns in ex.map(lambda x: (x, noticias_yahoo(x["s"], 6)), lote):
             mezclar(cache, x["s"], ns, "fy")
-    lote_g = sorted(valores, key=lambda x: (x.get("z") != "España", (cache.get(x["s"]) or {}).get("fg") or ""))[:LOTE_GOOGLE]
+    lote_g = lote_google(cache, valores)
     for x in lote_g:
         nombre = nombre_corto(x.get("n"), x["s"])
         try:
@@ -1172,6 +1325,11 @@ def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
         cupo -= 1
         if previas:
             cam.append(cambio(s, i.get("n"), "evitar" if reciente(s, "evitar") else "nada", "idea", (dice.get(s) or {}).get("motivo") or i.get("tesis"), i.get("fuentes")))
+    # 14 nov 2026 (auditoría): el orden es el de la IA de hoy, no el de la vez anterior. Antes las que seguían conservaban
+    # su puesto: en el ensayo la IA ponía Western Digital la última, con confianza baja, y en la app seguía de idea n.º 1.
+    # Las que la IA ya no propone y siguen por constancia («sigue») van detrás, en el orden que tenían.
+    puesto = {i["s"]: k for k, i in enumerate(ideas)}
+    out.sort(key=lambda o: (0, puesto[o["s"]]) if o["s"] in puesto else (1, 0))
     ids = {o["s"] for o in out}
     ev = []
     for e in evitar:

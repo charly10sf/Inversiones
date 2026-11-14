@@ -45,6 +45,17 @@ function aEuros(p, moneda) {
   return fx[moneda] ? p * fx[moneda] : null;
 }
 
+/* 14 nov (auditoría): Bitvavo manda el cambio de las últimas 24 horas (ticker24h: «last» frente a «open»). En Mercados salía
+   como «hoy», y la posición de bitcoin mide «hoy» desde su último cierre (0.8.6c, «hoy es hoy»): dos «hoy» distintos del
+   mismo bitcoin, también en lo que lee la IA. Aquí, el de la posición: desde el cierre anterior de precios.json si su dato es
+   de hoy y, si es de un día anterior, desde ese último precio. */
+function varHoyMercado(sym, precio) {
+  const m = S.precios && S.precios.mercados && S.precios.mercados[sym];
+  if (!m || !(precio > 0)) return null;
+  const ref = m.fecha && m.fecha >= hoyIso() ? m.cierre_anterior : m.precio;
+  return ref > 0 ? (precio / ref - 1) * 100 : null;
+}
+
 const LIVE = {
   yahoo: 'off', bitvavo: 'off', wsY: null, wsB: null, mapaY: {}, mapaB: {}, mercY: new Set(), mercB: new Set(), radarY: new Set(), latido: null, esperaY: 1000, esperaB: 1000,
   mapas() {
@@ -123,6 +134,15 @@ const LIVE = {
     }
     programarParche();
   },
+  alTickerBitvavo(d) {
+    const last = +d.last, open = +d.open;
+    if (!(last > 0)) return;
+    const v = { precio: last, var: open > 0 ? (last / open - 1) * 100 : null, t: d.timestamp || Date.now(), fuente: 'Bitvavo' };
+    const id = this.mapaB[d.market];
+    if (id) S.live[id] = v;
+    // 14 nov (auditoría): en Mercados, lo de hoy y no lo de las últimas 24 horas (varHoyMercado)
+    if (this.mercB.has(d.market)) { const vh = varHoyMercado(d.market, last); S.liveM[d.market] = vh != null ? { ...v, var: vh } : v; }
+  },
   conectarBitvavo() {
     const mercados = [...new Set([...Object.keys(this.mapaB), ...this.mercB])];
     if (!mercados.length || typeof WebSocket === 'undefined') return;
@@ -134,14 +154,7 @@ const LIVE = {
     ws.onmessage = (e) => {
       let j; try { j = JSON.parse(e.data); } catch (err) { return; }
       if (!j || j.event !== 'ticker24h' || !Array.isArray(j.data)) return;
-      for (const d of j.data) {
-        const last = +d.last, open = +d.open;
-        if (!(last > 0)) continue;
-        const v = { precio: last, var: open > 0 ? (last / open - 1) * 100 : null, t: d.timestamp || Date.now(), fuente: 'Bitvavo' };
-        const id = this.mapaB[d.market];
-        if (id) S.live[id] = v;
-        if (this.mercB.has(d.market)) S.liveM[d.market] = v;
-      }
+      for (const d of j.data) this.alTickerBitvavo(d);
       programarParche();
     };
     ws.onclose = () => {
