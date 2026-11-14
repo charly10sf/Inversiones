@@ -26,6 +26,14 @@ on:
         description: "Solo con ensayo: hasta dónde se traduce en esta pasada (todo, esencial o nada). Vacío: lo que diga la variable TRADUCIR_ALCANCE"
         type: string
         default: ""
+      solo_comparar:
+        description: "Solo con ensayo: no hace la pasada; compara el código de main y el de esta rama sobre lo último publicado en la rama datos"
+        type: boolean
+        default: false
+      lecturas:
+        description: "Solo con ensayo y comparación: cuántas empresas se leen de cero lado a lado, dos veces con cada código (0: ninguna)"
+        type: string
+        default: "0"
   push:
     branches: [main]
     paths:
@@ -43,6 +51,8 @@ concurrency:
 
 jobs:
   precios:
+    # 14 nov 2026 (auditoría): un ensayo con «solo_comparar» no hace la pasada (ni la paga): compara sobre lo ya publicado
+    if: ${{ !(inputs.ensayo && inputs.solo_comparar) }}
     runs-on: ubuntu-latest
     # 13 nov 2026 (auditoría): eran 20. Tras la noche o el fin de semana la pasada (precios 5-7 min, la IA 12-14 y la
     # traducción) no cabía, se cortaba sin publicar y lo ya cobrado por Claude se tiraba: el 7 nov, 10 de 12 pasadas; entre
@@ -235,9 +245,12 @@ jobs:
   # 13 nov 2026 (auditoría): con «ensayo» y «comparar», la decisión de las ideas y el informe de la cartera tres veces
   # sobre los datos que acaba de dejar la pasada: con el código de main, con el de esta rama y con el de esta rama y el
   # modelo de «comparar». Lado a lado, sin publicar nada; queda en el artefacto «ensayo-comparacion».
+  # 14 nov 2026 (auditoría): con «solo_comparar» no espera a la pasada y usa lo último de la rama datos; con «lecturas», lee
+  # además la prensa de ese número de empresas con los dos códigos, dos veces con cada uno (para separar lo que cambia el
+  # código de lo que baila la IA de una vez a otra). «comparar» puede ir vacío: entonces no hay tercer modelo.
   comparar:
     needs: precios
-    if: ${{ inputs.ensayo && inputs.comparar != '' }}
+    if: ${{ always() && inputs.ensayo && (inputs.comparar != '' || inputs.solo_comparar) && (needs.precios.result == 'success' || needs.precios.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -253,9 +266,19 @@ jobs:
         run: pip install -r scripts/requirements.txt
 
       - uses: actions/download-artifact@v4
+        if: ${{ !inputs.solo_comparar }}
         with:
           name: ensayo-pasada
           path: ensayo-pasada
+
+      - name: Lo último publicado en la rama datos
+        if: ${{ inputs.solo_comparar }}
+        run: |
+          git fetch -q --depth=1 origin datos
+          mkdir -p ensayo-pasada
+          git archive FETCH_HEAD radar.json radar-mas.json precios.json noticias-cache.json escaneo.json informe.json fichas.json fichas-mas.json | tar -x -C ensayo-pasada
+          cp ensayo-pasada/escaneo.json ensayo-pasada/escaneo-anterior.json
+          cp ensayo-pasada/informe.json ensayo-pasada/informe-anterior.json
 
       - name: Los scripts de main, aparte
         run: |
@@ -267,11 +290,20 @@ jobs:
         env:
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
           OTRO_MODELO: ${{ inputs.comparar }}
+          LECTURAS: ${{ inputs.lecturas }}
+          ENSAYO_SIEMPRE: "PEP,CTVA,NVDA"
         run: |
           mkdir -p comparacion
           python scripts/ensayo_comparar.py /tmp/main/scripts main instrumentos.json ensayo-pasada comparacion > comparacion/registro-main.txt 2>&1 &
           python scripts/ensayo_comparar.py scripts rama instrumentos.json ensayo-pasada comparacion > comparacion/registro-rama.txt 2>&1 &
-          python scripts/ensayo_comparar.py scripts otro instrumentos.json ensayo-pasada comparacion "$OTRO_MODELO" solo-decision > comparacion/registro-otro.txt 2>&1 &
+          if [ -n "$OTRO_MODELO" ]; then
+            python scripts/ensayo_comparar.py scripts otro instrumentos.json ensayo-pasada comparacion "$OTRO_MODELO" solo-decision > comparacion/registro-otro.txt 2>&1 &
+          fi
+          if [ "${LECTURAS:-0}" -gt 0 ] 2>/dev/null; then
+            python scripts/ensayo_comparar.py --muestra scripts ensayo-pasada comparacion/muestra.json "$LECTURAS" | tee comparacion/registro-muestra.txt
+            for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+            for e in rama rama2; do python scripts/ensayo_comparar.py --lecturas scripts $e ensayo-pasada comparacion > comparacion/registro-lecturas-$e.txt 2>&1 & done
+          fi
           wait
           tail -n 8 comparacion/registro-*.txt
 

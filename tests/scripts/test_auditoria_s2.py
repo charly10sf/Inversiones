@@ -378,7 +378,8 @@ class EnsayoLadoALado(unittest.TestCase):
     def test_el_ensayo_no_publica_y_guarda_el_artefacto(self):
         yml = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8")
         self.assertIn("name: ensayo-pasada", yml)
-        self.assertIn("if: ${{ inputs.ensayo && inputs.comparar != '' }}", yml)
+        # 14 nov: la comparación también sale con «solo_comparar» (sin pasada); siempre dentro de un ensayo
+        self.assertIn("if: ${{ always() && inputs.ensayo && (inputs.comparar != '' || inputs.solo_comparar) && (needs.precios.result == 'success' || needs.precios.result == 'skipped') }}", yml)
         publicar = yml.split("- name: Publicar en la rama datos")[1][:80]
         self.assertIn("if: ${{ !inputs.ensayo }}", publicar)
         # el modelo de «comparar» entra por una variable de entorno, no pegado en la orden

@@ -314,5 +314,46 @@ class MejoresDeLaWebMiranLaPrensa(Base):
         self.assertIn("(!deGrowIA.has(x.s) && prensaEnContra(x.s) === 'fuera')", js)
 
 
+# ------------------------------------------------------------------ el ensayo de las lecturas, lado a lado
+
+class EnsayoDeLasLecturas(unittest.TestCase):
+    """El ensayo lado a lado solo comparaba la decisión y el informe. Lo que cambia en la lectura de cada empresa necesita
+    leer las mismas empresas con los dos códigos, y más de una vez: la IA no contesta dos veces igual."""
+
+    def test_la_action_no_hace_la_pasada_ni_publica_con_solo_comparar(self):
+        yml = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8")
+        precios, comparar = yml.split("\n  comparar:\n")
+        self.assertIn("if: ${{ !(inputs.ensayo && inputs.solo_comparar) }}", precios.split("jobs:")[1][:400])
+        self.assertNotIn("git push", comparar)                            # la comparación no publica nada
+        self.assertIn("git archive FETCH_HEAD radar.json radar-mas.json precios.json noticias-cache.json escaneo.json", comparar)
+        for e in ("main main2", "rama rama2"):
+            self.assertIn(f"for e in {e}; do python scripts/ensayo_comparar.py --lecturas", comparar)
+        self.assertNotIn('"${{ inputs.lecturas }}"', yml)                # entra por una variable de entorno
+
+    def test_la_muestra_y_la_lectura_con_el_codigo_que_se_le_da(self):
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            datos, sal = Path(d, "datos"), Path(d, "sal")
+            datos.mkdir(); sal.mkdir()
+            dia = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)).isoformat()
+            notas = [{**n, "d": dia} for n in NOTAS_HBX[:3]] + [{"t": "HBX Group gana un 12 % más", "f": "Expansión", "d": dia, "u": "https://news.google.com/d"}]
+            json.dump({"valores": [HBX, PEP, empresa("SIN", "Sin Noticias SA")]}, open(datos / "radar.json", "w"))
+            json.dump({"HBX.MC": {"n": notas}, "PEP": {"n": [{**n, "d": dia} for n in NOTAS_PEP]}}, open(datos / "noticias-cache.json", "w"))
+            json.dump({"lectura": {"PEP": {"d": dia, "rel": 3, "imp": "negativo", "txt": "x"}}}, open(datos / "escaneo.json", "w"))
+            r = subprocess.run([sys.executable, str(RAIZ / "scripts/ensayo_comparar.py"), "--muestra", str(RAIZ / "scripts"), str(datos), str(sal / "muestra.json"), "10"],
+                               capture_output=True, text=True, env={**os.environ, "ENSAYO_SIEMPRE": ""})
+            self.assertEqual(r.returncode, 0, r.stderr)
+            m = json.load(open(sal / "muestra.json"))
+            self.assertEqual(m["por"], {"HBX.MC": "repetidas", "PEP": "rel3"})    # la que no tiene noticias no entra
+            # sin clave no se llama a Claude: no lee ninguna, pero deja sus archivos y no rompe
+            env = {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_RADAR_KEY", "CLAUDE_API_KEY", "ANTHROPIC_API_KEY")}
+            r = subprocess.run([sys.executable, str(RAIZ / "scripts/ensayo_comparar.py"), "--lecturas", str(RAIZ / "scripts"), "rama", str(datos), str(sal)],
+                               capture_output=True, text=True, env={**env, "CLAUDE_API": "http://127.0.0.1:9/no"})
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("lectura", json.load(open(sal / "lecturas-rama.json")))
+            self.assertTrue((sal / "uso-lecturas-rama.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
