@@ -38,6 +38,13 @@ class OrdenDeLasIdeas(unittest.TestCase):
         self.assertEqual(out[-1]["confianza"], "baja")
         self.assertEqual(out[0]["tesis"], "la de hoy")
 
+    def test_una_de_confianza_baja_no_va_por_delante_de_una_de_media_o_alta(self):
+        # la IA repite el orden de ayer y deja primeras a las dos en las que confía poco: bajan detrás de las demás
+        out = self.asentar(["WDC", "COHR", "SZG.DE", "TRE.MC", "PRY.MI"],
+                           [{"s": s, "tesis": "la de hoy", "confianza": c} for s, c in (("WDC", "baja"), ("COHR", "baja"), ("SZG.DE", "media"), ("TRE.MC", "alta"), ("PRY.MI", "media"))])
+        self.assertEqual([i["s"] for i in out], ["SZG.DE", "TRE.MC", "PRY.MI", "WDC", "COHR"])
+        self.assertEqual([i["confianza"] for i in out], ["media", "alta", "media", "baja", "baja"])
+
     def test_la_que_la_ia_ya_no_propone_y_sigue_va_detras(self):
         # la IA deja de proponer WDC sin noticia grave: sigue por constancia, pero ya no la primera
         out = self.asentar(["WDC", "COHR", "TRE.MC"], [{"s": "TRE.MC", "tesis": "t"}, {"s": "COHR", "tesis": "t"}])

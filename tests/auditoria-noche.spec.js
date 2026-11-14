@@ -134,3 +134,35 @@ test('la beta dice contra qué índice se mide', async ({ page, errores }, info)
   expect(r.sin.etiqueta).toBe('Beta');
   expect(r.sin.ia).not.toContain('frente al Ibex');
 });
+
+test('en Mercados, si el dato no es de hoy no pone «Hoy»: pone el día, y el festivo si lo hay', async ({ page, errores }, info) => {
+  test.skip(info.project.name !== 'movil', 'una vez basta');
+  await crearCuenta(page);
+  await meterCartera(page);
+  await quitarCapas(page);
+  const r = await page.evaluate(() => {
+    const m = S.precios.mercados['^GSPC'], hoy = hoyIso(), ayer = sumarDias(hoy, -1), viejo = sumarDias(hoy, -10);
+    S.liveM = {};
+    Object.assign(m, { fecha: hoy, variacion_dia: -0.4 });
+    const deHoy = [rotuloMovMerc('^GSPC', false), filaMercado('^GSPC', m, S.M)];
+    m.fecha = ayer;
+    const deAyer = [rotuloMovMerc('^GSPC', false), rotuloMovMerc('^GSPC', true), filaMercado('^GSPC', m, S.M), tarjetaMercado('^GSPC', m, S.M)];
+    m.fecha = viejo;
+    const deHace10 = rotuloMovMerc('^GSPC', true);
+    // hoy Wall Street cierra por festivo: lo dice; el Ibex, que abre, no
+    m.fecha = ayer; S.precios.mercados['^IBEX'].fecha = ayer;
+    AG_CIERRES.push([hoy, 'us', 'Acción de Gracias']);
+    const festivo = [rotuloMovMerc('^GSPC', true), rotuloMovMerc('^IBEX', true)];
+    AG_CIERRES.pop();
+    return { deHoy, deAyer, deHace10, festivo, dia: DIAS_LARGOS[deIso(ayer).getDay()], corta: fechaCorta(viejo) };
+  });
+  expect(r.deHoy[0]).toBe('Hoy baja');
+  expect(r.deHoy[1]).toContain('<b>Hoy baja:</b>');
+  expect(r.deAyer[0]).toBe(`El ${r.dia} bajó`);
+  expect(r.deAyer[1]).toBe(`El ${r.dia} subió`);
+  expect(r.deAyer[2]).toContain(`<b>El ${r.dia} bajó:</b>`);
+  expect(r.deAyer[2]).not.toContain('Hoy baja');
+  expect(r.deAyer[3]).not.toContain('Hoy baja');
+  expect(r.deHace10).toBe(`El ${r.corta} subió`);
+  expect(r.festivo).toEqual([`El ${r.dia} subió (hoy no abre por Acción de Gracias)`, `El ${r.dia} subió`]);
+});

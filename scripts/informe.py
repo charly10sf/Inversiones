@@ -1341,6 +1341,10 @@ def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
     # Las que la IA ya no propone y siguen por constancia («sigue») van detrás, en el orden que tenían.
     puesto = {i["s"]: k for k, i in enumerate(ideas)}
     out.sort(key=lambda o: (0, puesto[o["s"]]) if o["s"] in puesto else (1, 0))
+    # y una de confianza baja nunca va por delante de una de media o alta (Carlos, 14 nov: «evidentemente, si es confianza
+    # baja no puede estar arriba»). En un ensayo la IA repitió el orden del día anterior y dejó primeras a Western Digital y
+    # a Coherent diciendo a la vez que les tenía confianza baja. Entre las de igual confianza, el orden de la IA.
+    out.sort(key=lambda o: 1 if o.get("confianza") == "baja" else 0)
     ids = {o["s"] for o in out}
     ev = []
     for e in evitar:
