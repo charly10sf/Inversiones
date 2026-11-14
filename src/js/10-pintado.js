@@ -220,6 +220,16 @@ function datoMerc(sym) {
   return { precio: v ? v.precio : m.precio, var: v && v.var != null ? v.var : m.variacion_dia };
 }
 
+/* 14 nov (auditoría): de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir);
+   vacío si es de hoy. Lo usa lo que lee la IA: el sábado le llegaba «S&P 500 (hoy −0,4 %)» con el cierre del viernes, y la
+   revisión escribía «Hoy caen Wall Street y Asia». */
+function diaDatoMerc(sym) {
+  const m = (S.precios && S.precios.mercados && S.precios.mercados[sym]) || {};
+  const v = S.liveM[sym], t = v && v.t ? (v.t < 1e12 ? v.t * 1000 : v.t) : 0;
+  const f = t ? iso(new Date(t)) : (m.fecha || '');
+  return f && f < hoyIso() ? f : '';
+}
+
 /* 14 nov (auditoría): el encargo de la revisión no decía la escala de las notas y Haiku las pone unas veces de 1 a 5 y otras
    de 1 a 10 (7 de 12 vueltas del banco de la revisión: «Costes 8», «Disciplina 7», «Riesgo 5»). La app las pinta «de 5»:
    Inicio las recortaba a 5 (un «Riesgo 5» sobre 10 salía con los cinco puntos encendidos) y la pestaña de la IA decía

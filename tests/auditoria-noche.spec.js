@@ -35,3 +35,48 @@ test('en Mercados, el bitcoin de Bitvavo dice lo de hoy y no lo de las últimas 
   expect(r.pos).toBe(63000);   // la posición sigue recibiendo su precio en directo
   expect(r.ctx).toMatch(/hoy \+3,3/);   // y es lo que lee la IA
 });
+
+test('lo que lee la IA no llama «hoy» a un dato que es de otro día', async ({ page, errores }, info) => {
+  test.skip(info.project.name !== 'movil', 'una vez basta');
+  await crearCuenta(page);
+  await meterCartera(page);
+  await quitarCapas(page);
+  const r = await page.evaluate(() => {
+    const ayer = sumarDias(hoyIso(), -1), lineas = () => contextoAsesor(S.M, 'revision', true).split('\n');
+    S.live = {}; S.liveM = {};
+    // todo con fecha de ayer: la bolsa cerrada
+    for (const p of Object.values(S.precios.instrumentos)) p.fecha = ayer;
+    for (const m of Object.values(S.precios.mercados)) m.fecha = ayer;
+    pintar();
+    const a = lineas();
+    // y con el S&P 500 y Repsol de hoy
+    S.precios.mercados['^GSPC'].fecha = hoyIso();
+    S.precios.instrumentos.repsol.fecha = hoyIso();
+    pintar();
+    const b = lineas();
+    const de = (l, re) => l.find((x) => re.test(x)) || '';
+    return { ayer: fechaCorta(ayer), spA: de(a, /\] S&P 500:/), spB: de(b, /\] S&P 500:/), ibexB: de(b, /\] Ibex 35:/), repA: de(a, /acciones a .*€ \(/), repB: de(b, /acciones a .*€ \(hoy/), btc: de(a, /^Tiene .* unidades a /), chat: contextoAsesor(S.M, 'chat', true).split('\n').find((x) => /^- Ibex 35 /.test(x)) };
+  });
+  expect(r.spA).toContain(`(el ${r.ayer}, su última sesión,`);
+  expect(r.spA).not.toContain('(hoy');
+  expect(r.spB).toContain('(hoy');
+  expect(r.ibexB).toContain(`(el ${r.ayer}, su última sesión,`);
+  expect(r.chat).toContain(`: el ${r.ayer}, su última sesión,`);
+  // las posiciones: sin precio de hoy, el último movimiento con su fecha; con precio de hoy, «hoy»
+  expect(r.repA).toMatch(/\(hoy no ha cotizado: su último precio es del \d{4}-\d\d-\d\d y ese día se movió /);
+  expect(r.repB).toContain('(hoy');
+  expect(r.btc).not.toBe('');   // de bitcoin se tienen unidades, no participaciones
+});
+
+test('las notas de la revisión van siempre de 1 a 5', async ({ page, errores }, info) => {
+  test.skip(info.project.name !== 'movil', 'una vez basta');
+  await crearCuenta(page);
+  const r = await page.evaluate(() => ({
+    de10: notasDe5([{ k: 'Diversificación', nota: 6 }, { k: 'Costes', nota: 8 }, { k: 'Riesgo', nota: 5 }, { k: 'Disciplina', nota: 7 }, { k: 'Impuestos', nota: 4 }]).map((x) => x.nota),
+    de5: notasDe5([{ k: 'a', nota: 4 }, { k: 'b', nota: 5 }, { k: 'c', nota: 2 }, { k: 'd', nota: '3' }, null, { k: 'e' }]).map((x) => x.nota),
+    nada: notasDe5(undefined),
+  }));
+  expect(r.de10).toEqual([3, 4, 3, 4, 2]);   // antes: 5, 5, 5, 5 y 4 puntos en Inicio, y «8 de 5» en la pestaña de la IA
+  expect(r.de5).toEqual([4, 5, 2, 3, 0]);
+  expect(r.nada).toEqual([]);
+});

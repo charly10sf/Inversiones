@@ -25,7 +25,7 @@ function fichaTexto(f, corto = false, est = esPublico()) {
   const L = [];
   L.push(`### ${i.corto || i.nombre} (id "${f.pos.id}")`);
   L.push(`${i.nombre || ''}. ${i.tipo || ''}, ${i.clase || ''}${i.pais ? `, ${PAISES[i.pais] || i.pais}` : ''}, en ${f.pos.plataforma || '?'}. ${[i.yahoo && 'Ticker ' + i.yahoo, i.isin && 'ISIN ' + i.isin].filter(Boolean).join(', ')}.`);
-  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
+  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (${f.varDia == null && f.varUlt != null && f.fecha ? `hoy no ha cotizado: su último precio es del ${f.fecha} y ese día se movió ${P1(f.varUlt)}` : `hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}`}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
   // 0.8.2: con las reglas del estándar (también el fundador con Claude), la señal de los analistas y no la de Toisón
   const sn = est && f.senal && !f.senal.analistas ? senalAnalistas(f) : f.senal;
   L.push(sn.analistas ? `Lo que opinan los analistas: ${sn.txt || 'no la sigue ninguno'}. ${sn.motivos.join(' ')}` : `Señal automática de Toisón: ${sn.txt}. ${sn.motivos.join(' ')}`);
@@ -147,7 +147,8 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     L.push('', '## Mercados');
     // 0.7: en el chat, más corto (hoy, un mes y en el año)
-    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: hoy ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    // 14 nov (auditoría): si el dato no es de hoy (fin de semana, o la bolsa aún sin abrir), dice de qué día es en vez de «hoy»
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}, dv = diaDatoMerc(sym), cu = dv ? `el ${fechaCorta(dv)}, su última sesión,` : 'hoy'; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: ${cu} ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (${cu} ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
     try {
       const pr = proyeccion(M), c = pr.cfg;
       L.push('', `## Proyección de Toisón (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
