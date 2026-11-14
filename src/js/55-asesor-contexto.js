@@ -104,7 +104,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     try {
       const D = dividendosMeses(M);
-      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12, mes del ex-dividendo): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos; ${D.meses.filter((m) => m.bruto).map((m) => `${m.k}: ${E0(m.neto)} (${m.de.map((x) => x.n).join(', ')})`).join('; ')}.`);
+      // 14 nov (auditoría): pago a pago, con su fecha y de quién es. Antes iba el total de cada mes con los nombres detrás («2026-12:
+      // 78 € (BAT, IAG)») y la revisión se liaba: «ex-dividendo de IAG: unos 26 € brutos al año por acción» (eran 26 € netos de junio)
+      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12; cada cifra es lo que cobraría por todo lo que tiene de esa posición, no por acción): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos. Pago a pago, por fecha del ex-dividendo: ${D.meses.filter((m) => m.bruto).flatMap((m) => m.de).sort((a, b) => (a.d < b.d ? -1 : 1)).map((x) => `${x.d} ${x.n} ${E0(x.neto)} netos (${E0(x.bruto)} brutos)`).join('; ')}.`);
       const SO = solapamientos(M);
       if (SO.pares.length) L.push('Fondos que se pisan (llevan las mismas grandes empresas de una zona): ' + SO.pares.map((x) => `${x.a.inst.corto} y ${x.b.inst.corto} en un ${fmtNum(x.pct, 0)} %`).join('; ') + '.');
       const sg = siguiendo();

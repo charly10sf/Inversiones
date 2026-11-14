@@ -55,7 +55,7 @@ test('lo que lee la IA no llama «hoy» a un dato que es de otro día', async ({
     pintar();
     const b = lineas();
     const de = (l, re) => l.find((x) => re.test(x)) || '';
-    return { ayer: fechaCorta(ayer), spA: de(a, /\] S&P 500:/), spB: de(b, /\] S&P 500:/), ibexB: de(b, /\] Ibex 35:/), repA: de(a, /acciones a .*€ \(/), repB: de(b, /acciones a .*€ \(hoy/), btc: de(a, /^Tiene .* unidades a /), chat: contextoAsesor(S.M, 'chat', true).split('\n').find((x) => /^- Ibex 35 /.test(x)) };
+    return { div: de(a, /^Dividendos de los próximos 12 meses/), ayer: fechaCorta(ayer), spA: de(a, /\] S&P 500:/), spB: de(b, /\] S&P 500:/), ibexB: de(b, /\] Ibex 35:/), repA: de(a, /acciones a .*€ \(/), repB: de(b, /acciones a .*€ \(hoy/), btc: de(a, /^Tiene .* unidades a /), chat: contextoAsesor(S.M, 'chat', true).split('\n').find((x) => /^- Ibex 35 /.test(x)) };
   });
   expect(r.spA).toContain(`(el ${r.ayer}, su última sesión,`);
   expect(r.spA).not.toContain('(hoy');
@@ -66,6 +66,9 @@ test('lo que lee la IA no llama «hoy» a un dato que es de otro día', async ({
   expect(r.repA).toMatch(/\(hoy no ha cotizado: su último precio es del \d{4}-\d\d-\d\d y ese día se movió /);
   expect(r.repB).toContain('(hoy');
   expect(r.btc).not.toBe('');   // de bitcoin se tienen unidades, no participaciones
+  // los dividendos, pago a pago: fecha, de quién y cuánto (antes, el total del mes con los nombres detrás)
+  expect(r.div).toMatch(/Pago a pago, por fecha del ex-dividendo: \d{4}-\d\d-\d\d \S.*? \d+\s€ netos \(\d+\s€ brutos\); \d{4}-/);
+  expect(r.div).toContain('no por acción');
 });
 
 test('las notas de la revisión van siempre de 1 a 5', async ({ page, errores }, info) => {
