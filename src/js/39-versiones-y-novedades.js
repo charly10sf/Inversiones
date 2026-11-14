@@ -7,6 +7,47 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6c', f: '2026-11-12', h: '08:30', t: 'Una sola cifra para hoy', arreglos: [
+    'La cifra de hoy es la misma en todas partes: arriba en Hoy, en Buenos días, en la pastilla de 1D, en la casilla de hoy del calendario de Análisis y en el widget. Antes cada sitio la contaba a su manera y salían cifras distintas.',
+    'Hoy es lo que ha cambiado desde el cierre de ayer. Antes de que abra la bolsa solo se mueve la cripto, y los fondos, que publican su valor uno o dos días después, cuentan en el día de ese valor. Buenos días enseña debajo cómo acabó el último día de bolsa, con la misma cifra que su casilla del calendario.',
+    'La cripto cuenta desde el cierre de ayer, como lo demás, y no las últimas 24 horas.',
+    'El widget ya no repite al día siguiente lo de la víspera ni cuenta como de hoy el último valor de un fondo (con la versión nueva de la app de Android).',
+    'El aviso del móvil de que algo «sube un 8 % hoy» solo salta con lo de hoy. Antes, por la mañana, avisaba de lo que había pasado ayer en Wall Street y dentro de la app salía otra cifra (también con la versión nueva de la app de Android).',
+  ] },
+  { v: '0.8.6b', f: '2026-11-12', h: '00:15', t: 'Detalles que no cuadraban', arreglos: [
+    'En Hoy, la subida del día que escribe la IA dice de qué hora es («hoy a las 20:05»). Antes parecía contradecir la cifra de arriba, que va al momento.',
+    '«Tus límites, tu perfil y tus metas» ya no manda a «Más › Objetivos», que en el ordenador no existe: dice Objetivos, sin más.',
+    'En la ficha de una posición, los botones dicen «Apuntar compra» y «Apuntar venta»: Toisón apunta lo que haces en tu bróker, no compra ni vende.',
+    'La cuenta atrás de la cabecera y el Calendario cuentan los mismos días.',
+    'En el menú Más del móvil, la estrella ya no pisa los nombres largos, como «Movimientos».',
+    'En básico, el mapa de tu cartera explica el gris: es lo que apenas se ha movido.',
+  ] },
+  { v: '0.8.6a', f: '2026-11-11', h: '21:45', t: 'Hacienda, revisada', arreglos: [
+    'Los ETC, como el oro cotizado, cuentan en la renta como rendimiento del capital mobiliario, junto a dividendos e intereses, y no como ganancia: así lo ve Hacienda en una consulta sobre un ETC de petróleo. Con un bróker español llevan retención del 19 % de la ganancia y la regla de recompra es de dos meses, cotice donde cotice.',
+    'En la Guía de la renta, los ETF ya no van en la casilla 0328 con las acciones: van con los fondos, como «fondos cotizados». Los ETC tienen su propia fila.',
+    'El 720 y el 721 se explican por bloques (cuentas, valores y fondos, inmuebles, cripto), cada uno con su límite de 50.000 € y su plazo, del 1 de enero al 31 de marzo.',
+    'En Datos fiscales hay un campo para los rendimientos negativos de años anteriores, aparte de las pérdidas.',
+    'Interactive Brokers, desde unos 1,25 € por operación en Europa con la tarifa escalonada, más las tasas de bolsa.',
+    'El cierre del año y el aviso del Calendario cuentan lo que entra en la renta de este año, sin proponer qué vender.',
+    { t: '«Para pagar menos» sin órdenes, y la IA con el 720 por bloques y el criterio del ETC.', solo: 'dueno' },
+  ] },
+  { v: '0.8.6', f: '2026-11-10', h: '23:40', t: 'Tres pestañas nuevas y Tu año', cosas: [
+    { d: 'lista', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Lista de seguimiento', x: 'En Ideas, lo que sigues sin tenerlo, en una tabla (en el ordenador, también en tarjetas): cómo va hoy y en el mes, lo que supondría en tu cartera meter 1.000 € y lo que ha leído la IA de cada empresa, con el tono de la noticia. Hasta 10 empresas.' },
+    { d: 'frente', ir: { v: 'av-frente' }, t: 'Frente a un indexado', x: 'En Rentabilidad: lo que habría pasado si hubieras metido el mismo dinero, los mismos días, en un fondo indexado al MSCI World. La diferencia en euros, mes a mes y año a año. Es lo que habría pasado, no un indicador fiable de lo que pasará.' },
+    { d: 'entiende', t: 'Entiende tu cartera', x: 'En el modo básico, junto a Posiciones: 20 lecciones cortas en cinco capítulos, con tus propios números de ejemplo, y arriba la que más te sirve ahora. Formación general, no consejos.' },
+    { d: 'tuano', ir: { v: 'av-tuano' }, t: 'Tu año en Toisón', x: 'Siete tarjetas con lo que hiciste con tu plan este año: tu estilo de inversor, lo que aportaste, la edad de tu dinero, dónde está, lo que te costó, los dividendos y los meses sin sacar dinero. Se comparte como imagen, sin cantidades. En diciembre y enero sale en Hoy.' },
+    { d: 'discreto', ir: { v: 'cartera', sel: '.hero-ojo' }, t: 'Modo discreto en toda la app', x: 'El ojo de Patrimonio, o Ajustes, General, Modo discreto, oculta las cantidades en toda la app y en el widget de Android, que pasa a enseñar solo porcentajes.' },
+  ], arreglos: [
+    'Lo que más se mueve, en Hoy, habla solo de lo tuyo y dice por qué se mueve.',
+    'La pestaña elegida se ve plana, sin relieve, en Mármol y en Marfil.',
+    'Los nombres de algunas empresas españolas salen bien escritos, como ACS o Corporación Acciona Energía.',
+  ] },
+  { v: '0.8.3d', f: '2026-11-09', h: '20:45', t: 'Noticias', cosas: [
+    { d: 'mercados', ir: { v: 'noticias' }, t: 'Noticias, más completas', x: 'Una página nueva en Hoy, entre Hoy y Calendario: cómo van las bolsas, lo importante del día según la IA, los titulares por temas (España, EEUU, cripto, lo tuyo…) y por horas, con buscador, y lo que ha pasado en cada empresa con su tono. Toca un titular y la IA te lo resume dentro.' },
+  ], arreglos: [
+    'Buenos días dice de qué día es cada cifra: si la bolsa aún no ha abierto, lo de tu cartera es del último cierre, y lo de tus fondos, con el día de su último valor, va aparte.',
+    'Fuera de los titulares las noticias viejas que Google vuelve a fechar hoy y las páginas de cotización que no son noticias.',
+  ] },
   { v: '0.8.3c', f: '2026-11-08', h: '18:30', t: 'La IA, más firme', arreglos: [
     'Si se corta la conexión con la IA, lo vuelve a intentar sola, y al volver a preguntar lo intenta de verdad en vez de esperar unos minutos.',
     'En el ordenador, la barra de la izquierda se ensancha arrastrando su borde, y la IA con ella. Con doble clic en el borde vuelve a como estaba.',
@@ -686,6 +727,24 @@ const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class
 const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.8.6: un dibujo propio para cada novedad (Carlos, 10 nov: «hacen falta bastantes nuevos logos, no reciclar siempre los mismos»)
+  // la Lista de seguimiento: tres filas con su logo, su gráfica del mes y el tono de su noticia (▲ buena, ▼ mala, ● neutra)
+  lista: '<path class="m" d="M6 29h108M6 51h108"/>'
+    + '<circle class="fa" cx="14" cy="18" r="6"/><path class="l" d="M25 15h26"/><path class="m" d="M25 21h16"/><path class="u" d="M58 22l6-4 5 2 6-7 6 2"/><rect class="fa" x="90" y="11" width="24" height="14" rx="7"/><path class="u" d="M97 21l3-4 3 4"/><path class="u" d="M106 19h3"/>'
+    + '<circle class="fa" cx="14" cy="40" r="6"/><path class="l" d="M25 37h22"/><path class="m" d="M25 43h18"/><path class="d" d="M58 35l6 3 5-2 6 7 6-1"/><rect class="fdn" x="90" y="33" width="24" height="14" rx="7"/><path class="d" d="M97 38l3 4 3-4"/><path class="d" d="M106 40h3"/>'
+    + '<circle class="fa" cx="14" cy="62" r="6"/><path class="l" d="M25 59h28"/><path class="m" d="M25 65h14"/><path class="l" d="M58 63l6-2 5 1 6-2 6 1"/><rect class="fp" x="90" y="55" width="24" height="14" rx="7"/><circle class="fA" cx="99" cy="62" r="2.2"/><path class="m" d="M105 62h4"/>',
+  // Frente a un indexado: tu cartera (oro) y el mismo dinero en el indexado (discontinua) y, debajo, la diferencia en el tiempo
+  frente: '<path class="l" d="M8 40C30 36 50 30 70 22S100 12 112 9" stroke-dasharray="3 4"/><path class="a" d="M8 42C28 38 46 35 68 26S98 18 112 16"/><circle class="l" cx="112" cy="9" r="2.4"/><circle class="fA" cx="112" cy="16" r="3"/><path class="m" d="M8 63h104"/>'
+    + [-3, -5, -2, 3, 5, 7, 4, -2, -5, -7, -4].map((h, k) => `<path class="${h > 0 ? 'u' : 'd'}" d="M${13 + k * 9.4} 63v${-h}" stroke-width="4.2"/>`).join(''),
+  // Entiende tu cartera: un libro abierto con la lección marcada y los cinco capítulos, tres leídos
+  entiende: '<path class="l" d="M48 18C38 12 22 12 10 16V66C22 62 38 62 48 68Z"/><path class="l" d="M48 18C58 12 74 12 86 16V66C74 62 58 62 48 68Z"/><path class="m" d="M17 27h22M17 35h24M17 43h18M17 51h22"/><path class="a" d="M55 27h24"/><path class="m" d="M55 35h20M55 43h24M55 51h16"/>'
+    + [1, 1, 1, 0, 0].map((x, k) => `<circle class="${x ? 'fA' : 'fp'}" cx="104" cy="${14 + k * 13}" r="4.5"/>`).join(''),
+  // Tu año en Toisón: las tarjetas apiladas, la de delante con el año y lo aportado mes a mes, y compartir
+  tuano: '<rect class="fp" x="30" y="6" width="62" height="58" rx="8" transform="rotate(-7 61 35)"/><rect class="fa" x="26" y="9" width="64" height="60" rx="8" transform="rotate(5 58 39)"/><rect class="fp" x="20" y="12" width="68" height="62" rx="9"/><rect class="l" x="20" y="12" width="68" height="62" rx="9"/><text class="ta" x="29" y="34" style="font-size:15px" data-no-trad>2026</text>'
+    + [6, 9, 8, 12, 15, 18].map((h, k) => `<rect class="fA" x="${29 + k * 9}" y="${66 - h}" width="5.5" height="${h}" rx="1.5"/>`).join('')
+    + '<path class="a" d="M104 46V30M98 36l6-6 6 6"/><path class="a" d="M97 44v10h14V44"/>',
+  // el modo discreto: las cantidades tapadas, los porcentajes a la vista y el ojo tachado
+  discreto: '<rect class="fp" x="8" y="10" width="104" height="60" rx="10"/><text class="ta" x="18" y="37" style="font-size:16px" data-no-trad>•••• €</text><text class="tu" x="18" y="57" style="font-size:11px" data-no-trad>+4,2 %</text><path class="a" d="M82 40c6-8 22-8 28 0-6 8-22 8-28 0z"/><circle class="a" cx="96" cy="40" r="4"/><path class="a" d="M84 54l24-28"/>',
   // 0.8: el símbolo de Toisón (con getter: sus trazos se definen más abajo, en 49-avisos-y-ajustes.js)
   get toison() { return `<g class="simb-ts" transform="translate(60 41) scale(.4)"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></g>`; },
   // 0.7: la ficha con sus factores (bueno, malo, neutro), los titulares marcados, GrowIA con su cupo y el banco de cada noche

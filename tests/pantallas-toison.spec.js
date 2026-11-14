@@ -37,7 +37,7 @@ conTema('marfil')('con Toisón: la IA sin nombre, iconos de plumilla, pastillas 
   expect(await visibleConGrowIA(page)).toEqual([]);
   // Ideas: las pestañas de dentro dicen de dónde sale cada idea
   await ir(page, 'ideas');
-  expect((await page.locator('.exp-tabs button').allInnerTexts()).map((t) => t.split('\n')[0])).toEqual(['Lo tuyo', 'Del radar', 'Siguiendo']);
+  expect((await page.locator('.exp-tabs button').allInnerTexts()).map((t) => t.split('\n')[0])).toEqual(['Lo tuyo', 'Del radar', 'Lista de seguimiento']);
   // el panel de la IA: su nombre y su bocadillo de metal
   await page.locator('#bAsesor').evaluate((b) => b.click());
   await expect(page.locator('#asTit .ia-nom')).toHaveText('La IA');

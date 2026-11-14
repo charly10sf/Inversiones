@@ -110,6 +110,10 @@ test('no es un proxy abierto: solo las rutas de la app, con GET y POST, y los si
     expect(o.headers.get('access-control-allow-headers')).toContain('Authorization');
     // las rutas buenas sí
     expect((await fetch(`${m.url}/banco/estado`, { headers: { Origin: ORIGEN } })).status).toBe(200);
+    // las gráficas (10 nov): /intradia y /historico, con su consulta
+    expect((await fetch(`${m.url}/intradia?s=WDC`, { headers: { Origin: ORIGEN } })).status).toBe(200);
+    expect((await fetch(`${m.url}/historico?s=WDC,SAP.DE`, { headers: { Origin: ORIGEN } })).status).toBe(200);
+    expect(m.w.visto.map((v) => v.url)).toEqual(expect.arrayContaining(['/intradia?s=WDC', '/historico?s=WDC,SAP.DE']));
     expect((await fetch(`${m.url}/salud`)).status).toBe(200);
     expect((await fetch(`${m.url}/_relevo`)).status).toBe(200);
   } finally { m.cerrar(); }

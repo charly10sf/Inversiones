@@ -37,11 +37,18 @@ const ICO_BUSCA = SVG('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l
    pestaña del trozo «avanzado»; h si tiene dirección propia), av si solo sale en el avanzado y kw para el buscador */
 const PAGINAS = [
   { id: 'hoy', t: 'Hoy', en: 'Today', s: 'hoy', v: 'cartera', kw: 'inicio patrimonio grafica' },
+  { id: 'noticias', t: 'Noticias', en: 'News', s: 'hoy', g: 'cartera', v: 'noticias', kw: 'titulares prensa bolsa ibex wall street investing ultima hora' },
   { id: 'agenda', t: 'Calendario', en: 'Calendar', s: 'hoy', g: 'cartera', v: 'agenda', kw: 'fechas resultados dividendos aportaciones' },
+  // 0.8.6: Tu año en Toisón, una página de Hoy que se pinta en el trozo «avanzado» (trozos/tuano.js)
+  { id: 'tuano', get t() { return `Tu año ${anioTuAno()}`; }, get en() { return `Your ${anioTuAno()}`; }, s: 'hoy', g: 'cartera', v: 'av', p: 'tuano', kw: 'resumen del ano estilo de inversor wrapped' },
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
+  // 0.8.6: la pestaña 11, solo en básico (soloBas)
+  { id: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', s: 'cartera', g: 'cartera', v: 'av', p: 'entiende', soloBas: true, kw: 'aprender lecciones formacion ter twr tir hacienda riesgo' },
   { id: 'mov', t: 'Movimientos', en: 'Transactions', s: 'cartera', g: 'cartera', v: 'av', p: 'mov', kw: 'compras ventas operaciones' },
   { id: 'pnl', t: 'Día a día', en: 'Day by day', s: 'cartera', g: 'cartera', v: 'av', p: 'pnl', av: true, kw: 'ganancias diarias' },
-  { id: 'rentab', t: 'Rentabilidad', en: 'Returns', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
+  { id: 'rentab', t: 'Rentabilidad', en: 'Returns', apT: 'Resumen', apEn: 'Summary', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
+  // 0.8.6: la pestaña 2; en el móvil, un apartado de Rentabilidad
+  { id: 'frente', t: 'Frente a un indexado', en: 'Against an index fund', s: 'rendimiento', g: 'rr', v: 'av', p: 'frente', kw: 'indexado msci world comparar referencia alfa beta tracking mismo dinero' },
   { id: 'div', t: 'Dividendos', en: 'Dividends', s: 'rendimiento', g: 'rr', v: 'av', p: 'div', bas: 'rentab', kw: 'cobros ingresos' },
   { id: 'costes', t: 'Costes', en: 'Costs', s: 'rendimiento', g: 'rr', v: 'av', p: 'costes', bas: 'rentab', kw: 'ter comisiones gastos' },
   { id: 'analisis', t: 'La IA explica', en: 'AI explains', s: 'rendimiento', g: 'rr', v: 'analisis', kw: 'informe ia' },
@@ -67,7 +74,7 @@ const ACCIONES_APP = [
   { id: 'opinion', t: 'Avisar de un fallo', en: 'Report a bug', a: 'opinion', ico: () => ICONOS.bicho, kw: 'idea fallo error' },
 ];
 const GRUPOS_MAS = [['cartera', 'Tu cartera', 'Your portfolio'], ['rr', 'Riesgo y rentabilidad', 'Risk and returns'], ['hacienda', 'Hacienda', 'Taxes'], ['mi', 'Mercados e ideas', 'Markets and ideas'], ['herr', 'Herramientas', 'Tools']];
-const verPag = (p) => p && (!p.av || modoApp() === 'avanzado');
+const verPag = (p) => p && (!p.av || modoApp() === 'avanzado') && (!p.soloBas || modoApp() === 'basico');
 // 0.8.3a: en básico, Dividendos y Costes son dos tarjetas de Rentabilidad (bas): llevan allí y no salen sueltas en las listas
 const enBas = (p) => p && p.bas && modoApp() === 'basico';
 const enLista = (p) => verPag(p) && !enBas(p);
@@ -86,17 +93,44 @@ const hrefSeccion = (s) => { const ps = paginasDe(s); return ps.length ? hrefPag
 // Herramientas no tiene sección en la barra del móvil: se marca Más (que es donde está)
 const enHerramientas = () => S.vista === 'av' && ['grafico', 'lab'].includes(pestAv());
 
+/* ---------- 0.8.6: Tu año en Toisón ----------
+   El año que se enseña: de enero al mes de hoy y, como mucho, hasta noviembre (diciembre es el mes de verlo, como
+   en Year in Monzo); en enero, el año anterior, también hasta noviembre. Las tarjetas, en trozos/tuano.js. */
+function periodoTuAno(hoy = hoyIso()) {
+  const [y, m] = hoy.split('-').map(Number), cerrado = m === 1 || m === 12, anio = m === 1 ? y - 1 : y;
+  return { anio, desde: `${anio}-01-01`, hasta: cerrado ? `${anio}-11-30` : hoy, mesFin: cerrado ? 11 : m, cerrado };
+}
+const anioTuAno = () => periodoTuAno().anio;
+const enTuAno = () => S.vista === 'av' && pestAv() === 'tuano';
+function htmlTuAnoCab() {
+  const P = periodoTuAno(), mes = IDIOMA === 'en' ? MESES_EN[P.mesFin - 1] : MESES_LARGOS[P.mesFin - 1];
+  return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu año en Toisón', 'Your year in Toisón')}</h1><p class="ts-sub">${P.mesFin === 1 ? L(`${P.anio}, enero.`, `${P.anio}, January.`) : L(`${P.anio}, de enero a ${mes}.`, `${P.anio}, January to ${mes}.`)} ${L('Lo que hiciste con tu plan.', 'What you did with your plan.')}</p></div>`;
+}
+
+/* 0.8.6 · la entrada desde Hoy: solo en diciembre y en enero, una tarjeta sobria que lleva a Tu año (sin confeti ni
+   enhorabuenas). El resto del año, Tu año no sale en Hoy, aunque sigue en las listas (Hoy del ordenador, Más y el
+   buscador). Se puede quitar: vuelve el año siguiente */
+const entradaTuAnoToca = (hoy = hoyIso()) => { const m = +hoy.slice(5, 7); return m === 12 || m === 1; };
+function htmlEntradaTuAno(M, hoy = hoyIso()) {
+  if (!entradaTuAnoToca(hoy) || !M || !M.filas.length || S.demo) return '';
+  const P = periodoTuAno(hoy);
+  if (LS.get('inv-tuano-entrada-x', 0) === P.anio) return '';
+  return `<div class="ta-entrada" role="note"><a class="ta-entrada-a" href="#av-tuano"><small>${L(`Tu año ${P.anio} en Toisón`, `Your ${P.anio} in Toisón`)}</small><b>${L('Siete tarjetas con lo que hiciste con tu plan, de enero a noviembre.', 'Seven cards with what you did with your plan, January to November.')}</b><span class="ta-entrada-ir">${L('Verlo', 'See it')} ›</span></a>
+    <button type="button" class="ib ta-entrada-x" data-accion="tuano-entrada-x" aria-label="${L('Quitar de Hoy', 'Remove from Today')}">${ICONOS.cerrar}</button></div>`;
+}
+
 /* ---------- el móvil: Análisis por dentro ---------- */
 const PEST_ANA = [
   { k: 'posiciones', t: 'Posiciones', en: 'Holdings', ap: ['posiciones', 'mov', 'pnl'] },
-  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab'] },
+  { k: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', ap: ['entiende'], soloBas: true },
+  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab', 'frente'] },
   { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo'] },
   { k: 'reparto', t: 'Reparto', en: 'Allocation', ap: ['reparto', 'rebal'] },
   { k: 'ingresos', t: 'Ingresos y costes', en: 'Income and costs', ap: ['div', 'costes'], av: true },
   { k: 'fiscal', t: 'Hacienda', en: 'Taxes', ap: ['fiscal', 'renta'], sinAp: true },
   { k: 'analisis', t: 'La IA explica', en: 'AI explains', ap: ['analisis'] },
 ];
-const pestAnaVisibles = () => PEST_ANA.filter((x) => !x.av || modoApp() === 'avanzado');
+const pestAnaVisibles = () => PEST_ANA.filter((x) => (!x.av || modoApp() === 'avanzado') && (!x.soloBas || modoApp() === 'basico'));
 // el enlace de una página: las del trozo llevan además data-pest-av (lo de siempre: se cambia sin dejar el trozo)
 const aPag = (p, act, cls = '') => `<a href="${hrefPag(p)}"${p.v === 'av' ? ` data-pest-av="${p.p}"` : ''}${cls ? ` class="${cls}"` : ''} aria-current="${act ? 'page' : 'false'}">${esc(nomPag(p))}</a>`;
 function htmlPestAna() {
@@ -112,7 +146,8 @@ function htmlApartados(lista) {
   if (!lista) { const x = PEST_ANA.find((y) => y.ap.includes(pa)); if (!x || x.sinAp) return ''; lista = x.ap; }
   const ps = lista.map((id) => PAG[id]).filter(verPag);
   if (ps.length < 2) return '';
-  return `<nav class="apartados" aria-label="${L('Apartados', 'Sections')}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>`;
+  // 0.8.6: un apartado puede tener otro nombre que su página (Rentabilidad › Resumen · Frente a un indexado)
+  return `<nav class="apartados" aria-label="${L('Apartados', 'Sections')}">${ps.map((p) => aPag(p.apT ? { ...p, t: p.apT, en: p.apEn || p.apT } : p, p.id === pa)).join('')}</nav>`;
 }
 // la vuelta a la hoja de Más desde lo que se abre en ella (Tú, Herramientas)
 const htmlVolverMas = () => `<button type="button" class="volver-mas" data-mas>${L('‹ Más', '‹ More')}</button>`;
@@ -142,7 +177,9 @@ function apuntarReciente(id) {
 }
 const itemFijado = (id) => PAG[id] || ACCIONES_APP.find((a) => a.id === id);
 // cada página con su icono si lo tiene; si no, el de su sección
-const ICO_PAG = { agenda: () => ICONOS_PL.calendario, tu: () => ICONOS_PL.tu, objetivos: () => ICONOS_PL.objetivos, ruta: () => ICONOS_PL.paso, mov: () => ICONOS_PL.ordenar,
+// Noticias: un periódico doblado, del mismo trazo que la lupa
+const ICO_NOT = SVG('<path d="M4 5.5h12.5v13.5H6.2A2.2 2.2 0 0 1 4 16.8z"/><path d="M16.5 8.5H20v8.3a2.2 2.2 0 0 1-2.2 2.2"/><path d="M7 9h6.5M7 12.2h6.5M7 15.4h4"/>', 1.9);
+const ICO_PAG = { noticias: () => ICO_NOT, agenda: () => ICONOS_PL.calendario, tu: () => ICONOS_PL.tu, objetivos: () => ICONOS_PL.objetivos, ruta: () => ICONOS_PL.paso, mov: () => ICONOS_PL.ordenar,
   div: () => ICONOS.dividendo, costes: () => ICONOS.calc, analisis: () => ICONOS_PL.asistente, renta: () => ICONOS.resultados, grafico: () => ICONOS_PL.analisis };
 const icoItem = (x) => (x.a ? x.ico() : (ICO_PAG[x.id] || ICO_SEC[x.s])());
 // un enlace corto (el chip de los fijados en Hoy y en Más)

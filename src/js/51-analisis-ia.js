@@ -92,6 +92,7 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "preguntas": [{"q": "una pregunta corta para él", "por_que": "qué cambiaría en tus consejos según lo que conteste", "opciones": ["respuesta corta", "otra", "otra"]}],
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
+Las notas de "puntuaciones" son enteros de 1 a 5 (5, muy bien; 3, normal; 1, mal): nunca más de 5. Di «hoy» solo de lo que en los datos es de hoy. Si un precio o un movimiento lleva su día, cuéntalo con ese día y nunca como de hoy; lo que vale la cartera y cómo está repartida sí es de hoy. Si el informe de prensa llama «hoy» a algo que los datos fechan en otro día, mandan los datos.
 "preguntas": de 0 a 4 (Carlos, 3 nov: que pregunte más), solo si te falta algo de él (su vida, sus planes, su perfil) que cambiaría de verdad tus consejos; no vuelvas a preguntar lo que ya ha contestado, tampoco con otras palabras (sus respuestas de los últimos meses vienen en los datos, en «Le preguntaste»): úsalas como están, aunque no sean del todo claras. Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 0 a 8 (si no hay nada que mejorar de verdad, déjalo corto o vacío). "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (si en un plazo no hay nada que hacer, un solo paso con "esperar": true) (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula Toisón (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
 Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que Toisón pueda ocultarlas; ningún otro formato.`;
 }
@@ -119,7 +120,7 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "preguntas": [{"q": "una pregunta corta para mí", "por_que": "qué cambiaría en tu revisión", "opciones": ["respuesta corta", "otra"]}],
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
-Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" de 0 a 6, por orden de importancia. "preguntas" de 0 a 4, sin volver a preguntar lo que ya he contestado, tampoco con otras palabras (mis respuestas vienen en los datos). Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**); ningún otro formato.`;
+Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. Las notas de "puntuaciones" son enteros de 1 a 5 (5, muy bien; 3, normal; 1, mal): nunca más de 5. Di «hoy» solo de lo que en los datos es de hoy. Si un precio o un movimiento lleva su día, cuéntalo con ese día y nunca como de hoy; lo que vale la cartera y cómo está repartida sí es de hoy. Si el informe de prensa llama «hoy» a algo que los datos fechan en otro día, mandan los datos. "mejorar" de 0 a 6, por orden de importancia. "preguntas" de 0 a 4, sin volver a preguntar lo que ya he contestado, tampoco con otras palabras (mis respuestas vienen en los datos). Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**); ningún otro formato.`;
 }
 function extraerJSON(texto) {
   const bloques = [...String(texto).matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map((m) => m[1]);
@@ -227,6 +228,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     if (turno.estandar && pedido) await arreglarConsejosRevision(json, { ...pedido, texto, idPregunta, turno });
+    if (json.puntuaciones) json.puntuaciones = notasDe5(json.puntuaciones);
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
     // publico: hecha con las reglas del estándar; modo: el de la app cuando se hizo (para rehacerla si cambias de modo)

@@ -205,10 +205,10 @@ const QUE_ES = {
   agenda: ['Lo que pasa estas semanas con lo tuyo. Lo que hagas lo decides tú.', 'What is coming up for what you own. What you do is up to you.'],
   ia: ['La IA lee tu cartera y las noticias, explica y hace cuentas. No te dice qué comprar ni vender.', 'The AI reads your portfolio and the news, explains and does the maths. It does not tell you what to buy or sell.'],
   cifras: ['Tus números de un vistazo: por plataforma, lo que metiste y lo que cobras.', 'Your numbers at a glance: by platform, what you put in and what you collect.'],
-  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube y rojo si baja.', 'Each box is a holding: bigger the more it is worth, green if it rises and red if it falls.'],
+  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube, rojo si baja y gris si apenas se mueve.', 'Each box is a holding: bigger the more it is worth, grey if it barely moves, green if it rises and red if it falls.'],
   informe: ['Un resumen de las noticias del día de lo que tienes, escrito por la IA.', 'A summary of today\'s news about what you own, written by the AI.'],
   noticias: ['Los últimos titulares de las empresas y fondos que tienes.', 'The latest headlines about the companies and funds you own.'],
-  movidas: ['Las empresas que más suben y bajan hoy en las bolsas.', 'The companies rising and falling most today.'],
+  movidas: ['Lo que más se mueve hoy de lo que tienes, y por qué. Un día no dice nada de tu plan.', 'What moves most today among what you own, and why. One day says nothing about your plan.'],
   futuro: ['Lo que podrías tener si sigues aportando y los mercados se portan como de media. No es una promesa.', 'What you could have if you keep investing and markets behave as on average. Not a promise.'],
   metas: ['Si llegas a cada meta que te has puesto con lo que aportas.', 'Whether you reach each goal you set with what you put in.'],
   renta: ['Lo que llevas ganado este año con lo que has vendido y lo que pagarías en la renta.', 'What you have made this year from sales and what you would pay in tax.'],
@@ -234,12 +234,12 @@ function pintarPanelAv() {
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
   // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
-  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
   // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
-  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab'];
+  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab', 'data-fr-ref'];
   const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
@@ -388,7 +388,7 @@ function pavRiesgo(M) {
   const cinco = M.filas.filter((f) => histDe(f.inst.id)).slice(0, 5);
   const rets = cinco.map((f) => { const x = pavEnFechas(histDe(f.inst.id), s); return x.length === s.length ? pavRetornos(x) : null; });
   const matriz = cinco.length > 1 ? `<div class="pav-tabla"><table class="pav-matriz"><thead><tr><th></th>${cinco.map((f) => `<th title="${pavNom(f)}">${esc((f.inst.corto || f.inst.nombre).slice(0, 10))}</th>`).join('')}</tr></thead><tbody>${cinco.map((f, i) => `<tr><th style="text-align:left">${pavNom(f)}</th>${cinco.map((g, j) => { if (i === j) return '<td>—</td>'; const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; return c == null ? '<td>·</td>' : `<td style="background: color-mix(in srgb, var(--grafica) ${Math.round(Math.max(0, c) * 55)}%, transparent)">${fmtNum(c, 2)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>` : '';
-  const porPos = pavTabla([L('Posición', 'Holding'), L('Peso', 'Weight'), L('Riesgo', 'Risk'), L('Volatilidad', 'Volatility'), 'Beta'], M.filas.map((f) => [`<b>${pavNom(f)}</b>`, pct(f.peso, 1), f.p && f.p.riesgo ? `${f.p.riesgo} / 7` : '—', f.p && f.p.volatilidad != null ? pct(f.p.volatilidad, 1) : '—', f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—']));
+  const porPos = pavTabla([L('Posición', 'Holding'), L('Peso', 'Weight'), L('Riesgo', 'Risk'), L('Volatilidad', 'Volatility'), L('Beta (frente a su bolsa)', 'Beta (vs its home index)')], M.filas.map((f) => [`<b>${pavNom(f)}</b>`, pct(f.peso, 1), f.p && f.p.riesgo ? `${f.p.riesgo} / 7` : '—', f.p && f.p.volatilidad != null ? pct(f.p.volatilidad, 1) : '—', f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—']));
   // lo que la IA necesita para explicar estas cifras (Carlos, 4 nov: decía «no tengo el dato de origen»): cómo sale cada una,
   // con qué números y el mismo cálculo hecho al MSCI World en las mismas fechas, para que pueda comparar
   try {
@@ -405,7 +405,7 @@ function pavRiesgo(M) {
       `Peor caída en el periodo: ${fmtNum(peor1, 1)} %.${c10 && c10.peor ? ` Peor caída con hasta 10 años de precios: ${fmtNum(c10.peor.pct, 1)} % (del ${c10.peor.desde} al ${c10.peor.hasta}${c10.peor.vuelve ? `, recuperada el ${c10.peor.vuelve}` : ', sin recuperar'}).` : ''}`,
       `Mayor posición: ${top.inst.corto || top.inst.nombre}, ${fmtNum(top.peso, 1)} %. Las 5 mayores: ${fmtNum(top5, 1)} %.${esc20 != null ? ` Si la bolsa mundial cae un 20 %, con esa beta: ${eur(esc20, 0)} sobre ${eur(M.totalPos, 0)} en posiciones.` : ''}`,
       pares.length ? `Correlaciones del último año (de −1 a 1) entre las ${cinco.length} mayores posiciones con precios: ${pares.join('; ')}.` : 'Correlaciones: no hay dos posiciones con precios suficientes en esas fechas.',
-      `Por posición (peso, riesgo 1–7, volatilidad, beta): ${M.filas.map((f) => `${f.inst.corto || f.inst.nombre} ${fmtNum(f.peso, 1)} %, ${f.p && f.p.riesgo ? f.p.riesgo : '—'}, ${f.p && f.p.volatilidad != null ? fmtNum(f.p.volatilidad, 1) + ' %' : '—'}, ${f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—'}`).join('; ')}.`,
+      `Por posición (peso, riesgo 1–7, volatilidad, beta frente al índice de su bolsa con el último año): ${M.filas.map((f) => `${f.inst.corto || f.inst.nombre} ${fmtNum(f.peso, 1)} %, ${f.p && f.p.riesgo ? f.p.riesgo : '—'}, ${f.p && f.p.volatilidad != null ? fmtNum(f.p.volatilidad, 1) + ' %' : '—'}, ${f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—'}`).join('; ')}.`,
     ].filter(Boolean).join('\n') });
   } catch (e) { console.warn(e); }
   const caidaTxt = c10 && c10.peor ? L(`La peor de los últimos años: <b class="down">${pctS(c10.peor.pct, 1)}</b>, del ${fechaConAnio(c10.peor.desde)} al ${fechaConAnio(c10.peor.hasta)}${c10.peor.vuelve ? `; volvió a su máximo el ${fechaConAnio(c10.peor.vuelve)}` : '; todavía no ha vuelto a su máximo'}.`, `The worst in recent years: <b class="down">${pctS(c10.peor.pct, 1)}</b>.`) : '';
@@ -458,6 +458,7 @@ function pavRentabBas(M) {
     const dif = R.valor - bm.valor;
     idx = `<p class="pab-grande">${eur(bm.valor, 0)}</p><p class="pab-sub">${L(`tendrías con el mismo dinero, los mismos días, en un indexado de la bolsa mundial. Lo tuyo${M.total - R.valor > 1 ? ', sin el efectivo,' : ''} vale ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'más' : 'menos'}</b>.`, `you would have with the same money, on the same days, in a world index fund. Yours${M.total - R.valor > 1 ? ', without cash,' : ''} is worth ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'more' : 'less'}</b>.`)}</p>`;
   } else idx = `<p class="nota" style="margin:0">${bm && bm.desdeDatos ? L(`El indexado tiene precios desde ${fechaConAnio(bm.desdeDatos)}, y tu primera compra es anterior.`, `The index fund has prices from ${fechaConAnio(bm.desdeDatos)}; your first purchase is earlier.`) : L('Sale en cuanto tus posiciones tengan fecha de compra.', 'It shows once your holdings have a purchase date.')}</p>`;
+  if (bm && !bm.sinDatos) idx += `<p class="pab-sub" style="margin:10px 0 0"><a class="fr-ir" href="#av-frente" data-pest-av="frente">${L('Verlo mes a mes ›', 'See it month by month ›')}</a></p>`;
   const indexado = pabT('c4', L('¿Y en un indexado?', 'And in an index fund?'), idx, L('Un fondo del MSCI World en euros, con los dividendos dentro y su comisión descontada. Lo de hoy no dice nada de lo que pasará.', 'An MSCI World fund in euros, dividends included and its fee taken off. Today says nothing about the future.'));
   // lo que cobras y lo que te cuesta: las dos tarjetas de Ingresos y costes
   const D = dividendosMeses(M), nomMes = (k) => { const d = deIso(k + '-01'); return IDIOMA === 'en' ? MESES_EN[d.getMonth()].slice(0, 3) : MESES[d.getMonth()]; };
@@ -557,9 +558,9 @@ function pavHacienda(M) {
     if (!f.precio || f.inst.tipo === 'Efectivo') continue;
     for (const l of lotesDe(f.pos)) { if (!(l.u > 1e-9)) continue; const v = l.u * f.precio; lotes.push({ f, l, v, g: v - l.c }); }
   }
-  const gTotal = sum(lotes, (x) => x.g), siTodo = impuestoDeVenta(gTotal).impuesto;
+  const gTotal = sum(lotes, (x) => x.g), siTodo = impuestoDeVentas(lotes.map((x) => ({ g: x.g, inst: x.f.inst }))).impuesto;
   lotes.sort((a, b) => Math.abs(b.g) - Math.abs(a.g));
-  const tabla = pavTabla([L('Posición', 'Holding'), L('Compra', 'Bought'), L('Coste → hoy', 'Cost → today'), L('Ganancia', 'Gain'), L('Si lo vendieras', 'If you sold it')], lotes.slice(0, 14).map(({ f, l, v, g }) => [`<b>${pavNom(f)}</b>`, `${l.f ? fechaConAnio(l.f) : '—'}<small>${fmtNum(l.u, l.u < 10 ? 4 : 2)} ${L('uds.', 'units')}${l.mezcla ? L(' · coste medio', ' · average cost') : ''}</small>`, `${eur(l.c, 0)}<small>${eur(v, 0)}</small>`, `<span class="${cls(g)}">${eurS(g, 0)}</span>`, g > 0 ? `≈ ${eur(impuestoDeVenta(g).impuesto, 0)}` : `<small>${L('compensaría', 'would offset')}</small>`]))
+  const tabla = pavTabla([L('Posición', 'Holding'), L('Compra', 'Bought'), L('Coste → hoy', 'Cost → today'), L('Ganancia', 'Gain'), L('Si lo vendieras', 'If you sold it')], lotes.slice(0, 14).map(({ f, l, v, g }) => [`<b>${pavNom(f)}</b>`, `${l.f ? fechaConAnio(l.f) : '—'}<small>${fmtNum(l.u, l.u < 10 ? 4 : 2)} ${L('uds.', 'units')}${l.mezcla ? L(' · coste medio', ' · average cost') : ''}</small>`, `${eur(l.c, 0)}<small>${eur(v, 0)}</small>`, `<span class="${cls(g)}">${eurS(g, 0)}</span>`, g > 0 ? `≈ ${eur(impuestoDeVenta(g, undefined, f.inst).impuesto, 0)}` : `<small>${L('compensaría', 'would offset')}</small>`]))
     + (lotes.length > 14 ? `<p class="pav-como" style="margin-top:8px">${L(`Y ${lotes.length - 14} lotes más, más pequeños.`, `And ${lotes.length - 14} smaller lots.`)}</p>` : '');
   const fuera = (pred) => sum(M.filas.filter((f) => PAV_FUERA.test(f.pos.plataforma || '') && pred(f)), (f) => f.valor);
   const cripto = fuera((f) => f.inst.clase === 'Cripto'), valores = fuera((f) => f.inst.clase !== 'Cripto');
@@ -575,12 +576,15 @@ function pavHacienda(M) {
     pavT('c12', L(`Renta de ${anio} (se presenta entre abril y junio de ${anio + 1})`, `${anio} tax return`), pavKpis([
       [L('Ganancias y pérdidas por ventas', 'Gains and losses from sales'), eurS(fa.gp, 0), cls(fa.gp)],
       [L('Dividendos e intereses', 'Dividends and interest'), eur(fa.rcm, 0)],
+      fa.pendientesRcm ? [L('Rendimientos negativos de años anteriores', 'Negative investment income from earlier years'), eur(fa.pendientesRcm, 0), '', fa.usadasRcm ? L(`usas ${eur(fa.usadasRcm, 0)}`, `using ${eur(fa.usadasRcm, 0)}`) : ''] : null,
+      fa.nRCM ? [L('Ventas de ETC (rendimiento del capital)', 'ETC sales (investment income)'), eurS(fa.rcmVentas, 0), cls(fa.rcmVentas)] : null,
       [L('Pérdidas de años anteriores', 'Losses from earlier years'), eur(fa.pendientes, 0), '', fa.usadas ? L(`usas ${eur(fa.usadas, 0)}`, `using ${eur(fa.usadas, 0)}`) : ''],
       [L('Base del ahorro', 'Savings tax base'), eur(fa.base, 0)],
       [L('Impuesto', 'Tax'), eur(fa.cuota, 0), '', L(`tramo del ${pctTramo(fa.marginal)} %`, `${pctTramo(fa.marginal)}% bracket`)],
       [L('Ya retenido', 'Already withheld'), eur(fa.retenido, 0)],
       [L('Te saldría a pagar', 'You would owe'), `≈ ${eur(pagar, 0)}`, pagar > 0 ? 'warn' : ''],
       [L('Para compensar más adelante', 'To offset later'), eur(fa.sobra, 0)],
+      fa.sobraRCM > 0 ? [L('Rendimientos negativos (ETC) para más adelante', 'Negative investment income (ETCs) to offset later'), eur(fa.sobraRCM, 0)] : null,
     ], 4), L(`Con tus ventas apuntadas y lo que pusiste en Hacienda (dividendos, retenciones, pérdidas de otros años). Tramos del ahorro: ${textoTramos()}. Es un cálculo, no asesoramiento fiscal.`, 'With your recorded sales and what you entered in Taxes. It is a calculation, not tax advice.'), pavIr('#fiscal', L('Hacienda', 'Taxes'))),
     pavT('c8', L('Tus lotes y lo que supondría vender cada uno', 'Your lots and what selling each would mean'), (lotes.length ? tabla : `<p class="nota" style="margin:0">${L('Sin lotes con precio.', 'No priced lots.')}</p>`) + `<p class="pav-como" style="margin-top:10px">${L(`Si vendieras todo hoy: ganancia de ${eurS(gTotal, 0)} e impuesto de ≈ ${eur(siTodo, 0)} (sumado a lo que ya llevas este año).`, `If you sold everything today: a gain of ${eurS(gTotal, 0)} and tax of ≈ ${eur(siTodo, 0)}.`)}</p>`, L('FIFO: al vender, sale primero lo que compraste antes. Cada lote, como si lo vendieras solo, con lo que llevas este año. Lo decides tú.', 'FIFO: what you bought first goes first. Each lot as if sold on its own. Your call.')),
     pavT('c4', L('Avisos', 'Reminders'), `<ul class="pav-lista">${avisos.map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join('')}</ul>`, L('Los de fuera se miran por el nombre del bróker o del exchange que pusiste en cada posición. Es información, no asesoramiento fiscal.', 'Foreign ones are detected from the broker name on each holding.')),
@@ -668,6 +672,8 @@ function pavCostes(M) {
 
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
+  if (p === 'frente') { dibujarFrente(M); return; }
+  if (p === 'tuano') { dibujarTuAno(M); return; }
   if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }
   if (p === 'rentab') {
     const el = $('#pavBench'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;
@@ -710,13 +716,8 @@ const PAV_MESES = () => (IDIOMA === 'en' ? ['January', 'February', 'March', 'Apr
 const pavChips = (attr, actual, xs) => `<div class="tabs" role="group">${xs.map(([k, t]) => `<button type="button" ${attr}="${k}" aria-pressed="${actual === k}">${t}</button>`).join('')}</div>`;
 
 /* ---------- Día a día ---------- */
-function pavDias(M) {
-  // sin cripto, el sábado y el domingo no son días de bolsa (serieCartera pone un punto «hoy» también en fin de semana)
-  const s0 = serieCartera(M, 420), cripto = M.filas.some((f) => f.inst.clase === 'Cripto'), out = [];
-  const s = cripto ? s0 : s0.filter((x) => { const g = deIso(x.d).getDay(); return g !== 0 && g !== 6; });
-  for (let i = 1; i < s.length; i++) if (s[i - 1].v > 0) out.push({ d: s[i].d, e: s[i].v - s[i - 1].v, p: (s[i].v / s[i - 1].v - 1) * 100 });
-  return out;
-}
+// el cálculo, en el núcleo (cambiosPorDia): Buenos días usa el mismo para «Ayer»
+const pavDias = (M) => cambiosPorDia(M, 420);
 function pavPnl(M) {
   const ds = pavDias(M);
   if (ds.length < 5) return pavT('c12', L('Día a día', 'Day by day'), `<p class="nota" style="margin:0">${L('Aún no hay precios de suficientes días para contarlo.', 'Not enough days of prices yet.')}</p>`);
@@ -746,10 +747,10 @@ function pavPnl(M) {
   const maxM = Math.max(1, ...ult.map(([, v]) => Math.abs(v)));
   const barras = ult.map(([k, v]) => pavDos(`${PAV_MESES()[+k.slice(5) - 1].slice(0, 3)} ${k.slice(2, 4)}`, v, maxM)).join('');
   // lo que más ha movido tu cartera el último día
-  const mov = M.filas.filter((f) => f.dia != null && f.varDia != null && !f.diaViejo).map((f) => [f.inst.corto || f.inst.nombre, f.dia]).filter(([, v]) => isFinite(v) && Math.abs(v) > 0.005).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
+  const mov = M.filas.filter((f) => f.dia != null && f.varDia != null).map((f) => [f.inst.corto || f.inst.nombre, f.dia]).filter(([, v]) => isFinite(v) && Math.abs(v) > 0.005).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
   const maxD = Math.max(1, ...mov.map(([, v]) => Math.abs(v)));
   return [
-    pavT('c8', L('Tu cartera, día a día', 'Your portfolio, day by day'), kpis + `<div style="margin-top:16px">${cal}</div>`, L('Con lo que tienes hoy y el precio de cierre de cada día de bolsa: lo que cambió su valor de un día al siguiente. No cuenta las compras ni las ventas que hiciste por medio, así que un día en que compraste no sale como una subida.', 'With what you own today and each trading day\'s close: how its value changed from one day to the next. Purchases and sales in between are not counted.')),
+    pavT('c8', L('Tu cartera, día a día', 'Your portfolio, day by day'), kpis + `<div style="margin-top:16px">${cal}</div>`, L('Con lo que tienes hoy y el precio de cierre de cada día de bolsa: lo que cambió su valor de un día al siguiente. No cuenta las compras ni las ventas que hiciste por medio, así que un día en que compraste no sale como una subida. La casilla de hoy es la cifra de «Hoy» de Inicio, Buenos días y el widget; lo de los fondos va en el día de su valor, que publican uno o dos días después.', 'With what you own today and each trading day\'s close: how its value changed from one day to the next. Purchases and sales in between are not counted. Today\'s box is the same «Today» figure as on Home, the morning summary and the widget; funds go on the day of their price, published a day or two later.')),
     pavT('c4', L('Mes a mes', 'Month by month'), barras, L('La suma de los días de cada mes, en euros, con lo que tienes hoy.', 'The sum of each month\'s days, in euros, with what you own today.')),
     mov.length ? pavT('c12', L('Lo que más ha movido tu cartera hoy', 'What moved your portfolio most today'), mov.map(([n, v]) => pavDos(n, v, maxD)).join(''), L('Lo que ha ganado o perdido cada posición en la última sesión, en euros.', 'What each holding gained or lost in the last session, in euros.')) : '',
   ].join('');

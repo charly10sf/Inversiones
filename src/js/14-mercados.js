@@ -30,6 +30,23 @@ const MERC_INFO = {
   'NG=F': { g: 'Materias primas', que: 'El gas natural en EEUU. Pesa en la factura de la industria y en la inflación.', sube: 'Más inflación y costes para la industria.', baja: 'Alivio en costes y en la inflación.', tuyo: (f) => f.p && /Utilities|Gas/i.test(f.p.industria || '') },
   'BTC-EUR': { g: 'Cripto', que: 'La mayor criptomoneda. Muy volátil: se mueve con el apetito por el riesgo.', sube: 'Apetito por el riesgo: suele ir con la tecnología.', baja: 'Huida del riesgo: puede caer mucho en poco tiempo.', tuyo: (f) => f.inst.clase === 'Cripto' },
 };
+/* 14 nov 2026 (Carlos: «si no es hoy, que no ponga hoy; que ponga el viernes, y si es día festivo que lo identifique»): el
+   rótulo del movimiento de un mercado. Con dato de hoy, «Hoy sube»; con dato de otro día, ese día («El viernes subió», o
+   la fecha si hace más de una semana); y si hoy su bolsa cierra por festivo, lo dice. */
+const BOLSA_DE_MERC = { '^IBEX': 'mad', '^GDAXI': 'fra', '^FCHI': 'eur', '^STOXX50E': 'eur', '^FTSE': 'lon', '^GSPC': 'us', '^NDX': 'us', '^RUT': 'us', '^VIX': 'us', '^TNX': 'us', '^IRX': 'us' };
+function festivoHoyMerc(sym) {
+  const k = BOLSA_DE_MERC[sym], hoy = hoyIso(), f = k && AG_CIERRES.find(([d, donde]) => d === hoy && donde.split(' ').includes(k));
+  return f ? f[2] : '';
+}
+function rotuloMovMerc(sym, sube) {
+  const dv = diaDatoMerc(sym);
+  if (!dv) return sube ? 'Hoy sube' : 'Hoy baja';
+  const d = deIso(dv), cerca = dv >= sumarDias(hoyIso(), -6), fest = festivoHoyMerc(sym);
+  const es = `${cerca ? `El ${DIAS_LARGOS[d.getDay()]}` : `El ${fechaCorta(dv)}`} ${sube ? 'subió' : 'bajó'}${fest ? ` (hoy no abre por ${fest})` : ''}`;
+  const en = `${cerca ? `On ${DIAS_EN[d.getDay()]}` : `On ${fechaCorta(dv)}`} it ${sube ? 'rose' : 'fell'}${fest ? ` (closed today: ${AG_FESTIVOS_EN[fest] || fest})` : ''}`;
+  return L(es, en);
+}
+
 /* cada mercado en una fila: nombre, mini gráfica, precio y cambio de hoy; al tocarla, qué es, cómo va y qué te implica */
 function filaMercado(sym, m, M) {
   const info = MERC_INFO[sym] || {};
@@ -47,7 +64,7 @@ function filaMercado(sym, m, M) {
       ${info.que ? `<p class="mf-que">${esc(info.que)}</p>` : ''}
       <div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div>
-      ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
+      ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : esc(rotuloMovMerc(sym, sube))}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
       ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
     </div>
   </details>`;
@@ -63,7 +80,7 @@ function tarjetaMercado(sym, m, M) {
       <div class="merc2-p"><span class="merc-p">${B('mp:' + sym)}</span>${B('mv:' + sym)}</div></div>
     <div class="merc2-g"><div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div></div>
-    ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
+    ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : esc(rotuloMovMerc(sym, sube))}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
     ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
   </article>`;
 }
@@ -83,7 +100,7 @@ function vistaMercados(M) {
     ${htmlBuscaMercados()}
     ${htmlMapaMundo()}
     <section class="mgrupos-w" aria-labelledby="hMg">
-      <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">La línea son sus tres últimos meses y la cifra, lo de hoy. Toca uno para ver qué es y qué significa para ti.</span></div>
+      <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">La línea son sus tres últimos meses y la cifra, lo de hoy o, si su bolsa no ha abierto hoy, lo de su última sesión. Toca uno para ver qué es y qué significa para ti.</span></div>
       <div class="mg-tabs" role="tablist" aria-label="Grupos de mercados">${grupos.map(([g]) => `<button type="button" role="tab" data-mg="${esc(g)}" aria-selected="${g === act}">${esc(MG_CORTO[g] || g)}</button>`).join('')}</div>
       <div class="mgrupos">${grupos.map(([g, v]) => `<section class="mgrupo${g === act ? ' act' : ''}" data-g="${esc(g)}" aria-label="${esc(g)}"><h3 class="mg-t">${esc(g)}</h3><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
     </section>

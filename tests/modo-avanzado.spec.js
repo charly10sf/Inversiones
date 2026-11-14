@@ -70,7 +70,7 @@ test('básico: sin pestañas y con un «¿Qué es?» en cada bloque; se elige en
   expect(await page.evaluate(() => [...document.querySelectorAll('#vista .que-es')].every((p) => p.closest('section, .car-pos, .car-hero')))).toBe(true);
   // 0.8.3a: en básico, seis pestañas (sin Ingresos y costes) y Posiciones sin Día a día
   await page.evaluate(() => { location.hash = 'posiciones'; });
-  await expect(page.locator('.pest-av a')).toHaveText(['Posiciones', 'Rentabilidad', 'Riesgo', 'Reparto', 'Hacienda', 'La IA explica']);
+  await expect(page.locator('.pest-av a')).toHaveText(['Posiciones', 'Entiende tu cartera', 'Rentabilidad', 'Riesgo', 'Reparto', 'Hacienda', 'La IA explica']); // 0.8.6: la 11, solo en básico
   await expect(page.locator('#vista .apartados a')).toHaveText(['Posiciones', 'Movimientos']);
 });
 

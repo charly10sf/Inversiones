@@ -30,6 +30,7 @@ import email.utils
 import json
 import math
 import re
+import unicodedata
 import sys
 import time
 import traceback
@@ -119,7 +120,15 @@ NOTICIAS_MERCADO = [
     ("Tipos", "bonos rentabilidad bono 10 años"), ("Asia", "bolsas asiáticas China Japón"),
     ("Emergentes", "mercados emergentes bolsa India Brasil"), ("Materias primas", "petróleo Brent OPEP"),
     ("Materias primas", "oro precio onza"), ("Divisas", "dólar euro divisas"), ("Cripto", "bitcoin criptomonedas mercado"),
+    # 9 nov 2026 (la página de Noticias de la app, «más extensa y más detallada»): empresas, economía y más zonas
+    ("España", "bolsa española empresas resultados"), ("España", "economía española PIB paro"),
+    ("EEUU", "Wall Street resultados empresas Nasdaq"), ("Europa", "economía zona euro Alemania"),
+    ("Asia", "Nikkei Hang Seng bolsa"), ("Cripto", "ethereum criptomonedas regulación"),
 ]
+# los titulares de mercado, solo de los últimos días (antes, de 30: salían noticias viejas con la fecha de hoy) y más
+# por zona: hasta 5 de cada una y 60 en total
+NOTICIAS_MERCADO_CUANDO = "3d"
+NOTICIAS_POR_ZONA, NOTICIAS_MERCADO_MAX = 5, 60
 
 # Noticias de cada comunidad autónoma, solo las que tocan el dinero de quien vive allí: impuestos, ayudas, vivienda.
 # El titular tiene que nombrar la comunidad (o su gobierno) y hablar de dinero. Cada 6 horas, en noticias["_region"].
@@ -590,7 +599,8 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 
 # ---------------------------------------------------------------- noticias (Google News en español)
 
-RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
+RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial"
+                   r"|tiempo real|cotizaci[oó]n (de )?hoy|^precio (del|de la|de) [^.]{0,40}\bhoy\b|minuto a minuto", re.I)
 
 
 def web_medio(it):
@@ -599,6 +609,76 @@ def web_medio(it):
     url = (src.get("url") if src is not None else None) or ""
     host = urllib.parse.urlparse(url).hostname or ""
     return re.sub(r"^www\.", "", host.lower()) or None
+
+
+# 14 nov 2026 (auditoría): la misma nota en varios medios contaba como varias fuentes. Los repetidos se quitaban por los 60
+# primeros caracteres del titular, y «El secretario del Tesoro de EEUU rechaza más subidas de tipos de la Fed» (El Boletín),
+# «…, contrario a subir tipos: "No es algo que yo haría…"» (El Confidencial) y «… rechaza más subidas de tipos: No es algo
+# que yo haría…» (Demócrata) pasaban por tres. Ahora dos titulares son la misma nota si comparten casi todas sus palabras.
+_VACIAS = set("el la los las un una unos unas de del al y o u en por para con sin que se su sus lo a e es no mas como tras ante "
+              "sobre entre desde hasta hoy ayer enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre "
+              "diciembre the of and to in on for as at by is its with from after amid".split())
+
+
+def palabras_nota(t):
+    """Las palabras que cuentan de un titular: sin tildes, sin artículos ni preposiciones, con las cifras enteras (3,36)."""
+    s = "".join(c for c in unicodedata.normalize("NFD", str(t or "").lower()) if unicodedata.category(c) != "Mn")
+    return {w for w in re.findall(r"[a-z0-9]+(?:[.,][0-9]+)*", s) if (len(w) >= 3 or w[0].isdigit()) and w not in _VACIAS}
+
+
+def misma_nota(a, b, sin=()):
+    """Si dos titulares cuentan lo mismo: comparten 4 palabras o más y al menos el 60 % de las del más corto. Dos titulares
+    iguales, siempre. `sin`: palabras que no cuentan (las del nombre de la empresa, que salen en todos sus titulares)."""
+    if re.sub(r"\W+", "", str(a or "").lower())[:60] == re.sub(r"\W+", "", str(b or "").lower())[:60]:
+        return True
+    pa, pb = palabras_nota(a) - set(sin), palabras_nota(b) - set(sin)
+    comun, menor = len(pa & pb), min(len(pa), len(pb))
+    return menor >= 4 and comun >= 4 and comun / menor >= 0.6
+
+
+def agrupar_notas(lista):
+    """La lista sin las notas repetidas, en el mismo orden: de cada nota se queda el primer titular y en «mas» los otros
+    medios que la traen (hasta 4)."""
+    grupos = []
+    for x in lista:
+        if not isinstance(x, dict) or not x.get("t"):
+            continue
+        for g in grupos:
+            if any(misma_nota(x["t"], y["t"]) for y in g):
+                g.append(x)
+                break
+        else:
+            grupos.append([x])
+    out = []
+    for g in grupos:
+        uno = dict(g[0])
+        medios = []
+        for y in g:
+            for m in [y.get("f")] + list(y.get("mas") or []):
+                if m and m != uno.get("f") and m not in medios:
+                    medios.append(m)
+        if medios:
+            uno["mas"] = medios[:4]
+        else:
+            uno.pop("mas", None)
+        out.append(uno)
+    return out
+
+
+def elegir_mercado(lista, por_zona=None, total=None):
+    """Los titulares de mercado que se guardan: sin notas repetidas (agrupar_notas), hasta por_zona de cada zona (los más
+    nuevos) y el resto por fecha hasta total; de más nuevo a más viejo."""
+    por_zona = NOTICIAS_POR_ZONA if por_zona is None else por_zona
+    total = NOTICIAS_MERCADO_MAX if total is None else total
+    m = sorted(lista, key=lambda x: x.get("d") or "", reverse=True)
+    unicos = agrupar_notas(m)
+    zonas = {}
+    for x in unicos:
+        zonas.setdefault(x.get("z"), []).append(x)
+    elegidas = [x for xs in zonas.values() for x in xs[:por_zona]]
+    resto = [x for x in unicos if x not in elegidas]
+    elegidas += resto[: max(0, total - len(elegidas))]
+    return sorted(elegidas[:total], key=lambda x: x.get("d") or "", reverse=True)
 
 
 def noticias(consulta, n=6, debe=None, cuando="30d"):
@@ -1243,6 +1323,18 @@ def fechas_radar(info, precio, a_eur):
     return out
 
 
+def objetivo_creible(objetivo, precio):
+    """El precio objetivo medio, o None si no puede ser: más de 8 veces el precio o menos de la octava parte es un cambio de
+    unidad de Yahoo (peniques contra libras), no una opinión. 13 nov 2026 (auditoría): Templeton Emerging Markets (TEM.L)
+    salía con un 1.150 % de recorrido (objetivo 3.757,7 con el precio en 300,5 peniques)."""
+    try:
+        if objetivo and precio and 0.125 <= float(objetivo) / float(precio) <= 8:
+            return objetivo
+    except (TypeError, ValueError, ZeroDivisionError):
+        pass
+    return None
+
+
 def radar_ficha(sim, zona, fx):
     """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
     rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
@@ -1254,7 +1346,9 @@ def radar_ficha(sim, zona, fx):
     moneda = info.get("currency") or "EUR"
     a_eur = cambio_hoy(moneda, fx)
     a_eur_base = cambio_hoy(normaliza_moneda(moneda)[0], fx)
-    objetivo = info.get("targetMeanPrice")
+    objetivo = objetivo_creible(info.get("targetMeanPrice"), precio)
+    if objetivo is None:  # sin objetivo medio que valga, tampoco su rango
+        info = {**info, "targetLowPrice": None, "targetHighPrice": None}
     eps, epsf = info.get("trailingEps"), info.get("forwardEps")
     div = info.get("dividendYield")
     cambio_1a = info.get("52WeekChange")
@@ -1425,6 +1519,97 @@ def radar_precios(valores, fx):
         if x.get("obj"):
             x["pot"] = num((x["obj"] / p - 1) * 100, 1)
     return len(nuevos)
+
+
+# 14 nov 2026 (auditoría): la beta que se enseñaba era la de Yahoo, que no dice contra qué mide. En las de fuera de EEUU
+# no es su bolsa: Bankinter salía con 0,04 y CaixaBank con 0,12 (los bancos son un tercio del Ibex), y BAT con 0,09 cuando
+# contra el FTSE 100 da 0,9. Al lado ponía «cuánto se mueve una acción cuando se mueve el mercado», y la IA sacaba
+# conclusiones de ahí. Ahora la calcula Toisón con datos que ya tiene: el último año, semana a semana, de cada acción
+# (radar-hist.json, en su moneda) contra el índice de su bolsa, y dice cuál es. Si no se puede calcular, no hay beta.
+INDICE_BETA = {".MC": "^IBEX", ".L": "^FTSE", ".DE": "^GDAXI", ".F": "^GDAXI", ".PA": "^FCHI"}
+BETA_SEMANAS_MIN = 40
+
+
+def indice_beta(sim):
+    """El índice contra el que se mide la beta de una acción: el de su bolsa (Ibex 35, FTSE 100, DAX, CAC 40); el Euro
+    Stoxx 50 para el resto de Europa y el S&P 500 para las de EEUU (sin sufijo)."""
+    s = str(sim or "")
+    if "." not in s:
+        return "^GSPC"
+    return INDICE_BETA.get(s[s.rindex("."):].upper(), "^STOXX50E")
+
+
+def beta_propia(serie, hist_indice, minimo=None):
+    """La beta de una acción contra un índice, con cierres semanales. serie: {"d": lunes de la primera semana, "v": cierres
+    de cada semana}; hist_indice: [[fecha, cierre], …] diario. De cada semana del índice vale su último cierre. Regresión
+    simple de lo que hace la acción cada semana sobre lo que hace el índice. None si hay menos de BETA_SEMANAS_MIN semanas
+    con los dos datos o el índice no se ha movido."""
+    minimo = BETA_SEMANAS_MIN if minimo is None else minimo
+    try:
+        d0 = dt.date.fromisoformat(str((serie or {}).get("d"))[:10])
+    except ValueError:
+        return None
+    v = (serie or {}).get("v") or []
+    por_semana = {}
+    for fila in hist_indice or []:
+        try:
+            k = (dt.date.fromisoformat(str(fila[0])[:10]) - d0).days // 7
+        except (ValueError, TypeError, IndexError):
+            continue
+        if 0 <= k < len(v) and isinstance(fila[1], (int, float)) and fila[1] > 0:
+            por_semana[k] = fila[1]  # el histórico va por fecha: se queda el último cierre de la semana
+    ra, ri = [], []
+    for k in range(1, len(v)):
+        a0, a1, i0, i1 = v[k - 1], v[k], por_semana.get(k - 1), por_semana.get(k)
+        if not (isinstance(a0, (int, float)) and isinstance(a1, (int, float)) and a0 > 0 and a1 > 0 and i0 and i1):
+            continue
+        r = a1 / a0 - 1
+        if abs(r) > 0.75:
+            continue  # un salto así en una semana es casi siempre un dato roto o un cambio de acciones sin ajustar
+        ra.append(r)
+        ri.append(i1 / i0 - 1)
+    n = len(ra)
+    if n < minimo:
+        return None
+    ma, mi = sum(ra) / n, sum(ri) / n
+    var = sum((y - mi) ** 2 for y in ri)
+    if var <= 0:
+        return None
+    return num(sum((x - ma) * (y - mi) for x, y in zip(ra, ri)) / var, 2)
+
+
+def poner_betas(valores, instrumentos, radar_hist, mercados):
+    """Pone en cada empresa del radar («beta» y «bi», el índice) y en cada posición que sea una de ellas («beta»,
+    «beta_ref» y fundamentales.beta) la beta calculada aquí, y quita la de Yahoo donde no se puede calcular. Devuelve
+    cuántas tienen beta."""
+    series = (radar_hist or {}).get("s") or {}
+    hist = {sim: (m or {}).get("historico") for sim, m in (mercados or {}).items()}
+    n = 0
+    hechas = {}
+    for x in valores or []:
+        sim = x.get("s")
+        ind = indice_beta(sim)
+        b = beta_propia(series.get(sim), hist.get(ind))
+        x["beta"] = b
+        if b is None:
+            x.pop("bi", None)
+        else:
+            x["bi"] = ind
+            n += 1
+        hechas[sim] = (b, ind)
+    for v in (instrumentos or {}).values():
+        if not isinstance(v, dict) or ("beta" not in v and "beta" not in (v.get("fundamentales") or {})):
+            continue
+        sim = v.get("simbolo")
+        b, ind = hechas[sim] if sim in hechas else (beta_propia(series.get(sim), hist.get(indice_beta(sim))), indice_beta(sim))
+        v["beta"] = b
+        if isinstance(v.get("fundamentales"), dict):
+            v["fundamentales"]["beta"] = b
+        if b is None:
+            v.pop("beta_ref", None)
+        else:
+            v["beta_ref"] = ind
+    return n
 
 
 def radar_historico(valores):
@@ -1617,7 +1802,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro"), None) for inst in instrumentos if inst.get("noticias")]
         for clave, q, debe, zona in consultas:
             try:
-                lista = noticias(q, 6 if zona else 8, debe)
+                lista = noticias(q, 6, debe, NOTICIAS_MERCADO_CUANDO) if zona else noticias(q, 8, debe)
                 for x in lista:
                     if zona:
                         x["z"] = zona
@@ -1628,21 +1813,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
                     salida["noticias"][clave] = prev_not[clave]
             time.sleep(0.3)
         if "mercado" in salida["noticias"]:
-            m = sorted(salida["noticias"]["mercado"], key=lambda x: x["d"] or "", reverse=True)
-            vistos, unicos = set(), []
-            for x in m:
-                k = re.sub(r"\W+", "", x["t"].lower())[:60]
-                if k not in vistos:
-                    vistos.add(k)
-                    unicos.append(x)
-            # hasta 3 por zona y el resto por fecha, 30 como mucho
-            por_zona = {}
-            for x in unicos:
-                por_zona.setdefault(x.get("z"), []).append(x)
-            elegidas = [x for xs in por_zona.values() for x in xs[:3]]
-            resto = [x for x in unicos if x not in elegidas]
-            elegidas += resto[: max(0, 30 - len(elegidas))]
-            salida["noticias"]["mercado"] = sorted(elegidas, key=lambda x: x["d"] or "", reverse=True)
+            salida["noticias"]["mercado"] = elegir_mercado(salida["noticias"]["mercado"])
         salida["noticias_generado"] = ahora()
 
     # las de cada comunidad, aparte y más despacio
@@ -1709,6 +1880,12 @@ def main(ruta_inst, dir_anterior, dir_salida):
         # el núcleo (radar.json) y el resto (radar-mas.json); las descubiertas van de mayor a menor
         nucleo = {sim for simbolos in RADAR.values() for sim in simbolos} | pd | {s for s, _ in extra[:NUCLEO_DESCUBIERTAS]}
         todos = radar_sal["valores"]
+        # la beta propia, con el histórico semanal de la pasada anterior (se rehace una vez al día: para un año va de sobra)
+        try:
+            print(f"radar: beta propia en {poner_betas(todos, salida['instrumentos'], leer_json(f'{dir_anterior}/radar-hist.json'), salida['mercados'])} empresas")
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            errores.append(f"radar beta: {e}")
         radar_sal["valores"] = [x for x in todos if x.get("s") in nucleo]
         mas = [x for x in todos if x.get("s") not in nucleo]
         radar_sal["pedidas"] = pedidas

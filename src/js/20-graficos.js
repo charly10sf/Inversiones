@@ -11,6 +11,8 @@ function niceTicks(min, max, n = 4) {
 /* series: [{datos:[{d,v}], color, disc, nombre}] — la primera manda en el eje X y en el color de relleno */
 function grafLinea(cont, series, opt = {}) {
   cont.innerHTML = '';
+  // 0.8.6 · modo discreto: una gráfica en euros (su fmt ya sale con «••••») va también sin cifras en el eje
+  if (opt.oculto == null && S.oculto && typeof opt.fmt === 'function') { try { if (/•/.test(String(opt.fmt(1234)))) opt = { ...opt, oculto: true }; } catch (e) {} }
   if (Array.isArray(series) && series.length && series[0].d) series = [{ datos: series }];
   const base = series[0] && series[0].datos;
   if (!base || base.length < 2) { cont.innerHTML = '<div class="vacio">Faltan precios para dibujarlo.</div>'; return; }
@@ -71,7 +73,12 @@ function grafLinea(cont, series, opt = {}) {
   if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--borde)" stroke-width="1" stroke-dasharray="2 3"/>`;
   if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--aviso)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--aviso)">${esc(opt.linea.etiqueta || '')}</text>`;
   const yRel = opt.rellenoA != null ? y(opt.rellenoA) : H - mb;
-  g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
+  // 0.8.6: dosLados, por encima del valor de referencia en verde y por debajo en rojo (la diferencia con un indexado)
+  if (opt.rellenoA != null && opt.dosLados) {
+    const id = 'gl' + Math.random().toString(36).slice(2, 8), pol = `points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}"`;
+    g += `<defs><clipPath id="${id}a"><rect x="0" y="0" width="${W}" height="${Math.max(0, yRel)}"/></clipPath><clipPath id="${id}b"><rect x="0" y="${yRel}" width="${W}" height="${Math.max(0, H - yRel)}"/></clipPath></defs>`;
+    g += `<polygon ${pol} fill="var(--sube)" fill-opacity="0.22" clip-path="url(#${id}a)"/><polygon ${pol} fill="var(--baja)" fill-opacity="0.22" clip-path="url(#${id}b)"/>`;
+  } else g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
   if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--borde)" stroke-width="1"/>`;
   for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--texto-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
   g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -334,19 +341,34 @@ function dibujar(M) {
   for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
   equilibrarCar();
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M, cfgProy()), (S.horizonte || 20) * 12);
+  dibujarEvo(M);
+  if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
+  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
+  // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
+  for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
+}
+/* la gráfica grande de la cartera. En 1D y 1S pide al Worker los precios por horas de lo que no trae intradia.json
+   y, cuando llegan, se vuelve a dibujar sola (sin repintar la página) */
+function dibujarEvo(M) {
   const g = $('#grafEvo');
   if (g) {
     const dias = diasRango(S.rango);
     const intra = INTRADIA.has(S.rango);
+    if (intra) pedirIntradia(M.filas.filter((f) => f.uds != null && f.valor > 0), (nuevo) => { if (nuevo && INTRADIA.has(S.rango) && S.M && $('#grafEvo')) dibujarEvo(S.M); });
     let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias), deIntra = intra;
-    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 9); deIntra = false; }
+    // sin precios por horas de nada (una cartera solo de fondos, o sin red): los cierres de cada día; en 1S, de la
+    // última semana, y en 1D, de los últimos días (y la pastilla lo dice)
+    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 7); deIntra = false; }
     // la serie diaria solo suma las posiciones con histórico: el efectivo (y lo que no tiene histórico) entra como
     // una cantidad fija, para que la gráfica, la pastilla y la cifra grande hablen del mismo patrimonio
     if (!deIntra && serie.length) { const extra = M.total - serie[serie.length - 1].v; if (isFinite(extra) && Math.abs(extra) > 0.005) serie = serie.map((x) => ({ d: x.d, v: x.v + extra })); }
     // la variación del periodo, en una pastilla debajo de la cifra grande
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
-    const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
+    // 12 nov: en 1D la pastilla es siempre «Hoy» (la misma cifra de Buenos días, del widget y de la casilla de hoy del
+    // calendario); antes, sin precios por horas, enseñaba lo de los últimos cuatro días
+    const etqRango = S.rango === '1D' && deIntra ? L('hoy, desde el cierre de ayer', 'today, since yesterday’s close')
+      : S.rango === '1D' && serie.length ? L(`hoy (la gráfica, sin precios por horas: desde el ${fechaPunto(serie[0].d)})`, `today (chart without hourly prices: since ${fechaPunto(serie[0].d)})`)
       : S.rango === 'Inicio' && inicioDicho() && serie.length ? L(`ganado desde que empezaste a invertir, en ${deIso(inicioDicho()).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`, `gained since you started investing, ${deIso(inicioDicho()).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`)
       : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde tu primera compra apuntada, el ${fechaPunto(serie[0].d)}`, `since your first logged purchase, ${fechaPunto(serie[0].d)}`)
       : S.rango === 'Inicio' && serie.length ? L('ganado desde que compraste', 'gained since you bought')
@@ -357,7 +379,8 @@ function dibujar(M) {
       cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
     };
     // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
-    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
+    const dia1 = S.rango === '1D' && isFinite(M.dia) && serie.length > 0;
+    const ref0 = dia1 ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
     const real = (M2) => (S.rango === 'Inicio' && isFinite(M2.pl) && isFinite(M2.plPct) ? { d: M2.pl, p: M2.plPct } : null);
     if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(M));
@@ -373,7 +396,7 @@ function dibujar(M) {
           { const r = Math.round(p.v * 100) / 100, e = Math.trunc(r), c = Math.round(Math.abs(r - e) * 100); hn.innerHTML = `<span>${fmtNum(e, 0)}</span><span class="dec">,${String(c).padStart(2, '0')} €</span>`; }
         }
         lbl.textContent = L(`El ${fechaPunto(p.d)}`, fechaPunto(p.d));
-        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el último cierre', 'since the last close'));
+        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el cierre de ayer', 'since yesterday’s close'));
       } else {
         if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); }
         lbl.textContent = L('Patrimonio', 'Net worth');
@@ -383,17 +406,13 @@ function dibujar(M) {
     // con los precios en directo cambia el patrimonio: la pastilla se pone al día con él (salvo con el dedo encima)
     S.heroVar = (M2) => {
       const hn = $('#heroNum'); if (!hn || hn.dataset.antes || serie.length < 2) return;
-      const desde = S.rango === '1D' && deIntra && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
+      const desde = S.rango === '1D' && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
       pintarVar(desde, { v: isFinite(M2.total) ? M2.total : ahora.v }, etqRango, real(M2));
     };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
-  if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
-  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
-  // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
-  for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
 }
 function dibujarSparkM(el) {
   const h = histMercado(el.dataset.sparkM) || [];

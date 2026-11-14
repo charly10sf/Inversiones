@@ -25,7 +25,7 @@ function fichaTexto(f, corto = false, est = esPublico()) {
   const L = [];
   L.push(`### ${i.corto || i.nombre} (id "${f.pos.id}")`);
   L.push(`${i.nombre || ''}. ${i.tipo || ''}, ${i.clase || ''}${i.pais ? `, ${PAISES[i.pais] || i.pais}` : ''}, en ${f.pos.plataforma || '?'}. ${[i.yahoo && 'Ticker ' + i.yahoo, i.isin && 'ISIN ' + i.isin].filter(Boolean).join(', ')}.`);
-  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
+  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (${f.varDia == null && f.varUlt != null && f.fecha ? `aún sin precio de hoy: el último es del ${diaConSemana(f.fecha)} y ese día se movió ${P1(f.varUlt)}` : `hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}`}${f.vivo && f.varDia != null ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
   // 0.8.2: con las reglas del estándar (también el fundador con Claude), la señal de los analistas y no la de Toisón
   const sn = est && f.senal && !f.senal.analistas ? senalAnalistas(f) : f.senal;
   L.push(sn.analistas ? `Lo que opinan los analistas: ${sn.txt || 'no la sigue ninguno'}. ${sn.motivos.join(' ')}` : `Señal automática de Toisón: ${sn.txt}. ${sn.motivos.join(' ')}`);
@@ -39,7 +39,7 @@ function fichaTexto(f, corto = false, est = esPublico()) {
     } catch (e) {}
     if (a.cambios && a.cambios.length) L.push('Cambios recientes de analistas: ' + a.cambios.slice(0, corto ? 3 : 5).map((c) => [c.fecha, c.firma, c.accion, c.de && c.a ? `${c.de} → ${c.a}` : c.a, c.objetivo ? `objetivo ${fmtNum(c.objetivo, 2)} €` : ''].filter(Boolean).join(' ')).join('; ') + '.');
   }
-  const val = [fu.per && `PER ${fmtNum(fu.per, 1)}`, (fu.per_futuro || p.per_futuro) && `PER futuro ${fmtNum(fu.per_futuro || p.per_futuro, 1)}`, fu.peg && `PEG ${fmtNum(fu.peg, 2)}`, fu.ev_ebitda && `EV/EBITDA ${fmtNum(fu.ev_ebitda, 1)}`, fu.pvc && `precio/valor contable ${fmtNum(fu.pvc, 2)}`, p.dividendo_pct && `dividendo ${fmtNum(p.dividendo_pct, 2)} %`, fu.payout && `payout ${fmtNum(fu.payout, 0)} %`, fu.capitalizacion && `capitalización ${fmtNum(fu.capitalizacion / 1e9, 1)} mil millones`, fu.deuda_capital && `deuda/capital ${fmtNum(fu.deuda_capital, 0)} %`, fu.roe && `ROE ${fmtNum(fu.roe, 1)} %`, fu.margen && `margen ${fmtNum(fu.margen, 1)} %`, fu.crec_ingresos != null && `ingresos ${P1(fu.crec_ingresos)} interanual`, fu.crec_beneficio != null && `beneficio ${P1(fu.crec_beneficio)} interanual`, fu.beta != null && `beta ${fmtNum(fu.beta, 2)}`].filter(Boolean);
+  const val = [fu.per && `PER ${fmtNum(fu.per, 1)}`, (fu.per_futuro || p.per_futuro) && `PER futuro ${fmtNum(fu.per_futuro || p.per_futuro, 1)}`, fu.peg && `PEG ${fmtNum(fu.peg, 2)}`, fu.ev_ebitda && `EV/EBITDA ${fmtNum(fu.ev_ebitda, 1)}`, fu.pvc && `precio/valor contable ${fmtNum(fu.pvc, 2)}`, p.dividendo_pct && `dividendo ${fmtNum(p.dividendo_pct, 2)} %`, fu.payout && `payout ${fmtNum(fu.payout, 0)} %`, fu.capitalizacion && `capitalización ${fmtNum(fu.capitalizacion / 1e9, 1)} mil millones`, fu.deuda_capital && `deuda/capital ${fmtNum(fu.deuda_capital, 0)} %`, fu.roe && `ROE ${fmtNum(fu.roe, 1)} %`, fu.margen && `margen ${fmtNum(fu.margen, 1)} %`, fu.crec_ingresos != null && `ingresos ${P1(fu.crec_ingresos)} interanual`, fu.crec_beneficio != null && `beneficio ${P1(fu.crec_beneficio)} interanual`, fu.beta != null && `beta ${fmtNum(fu.beta, 2)}${refBeta(p) ? ` frente al ${refBeta(p)} (último año, semana a semana)` : ''}`].filter(Boolean);
   if (val.length) L.push('Valoración y cuentas: ' + val.join(', ') + '.');
   if (p.estimaciones) { const e = p.estimaciones; L.push(`Beneficio por acción que esperan los analistas: este año ${P1(e.este_anio && e.este_anio.crec)}, el que viene ${P1(e.siguiente && e.siguiente.crec)}.`); }
   const re = [['1m', '1 mes'], ['3m', '3 meses'], ['ytd', 'en el año'], ['1a', '1 año'], ['3a_anual', '3 años, anual'], ['5a_anual', '5 años, anual'], ['10a_anual', '10 años, anual']].filter(([k]) => r[k] != null).map(([k, tt]) => `${tt} ${P1(r[k])}`);
@@ -104,7 +104,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     try {
       const D = dividendosMeses(M);
-      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12, mes del ex-dividendo): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos; ${D.meses.filter((m) => m.bruto).map((m) => `${m.k}: ${E0(m.neto)} (${m.de.map((x) => x.n).join(', ')})`).join('; ')}.`);
+      // 14 nov (auditoría): pago a pago, con su fecha y de quién es. Antes iba el total de cada mes con los nombres detrás («2026-12:
+      // 78 € (BAT, IAG)») y la revisión se liaba: «ex-dividendo de IAG: unos 26 € brutos al año por acción» (eran 26 € netos de junio)
+      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12; cada cifra es lo que cobraría por todo lo que tiene de esa posición, no por acción; las fechas son aproximadas, las del año pasado más doce meses, salvo el próximo ex-dividendo de cada una si ya está anunciado): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos. Pago a pago, por fecha del ex-dividendo: ${D.meses.filter((m) => m.bruto).flatMap((m) => m.de).sort((a, b) => (a.d < b.d ? -1 : 1)).map((x) => `${x.d} ${x.n} ${E0(x.neto)} netos (${E0(x.bruto)} brutos)`).join('; ')}.`);
       const SO = solapamientos(M);
       if (SO.pares.length) L.push('Fondos que se pisan (llevan las mismas grandes empresas de una zona): ' + SO.pares.map((x) => `${x.a.inst.corto} y ${x.b.inst.corto} en un ${fmtNum(x.pct, 0)} %`).join('; ') + '.');
       const sg = siguiendo();
@@ -125,9 +127,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     const fa = fiscalAnio(anio);
     L.push('', `## Impuestos de ${anio} (renta que se presenta entre abril y junio de ${anio + 1})`);
-    L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}. Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}. Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.`);
+    L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length - fa.nRCM} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}.${fa.nRCM ? ` Ventas de ETC ${eurP(fa.rcmVentas)} (${fa.nRCM}; cuentan como rendimiento del capital mobiliario, no como ganancia patrimonial).` : ''} Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}.${fa.pendientesRcm ? ` Rendimientos negativos de años anteriores pendientes ${E2(fa.pendientesRcm)}.` : ''} Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.${fa.sobraRCM > 0 ? ` Rendimientos negativos de ETC que pasarían a años siguientes ${E2(fa.sobraRCM)} (saldo aparte: compensan rendimientos y solo hasta el 25 % de las ganancias).` : ''}`);
     if (!fa.otras && !fa.rcm) L.push('Aviso: no ha apuntado en Toisón sus dividendos ni ventas hechas fuera de ella, así que el impuesto calculado puede salir alto.');
-    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio).impuesto)}` : ''}`; }).join('; ') + '.');
+    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : ''}`; }).join('; ') + '.');
     // en el modo estándar GrowFolio no propone ventas: ni la sección (un «ninguna pide vender» sería un «mantén»)
     const planes = pub ? [] : M.filas.map((f) => planVenta(f, M)).filter(Boolean);
     if (!pub) L.push('', '## Planes de venta que propone Toisón ahora');
@@ -147,7 +149,8 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     L.push('', '## Mercados');
     // 0.7: en el chat, más corto (hoy, un mes y en el año)
-    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: hoy ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    // 14 nov (auditoría): si el dato no es de hoy (fin de semana, o la bolsa aún sin abrir), dice de qué día es en vez de «hoy»
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}, dv = diaDatoMerc(sym), cu = dv ? `el ${diaConSemana(dv)}, su última sesión,` : 'hoy'; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: ${cu} ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (${cu} ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
     try {
       const pr = proyeccion(M), c = pr.cfg;
       L.push('', `## Proyección de Toisón (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
@@ -270,17 +273,18 @@ function instruccionesAsesor(est = esPublico()) {
   // lo de sus brókeres sale de lo que tiene de verdad (no de la cartera del creador de GrowFolio)
   const plats = [...new Set([...((S.M && S.M.filas) || []).map((f) => f.pos.plataforma), ...((S.M && S.M.efectivo) || []).map((e) => e.plataforma)].filter(Boolean))];
   const fuera = plats.filter(esDeFuera), conFondos = ((S.M && S.M.filas) || []).some((f) => /^Fondo/.test(f.inst.tipo || ''));
-  const COMIS = { 'Trade Republic': 'Trade Republic, 1 € por operación', MyInvestor: 'MyInvestor, sin comisión en fondos indexados', Bitvavo: 'Bitvavo, alrededor del 0,25 %', Revolut: 'Revolut, según su plan', 'Interactive Brokers': 'Interactive Brokers, desde unos 3 € por operación en Europa' };
+  const COMIS = { 'Trade Republic': 'Trade Republic, 1 € por operación', MyInvestor: 'MyInvestor, sin comisión en fondos indexados', Bitvavo: 'Bitvavo, alrededor del 0,25 %', Revolut: 'Revolut, según su plan', 'Interactive Brokers': 'Interactive Brokers, desde unos 1,25 € por operación en Europa con la tarifa escalonada, más las tasas de bolsa (3 € con la fija)' };
   const comis = plats.map((p2) => COMIS[p2]).filter(Boolean);
   const fiscal = `Fiscalidad en España en ${anio}:
 - Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: ${textoTramos()}${TRAMOS_FORAL[comunidadUsuario()] ? ` (escala foral de ${nombreComunidad(comunidadUsuario())}, donde vive)` : ''}.
 - Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
 - Regla de recompra: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores (acciones y ETF de bolsas de la UE) o en el año anterior o posterior (fondos de inversión, también con aportaciones automáticas, y acciones y ETF que cotizan fuera de la UE), se aplaza la parte de la pérdida que corresponde a lo recomprado. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
 - Traspasos entre fondos de inversión: no tributan. Entre ETF sí.
+- ETC y ETN (oro, materias primas y también los ETN de cripto): son títulos de deuda. La DGT, en la consulta vinculante V0267-25 (2025, sobre un ETC de petróleo), dijo que lo que se gana o se pierde al venderlos es rendimiento del capital mobiliario, no ganancia patrimonial; no hay consulta expresa sobre los de oro ni los de cripto, y Toisón les aplica el mismo criterio por estar hechos igual: dilo así, sin darlo por ley. Se suma a dividendos e intereses, con las ganancias solo se compensa hasta el 25 %, la recompra es de dos meses coticen donde coticen y un bróker español puede retener el 19 % de la ganancia al vender. Tampoco se traspasan sin tributar.
 - Dividendos e intereses: tributan en la base del ahorro; los españoles llegan con el 19 % retenido. Los extranjeros traen la retención del país de la sede: EEUU 15 % (con el W-8BEN que hace el bróker), Países Bajos 15 %, Francia 12,8 %, Reino Unido 0 %; Suiza 35 %, Alemania 26,4 %, Italia 26 %, Dinamarca 27 %, Suecia 30 %, Finlandia 35 %, Bélgica 30 %, Austria 27,5 %, Irlanda 25 %, Noruega 25 %, Portugal 25 %. En la renta recupera con la deducción por doble imposición internacional hasta el tipo del convenio (casi siempre el 15 %): lo que pase se pierde salvo que lo reclame a ese país.
 - Fondos de acumulación${conFondos ? ' (mira en sus datos si los suyos lo son)' : ''}: no reparten, así que no pagan nada hasta que venda.
 - Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
-- Modelos 720 y 721: solo si lo que tiene en brókeres de fuera de España${fuera.length ? ` (${fuera.join(', ')})` : ''} o la cripto fuera de España pasan de 50.000 €.
+- Modelos 720 y 721 (informativos, del 1 de enero al 31 de marzo): solo si a 31 de diciembre pasa de 50.000 € en alguno de los bloques, cada uno por separado: cuentas fuera de España; valores y fondos en brókeres de fuera${fuera.length ? ` (${fuera.join(', ')})` : ''}; inmuebles fuera (los tres, en el 720); o cripto en plataformas de fuera (el 721). Los años siguientes, solo si un bloque sube más de 20.000 € desde la última vez o deja de tener algo declarado.
 - Sus brókeres: ${plats.length ? plats.join(', ') : 'aún no ha metido ninguno'}.${comis.length ? ` Comisiones aproximadas: ${comis.join('; ')}.` : ''} Si no sabes la comisión de uno, dilo y no la inventes.`;
   // 0.8.2 (opción B): con Claude, el fundador también va con estas reglas; su Paso a paso lo calcula el código y la IA lo explica
   if (est) return `${INSTR_PUBLICAS}${esPublico() ? '' : `
@@ -333,12 +337,12 @@ function hSimularVenta(q) {
   const r = fifo(lotesDe(f.pos), u);
   const gan = neto - r.coste;
   const anio = new Date().getFullYear();
-  const iv = impuestoDeVenta(gan, anio);
+  const iv = impuestoDeVenta(gan, anio, f.inst);
   return {
     posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
     importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
     lotes_usados: r.usados.map((l) => ({ fecha: l.f, unidades: R2(l.u, 6), coste: R2(l.c) })),
-    ganancia_o_perdida: R2(gan), impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
+    ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial', impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
     tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
     renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra) },
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
@@ -396,7 +400,7 @@ function hBuscarEmpresa(q, est = esPublico()) {
   const tasa = tasaRadar(x);
   return {
     en_su_cartera: false, nombre: x.n, ticker: x.s, zona: x.z, pais: PAISES[PAIS_DE_NOMBRE[x.pais]] || x.pais, sector: x.sector, industria: x.ind,
-    precio: `${fmtNum(x.p, 2)} ${x.m}`, precio_eur: R2(x.pe, 2), hoy_pct: x.v, en_directo: !!x.vivo,
+    precio: `${fmtNum(x.p, 2)} ${x.m}`, precio_eur: R2(x.pe, 2), [x.vivo ? 'hoy_pct' : 'ultimo_cambio_pct']: x.v, en_directo: !!x.vivo,
     analistas: { consenso: CONSENSO[x.r] || null, nota_media_1_a_5: x.rm, numero: x.na, votos_ahora: x.v0, votos_hace_3_meses: x.v3, objetivo_medio: x.obj, objetivo_bajo: x.tb, objetivo_alto: x.ta, potencial_pct: R2(x.pot, 1) },
     valoracion: { per: x.per, per_futuro: x.perf, crecimiento_beneficio_esperado_pct: x.epsg, crecimiento_beneficio_pct: x.eg, crecimiento_ingresos_pct: x.rg, roe_pct: x.roe, margen_pct: x.mg, deuda_capital_pct: x.de, dividendo_pct: x.div, capitalizacion_eur: x.cap, beta: x.beta },
     precio_y_tendencia: { cambio_1_anio_pct: x.c1a, media_50: x.m50, media_200: x.m200, sobre_media_200_pct: x.m200 && x.p ? R2((x.p / x.m200 - 1) * 100, 1) : null, maximo_52s: x.mx, minimo_52s: x.mn },

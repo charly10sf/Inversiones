@@ -1,6 +1,144 @@
 {
  "versiones": [
   {
+   "v": "0.8.6b",
+   "f": "2026-11-12",
+   "h": "00:15",
+   "t": "Detalles que no cuadraban",
+   "commits": [
+    {
+     "cuando": "2026-11-12 00:10",
+     "asunto": "Arreglos del repaso: la hora en la subida que escribe la IA, Objetivos sin «Más ›», «Apuntar compra» en la ficha, los días de la cuenta atrás, la estrella de Más y el gris del mapa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-12 00:10",
+     "asunto": "Prueba de los arreglos de la 0.8.6b",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.8.6a",
+   "f": "2026-11-11",
+   "h": "21:45",
+   "t": "Hacienda, revisada",
+   "commits": [
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: los ETF, fuera de la 0328 y con los fondos cotizados",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: el 720 y el 721, por bloques y con su plazo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: el cierre del año informa, sin proponer ventas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Comisiones: Interactive Brokers, desde unos 1,25 € con la tarifa escalonada",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:51",
+     "asunto": "Hacienda: el ETC cuenta como rendimiento del capital mobiliario (DGT V0267-25)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:51",
+     "asunto": "Pruebas de los arreglos de Hacienda: el ETC, la Guía de la renta y la comisión de IBKR",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 20:13",
+     "asunto": "Arreglos de Hacienda: lo que vio la revisión aparte",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 20:49",
+     "asunto": "Hacienda: lo que quedaba abierto tras la revisión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 21:02",
+     "asunto": "Hacienda: retoques de la segunda revisión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 21:45",
+     "asunto": "0.8.6a: versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.8.6",
+   "f": "2026-11-10",
+   "h": "23:40",
+   "t": "Tres pestañas nuevas y Tu año",
+   "commits": [
+    {
+     "cuando": "2026-11-09 01:10",
+     "asunto": "0.8.6: Lista de seguimiento (pestaña 1, sesiones 1 y 2 del plan)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-09 23:30",
+     "asunto": "0.8.6 · Entiende tu cartera: las 20 lecciones, «Para ti ahora» y las leídas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 18:05",
+     "asunto": "0.8.6 · Frente a un indexado (pestaña 2) y las pantallas y la progresión de la 11",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 20:40",
+     "asunto": "0.8.6 · Tu año en Toisón: las siete tarjetas y el estilo de inversor",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 22:30",
+     "asunto": "0.8.6 · Tu año: compartir sin cantidades, modo discreto en toda la app y en el widget, y la regla de Hoy",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 23:40",
+     "asunto": "0.8.6: repaso, pestañas elegidas planas, nombres del radar, versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.8.3d",
+   "f": "2026-11-09",
+   "h": "20:45",
+   "t": "Noticias",
+   "commits": [
+    {
+     "cuando": "2026-11-09 16:24",
+     "asunto": "Noticias: página nueva estilo Investing y Buenos días con cada cifra de su día",
+     "detalle": [
+      "#noticias en Hoy (trozo «noticias»): cinta de índices con su día, lo importante según la IA, titulares por temas y por",
+      "horas con buscador, empresas leídas por la IA con su tono y la agenda.",
+      "Buenos días: «hoy», «último cierre» o «desde el último cierre» según de cuándo es cada cifra; desglose de lo de hoy y de",
+      "los fondos atrasados; índices con su día; fuera titulares viejos y páginas de cotización.",
+      "precios.py: más consultas de mercado, de los últimos 3 días, hasta 5 por zona y 60 en total; informe.py sigue leyendo 30."
+     ]
+    },
+    {
+     "cuando": "2026-11-09 20:45",
+     "asunto": "0.8.3d: versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.3c",
    "f": "2026-11-08",
    "h": "18:30",

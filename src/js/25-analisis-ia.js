@@ -85,6 +85,14 @@ function totalAlDiaIA(txt, antes) {
 // trozo de «1234,567 €»)
 const RE_EUR_SUELTO_IA = /(\*\*[^*\n]*\*\*)|((?<![\d.,\w])[+\-−]?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?[  ]?€)/g;
 const envolverEurosIA = (t) => String(t).replace(RE_EUR_SUELTO_IA, (m, ya, suelto) => (ya ? ya : `**${suelto}**`));
+/* 0.8.6b: «(+1.013 € hoy, +1,3 %)» lo escribió la IA a una hora; el total de al lado se pone al día y la subida no, y en Hoy
+   se contradecía con la cabecera. La cifra se queda (es la de entonces) y se dice de cuándo es. */
+function hoyConHoraIA(txt, ia) {
+  const f = String((ia && ia.fecha) || ''); if (!ia || !ia.propio || f.length <= 10) return txt;
+  const d = new Date(f), dias = diasEntre(iso(d), hoyIso());
+  const cuando = dias === 0 ? L(`hoy a las ${d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`, `today at ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`) : L('ese día', 'that day');
+  return String(txt || '').replace(/(\((?:\*\*)?[+\-−]?\d[\d.]*(?:,\d+)?[  ]?€(?:\*\*)?) hoy(?=[,)])/, `$1 ${cuando}`);
+}
 function rellenarIA(txt, v) {
   return esc(envolverEurosIA(totalAlDiaIA(limpiaIA(txt), v && v.total && v._totalIA)))
     .replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
@@ -122,11 +130,11 @@ function htmlAnalisisIA(M) {
     <div class="ia-firma">${ICONOS.growia}<span>${esc(firma)}</span>${boton}<button class="btn peq" data-accion="copiar-ia" title="${L('Copia tu cartera en texto para pegarla en el asistente de IA que uses', 'Copy your portfolio as text to paste into the AI assistant you use')}">${ICONOS.copiar}${L('Copiar para tu IA', 'Copy for your AI')}</button></div>
     <div class="ia-cab">
       ${!ia.propio && dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: activa la IA para que se renueve solo</div>` : ''}
-      <p class="ia-titular">${R(ia.titular)}</p>
+      <p class="ia-titular">${R(hoyConHoraIA(ia.titular, ia))}</p>
       ${(ia.resumen || []).slice(0, 1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}
       ${(ia.resumen || []).length > 1 ? `<details class="mas ia-mas"><summary>Seguir leyendo</summary>${ia.resumen.slice(1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}</details>` : ''}
     </div>
-    ${ia.puntuaciones ? `<section class="ia-bloque" aria-labelledby="hNotas"><div class="sec-cab"><h2 id="hNotas">La nota de tu cartera, punto por punto</h2><span class="k">de 1 a 5: cuanto más alta, mejor lo haces</span></div><div class="ia-notas compactas">${ia.puntuaciones.map((x) => `<div class="ia-nota"><div class="ia-nota-t"><b>${esc(/^riesgo$/i.test(x.k) ? 'Control del riesgo' : x.k)}</b><small>${+x.nota || 0} de 5</small></div>${puntos(+x.nota || 0)}<span>${R(x.txt)}</span></div>`).join('')}</div></section>` : ''}
+    ${ia.puntuaciones ? `<section class="ia-bloque" aria-labelledby="hNotas"><div class="sec-cab"><h2 id="hNotas">La nota de tu cartera, punto por punto</h2><span class="k">de 1 a 5: cuanto más alta, mejor lo haces</span></div><div class="ia-notas compactas">${notasDe5(ia.puntuaciones).map((x) => `<div class="ia-nota"><div class="ia-nota-t"><b>${esc(/^riesgo$/i.test(x.k) ? 'Control del riesgo' : x.k)}</b><small>${+x.nota || 0} de 5</small></div>${puntos(+x.nota || 0)}<span>${R(x.txt)}</span></div>`).join('')}</div></section>` : ''}
     ${(ia.mejorar || []).length ? `<section class="ia-bloque ia-mej" aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">${ia.publico ? L('Para mirar', 'Worth a look') : 'Qué mejoraría'}</h2><span class="k">por orden de importancia</span></div>
         ${(() => { const li = (x) => `<li><h3>${R(x.titulo)}</h3><div class="ia-meta">${x.impacto ? `<span><b>${ia.publico ? L('Qué supone.', 'What it means.') : 'Qué ganas.'}</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div>${x.texto ? `<details class="paso-mas"><summary>${ia.publico ? L('Por qué', 'Why') : 'Por qué y cómo'}</summary><p>${R(x.texto)}</p></details>` : ''}</li>`; const m = ia.mejorar || []; return `<ol class="ia-mejorar">${m.slice(0, 3).map(li).join('')}</ol>${m.length > 3 ? `<details class="mas"><summary>${m.length - 3 === 1 ? 'Una cosa más' : `${m.length - 3} cosas más`}, menos urgentes</summary><ol class="ia-mejorar" style="counter-reset: m 3">${m.slice(3).map(li).join('')}</ol></details>` : ''}`; })()}
       </section>` : ''}

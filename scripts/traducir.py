@@ -18,6 +18,7 @@ salida, unos 0,05 US$ al día por lotes.
 """
 import datetime as dt
 import json
+import os
 import re
 import sys
 import time
@@ -28,11 +29,31 @@ MODELO_TRAD = I.CLAUDE_MODELO
 LOTE = 60          # textos por llamada
 MAX_LLAMADAS = 8   # llamadas por pasada, como mucho (contando las tandas partidas): lo que falte, en la siguiente
 TIEMPO_MAX = 300   # segundos para traducir en cada pasada, para no comerse los 20 minutos de la Action
+# 13 nov 2026 (auditoría): hasta dónde se traduce (TRADUCIR_ALCANCE; en la Action, la variable del repositorio del mismo
+# nombre). La traducción es el 21 % de lo que cuesta el radar y casi toda es del resto del radar (prioridad 3).
+#   todo      lo de siempre
+#   esencial  el informe, la decisión, las ideas, lo de la cartera, los temas y los titulares (prioridades 0 a 2); las
+#             lecturas y las fichas del resto del radar se quedan en español en la app en inglés
+#   nada      no se pide nada nuevo; lo ya traducido se sigue usando
+ALCANCES = {"todo": 3, "esencial": 2, "nada": -1}
+
+
+def prioridad_maxima(alcance=None):
+    """La prioridad más baja que se traduce según TRADUCIR_ALCANCE; si viene algo raro, todo (como siempre)."""
+    a = (os.environ.get("TRADUCIR_ALCANCE", "") if alcance is None else alcance).strip().lower()
+    return ALCANCES.get(a, ALCANCES["todo"])
+
+
+def lo_que_falta(hace_falta, t, dudoso, nopedir, reciente, alcance=None):
+    """Los textos que hay que pedir ahora, por orden: sin traducir, no fallados hace poco y dentro del alcance."""
+    tope = prioridad_maxima(alcance)
+    return [s for s, p in sorted(hace_falta.items(), key=lambda kv: (clave(kv[0]) in dudoso, kv[1]))
+            if p <= tope and clave(s) not in t and nopedir.get(clave(s), "") < reciente]
 DIAS_GUARDA = 3    # lo que deja de usarse se queda este tiempo por si vuelve
 DIAS_FALLO = 2     # un texto que la IA no consigue traducir solo no se vuelve a pedir hasta pasados estos días
 # claves que no son texto para leer (enlaces, fechas, símbolos, nombres, etiquetas) o subárboles que no se pintan
 SALTA = {"u", "f", "d", "h", "s", "id", "n", "modelo", "generado", "impacto", "imp", "urgencia", "confianza", "zona", "dato",
-         "fuentes", "noticias", "fuentes_pasada", "gemini", "ia", "claude", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web"}
+         "fuentes", "noticias", "fuentes_pasada", "gemini", "ia", "claude", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web", "g", "dn"}
 ES = re.compile(r"\b(de|del|la|las|los|el|que|para|con|por|una?|está|son|hay|se|su|sus|más|años?|hoy|tras|sin|muy)\b|[áéíóúñ¿¡]", re.I)
 
 
@@ -182,7 +203,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     def guardar(t, usado, dudoso, nopedir):
         with open(f"{dir_salida}/traduccion-en.json", "w", encoding="utf-8") as f:
             json.dump({"v": 1, "generado": I.ahora(), "t": t, "u": usado, "x": dudoso, "n": nopedir,
-                       "uso": [x for x in (previo.get("uso") or []) if I.hace_menos_de(x.get("t") or "", 48)] + I.USO}, f,
+                       "uso": [x for x in (previo.get("uso") or []) if I.hace_menos_de(x.get("t") or "", 48)] + I.USO,
+                       "coste_dias": I.coste_por_dias(previo.get("coste_dias"), I.USO)}, f,
                       ensure_ascii=False, separators=(",", ":"))
 
     try:
@@ -229,9 +251,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
                         hace_falta[s] = prio
 
         reciente = (dt.date.today() - dt.timedelta(days=DIAS_FALLO)).isoformat()
-        falta = [s for s, p in sorted(hace_falta.items(), key=lambda kv: (clave(kv[0]) in dudoso, kv[1]))
-                 if clave(s) not in t and nopedir.get(clave(s), "") < reciente]
-        print(f"traducción: {len(hace_falta)} textos en español, {len(falta)} sin traducir")
+        falta = lo_que_falta(hace_falta, t, dudoso, nopedir, reciente)
+        fuera = len(lo_que_falta(hace_falta, t, dudoso, nopedir, reciente, "todo")) - len(falta)
+        print(f"traducción: {len(hace_falta)} textos en español, {len(falta)} sin traducir"
+              + (f" ({fuera} más se quedan fuera por TRADUCIR_ALCANCE={os.environ.get('TRADUCIR_ALCANCE')})" if fuera else ""))
         hechos = 0
         if clave_api and falta:
             nuevo, dudosos, solos = traducir_todo(falta, clave_api, lote=traducir_lote if I.CLAUDE_LOTES else None)

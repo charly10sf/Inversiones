@@ -175,6 +175,22 @@ test('opción 2: el ISIN, el banco y los correos también van por el relevo, con
   expect(rel.otras).toEqual(['/isin?c=IE00B4L5Y983', '/banco/estado', '/correo']);
 });
 
+test('opción 2: las gráficas (histórico largo y precios por horas) también van por el relevo', async ({ page, context }) => {
+  await preparada(page);
+  await conRelevo(page);
+  await bloquear(context, WORKER, 'corta');
+  const rel = await servidor(context, RELEVO, '');
+  const via = await page.evaluate(async () => {
+    const inst = { id: 'wdc-relevo', clase: 'Acción', tipo: 'Acción', nombre: 'Western Digital', yahoo: 'WDC' };
+    await pedirIntradia([{ inst, p: null }], () => {});
+    HIST_PEND.add(inst.id); HIST_COLA.set(inst.id, simHist(inst));
+    await traerHistLargo();
+    return VIA_WORKER;
+  });
+  expect(via).toBe('relevo');
+  expect(rel.otras, 'las dos, con su símbolo').toEqual(expect.arrayContaining(['/intradia?s=WDC', '/historico?s=WDC']));
+});
+
 test('opción 2: «parar» corta también la petición por el relevo y no deja la pausa del bloqueo', async ({ page, context }) => {
   await preparada(page);
   await conRelevo(page);

@@ -123,7 +123,7 @@ for (const [k, p] of Object.entries(PAREJA_PL)) ICONOS[k] = ICONOS_PL[p];
 /* las pestañas, con el nombre corto de la barra del móvil; Plan va dentro de Cartera. Mercados era un icono suelto
    arriba y no se veía: desde la 0.1.17 es una pestaña más */
 const VISTAS = [
-  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
+  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'], ['noticias', 'Noticias', 'Noticias'],
 ];
 // 0.8: las dos que solo tiene Toisón (Cartera con tus posiciones, y Tú)
 const VISTAS_APARTE = [['posiciones', 'Análisis', 'Análisis'], ['tu', 'Tú', 'Tú'], ['av', 'Análisis', 'Análisis']];
@@ -138,7 +138,7 @@ const GRUPOS = [
   // 0.9 (propuesta A del 3 nov): Cartera pasa a llamarse Análisis y lleva las pestañas del detalle; Hoy, tu plan
   { k: 'posiciones', t: 'Análisis', en: 'Analysis', vistas: ['posiciones', 'av', 'analisis', 'fiscal'] },
   { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
-  { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'agenda'] },
+  { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'noticias', 'agenda'] },
   { k: 'expertos', t: 'Ideas', en: 'Ideas', vistas: ['expertos'] },
   { k: 'tu', t: 'Tú', en: 'You', vistas: ['tu', 'futuro', 'ruta'] },
 ];
@@ -147,6 +147,8 @@ const EN_CARTERA_TS = new Set(['posiciones', 'reparto']);
 function subvistas(k) {
   if (k === 'posiciones') return [['posiciones', 'Posiciones', 'Holdings'], ['analisis', 'Análisis', 'Analysis'], ['fiscal', 'Hacienda', 'Taxes']];
   if (k === 'tu') return [['tu', 'Tu cuenta', 'Your account'], ['futuro', 'Objetivos', 'Goals'], ['ruta', RUTA_NOM.t, RUTA_NOM.en]];
+  // 9 nov: en Noticias y Calendario (en Hoy salen tus fijados), las tres de Hoy a mano; en el ordenador ya están en la K2
+  if (k === 'cartera') return [['cartera', 'Hoy', 'Today'], ['noticias', 'Noticias', 'News'], ['agenda', 'Calendario', 'Calendar']];
   return null;
 }
 // las direcciones nuevas (#hoy, #ideas) caen en las claves de siempre
@@ -156,12 +158,14 @@ function vistaSegunNav(v) {
   return v;
 }
 // 0.8.3a: Gráfico técnico y Laboratorio están en Más (el sitio de Tú en la barra), aunque se pinten en el trozo de Análisis
-const grupoDe = (v) => (v === 'av' && typeof enHerramientas === 'function' && enHerramientas() ? GRUPOS.find((g) => g.k === 'tu') : GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera'));
+// 0.8.6: y Tu año en Toisón, en Hoy
+const grupoDe = (v) => (v === 'av' && typeof enHerramientas === 'function' && enHerramientas() ? GRUPOS.find((g) => g.k === 'tu') : v === 'av' && typeof enTuAno === 'function' && enTuAno() ? GRUPOS.find((g) => g.k === 'cartera') : GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera'));
 const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
 function htmlSubvistas() {
   // 0.8.3a: en Hoy, la fila de tus fijados; Herramientas, con la vuelta a Más
   if (S.vista === 'cartera') return htmlFijadosHoy();
   if (enHerramientas()) return htmlHerramientas();
+  if (enTuAno()) return htmlTuAnoCab();
   const g = grupoDe(S.vista), sv = subvistas(g.k); if (!sv) return '';
   // 0.3.11a: Hacienda, siempre (antes solo de marzo a junio y aparecía y desaparecía según desde dónde entraras)
   const lista = sv;
@@ -171,6 +175,7 @@ function htmlSubvistas() {
   // 0.9: sin el patrimonio arriba (ya está en Hoy) y con las pestañas del detalle
   // 0.8.3a: en el ordenador, el título es el de la sección de la K2 y las pestañas están en la segunda barra
   if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${titSeccion('Análisis', 'Analysis')}</h1><p class="ts-sub t-movil">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
+  if (g.k === 'cartera') return nav.replace('class="grupo-tabs"', 'class="grupo-tabs hoy-sub"');
   if (g.k === 'tu') return `<div class="ts-grupo${S.vista === 'futuro' && S.tuAp ? ' tu-sub' : ''}">${htmlVolverMas()}<h1 class="ts-tit">${titSeccion('Tú', 'You')}</h1>${nav}</div>`;
   return nav;
 }
@@ -215,6 +220,38 @@ function datoMerc(sym) {
   return { precio: v ? v.precio : m.precio, var: v && v.var != null ? v.var : m.variacion_dia };
 }
 
+/* 14 nov (auditoría): la beta ya no es la de Yahoo (no decía contra qué medía: Bankinter 0,04, BAT 0,09). La calcula la
+   Action con el último año, semana a semana, contra el índice de la bolsa de cada acción (beta_ref en la posición, bi en el
+   radar). Aquí, el nombre de ese índice, para decirlo siempre al lado de la cifra. */
+function refBeta(p) {
+  const sim = p && (p.beta_ref || p.bi), m = sim && S.precios && S.precios.mercados && S.precios.mercados[sim];
+  return m ? m.nombre : '';
+}
+function etiquetaBeta(p) { const r = refBeta(p); return r ? L(`Beta frente al ${r} (último año)`, `Beta against the ${r} (last year)`) : 'Beta'; }
+
+/* 14 nov (auditoría): de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir);
+   vacío si es de hoy. Lo usa lo que lee la IA: el sábado le llegaba «S&P 500 (hoy −0,4 %)» con el cierre del viernes, y la
+   revisión escribía «Hoy caen Wall Street y Asia». */
+function diaDatoMerc(sym) {
+  const m = (S.precios && S.precios.mercados && S.precios.mercados[sym]) || {};
+  const v = S.liveM[sym], t = v && v.t ? (v.t < 1e12 ? v.t * 1000 : v.t) : 0;
+  // el día del precio en directo solo vale si con él vino su cambio; si no, el % que se enseña es el de precios.json
+  const f = t && v.var != null ? iso(new Date(t)) : (m.fecha || '');
+  return f && f < hoyIso() ? f : '';
+}
+// «viernes 13 nov»: el día de un dato que no es de hoy, igual en las posiciones que en los mercados
+function diaConSemana(s) { return s ? `${DIAS_LARGOS[deIso(s).getDay()]} ${fechaCorta(s)}` : '—'; }
+
+/* 14 nov (auditoría): el encargo de la revisión no decía la escala de las notas y Haiku las pone unas veces de 1 a 5 y otras
+   de 1 a 10 (7 de 12 vueltas del banco de la revisión: «Costes 8», «Disciplina 7», «Riesgo 5»). La app las pinta «de 5»:
+   Inicio las recortaba a 5 (un «Riesgo 5» sobre 10 salía con los cinco puntos encendidos) y la pestaña de la IA decía
+   «8 de 5». Si alguna pasa de 5, es que van de 1 a 10: todas a la mitad. */
+function notasDe5(puntuaciones) {
+  const l = (Array.isArray(puntuaciones) ? puntuaciones : []).filter((x) => x && typeof x === 'object');
+  const n = (x) => parseFloat(x.nota) || 0, de10 = l.some((x) => n(x) > 5);   // parseFloat: «8/10» también es un 8
+  return l.map((x) => ({ ...x, nota: Math.max(0, Math.min(5, Math.round(n(x) / (de10 ? 2 : 1)))) }));
+}
+
 function porPlataforma(M) {
   const m = new Map();
   const add = (k, v, dia) => { const o = m.get(k) || { v: 0, dia: 0 }; o.v += v; o.dia += dia; m.set(k, o); };
@@ -231,6 +268,9 @@ function binds(M) {
   b.totalE = { txt: S.oculto ? '••••' : (tR < 0 ? '−' : '') + fmtNum(tE, 0), n: M.total };
   b.totalD = { txt: S.oculto ? '\u202f€' : ',' + String(tC).padStart(2, '0') + '\u202f€', n: tC };
   b.dia = { txt: `${eurS(M.dia)} (${pctS(M.diaPct)})`, n: M.dia, cls: cls(M.dia) };
+  // los mismos, redondeados, para Buenos días (que también se pone al día con los precios en directo)
+  b.dia0 = { txt: `${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})`, n: M.dia, cls: cls(M.dia) };
+  b.total0 = { txt: eur(M.total, 0), n: M.total };
   b.pl = { txt: `${eurS(M.pl)} (${pctS(M.plPct)})`, n: M.pl, cls: cls(M.pl) };
   b.estado = estadoDirecto();
   for (const [k, o] of porPlataforma(M)) b['plat:' + k] = { txt: eur(o.v, 0), n: o.v };
@@ -239,12 +279,11 @@ function binds(M) {
     const id = f.pos.id;
     b['pv:' + id] = { txt: eur(f.valor), n: f.valor };
     b['pp:' + id] = { txt: precioFmt(f.precio), n: f.precio };
-    // un fondo cuyo último valor es de hace más de dos sesiones no se ha movido «hoy»: raya, no su cambio viejo
-    // sin dato de hoy, una sola raya (salía «hoy — —»)
-    b['pd:' + id] = f.diaViejo || f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+    // lo que hoy no ha cotizado (la bolsa sin abrir, un fondo, el fin de semana): una sola raya (salía «hoy — —»)
+    b['pd:' + id] = f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     // lo de hoy también en euros (en la tabla sale con el % debajo)
     b['pdF:' + id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
-    b['pdE:' + id] = { txt: f.dia == null || f.varDia == null || f.diaViejo ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.diaViejo ? null : f.dia, cls: f.diaViejo ? '' : cls(f.dia) };
+    b['pdE:' + id] = { txt: f.varDia == null ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.varDia == null ? null : f.dia, cls: f.varDia == null ? '' : cls(f.dia) };
     b['pw:' + id] = { txt: pct(f.peso, 1), n: f.peso };
     b['pt:' + id] = { txt: pctS(f.plPct, 1), n: f.plPct, cls: cls(f.pl) };
     b['pg:' + id] = { txt: eurS(f.pl, 0), n: f.pl, cls: cls(f.pl) };
@@ -252,7 +291,7 @@ function binds(M) {
     if (!vistos.has(f.inst.id)) {
       vistos.add(f.inst.id);
       b['tp:' + f.inst.id] = { txt: precioFmt(f.precio), n: f.precio };
-      b['tv:' + f.inst.id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+      b['tv:' + f.inst.id] = { txt: pctS(f.varUlt), n: f.varUlt, cls: cls(f.varUlt) };
     }
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
@@ -528,27 +567,48 @@ function noticiasDeLoTuyo(M, max = 5) {
   return out.sort((a, b) => (String(b.d || '') > String(a.d || '') ? 1 : -1)).slice(0, max);
 }
 function htmlResumenDia(M) {
-  const N = (S.precios && S.precios.noticias) || {}, MK = (S.precios && S.precios.mercados) || {}, inf = informeVisible(), ia = iaActual();
+  const N = (S.precios && S.precios.noticias) || {}, inf = informeVisible(), ia = iaActual();
   const hoyD = new Date(), fecha = hoyD.toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  // 9 nov: cada cifra dice de qué día es. Un lunes a las 6, lo de «hoy» era lo del viernes (y lo de los fondos, del jueves)
+  // 12 nov: «hoy» es hoy, la misma cifra que la casilla de hoy del calendario, la de Inicio y la del widget; y debajo,
+  // el último día de bolsa anterior, la misma de su casilla. B() la pone al día con los precios en directo
+  if (!S.binds || !S.binds.dia0) S.binds = binds(M);
+  const dc = diaDeLaCartera(M), hp = horaPrecios();
   const mueven = [...M.filas].filter((f) => f.dia && Math.abs(f.dia) >= 1).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia)).slice(0, 3);
-  const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['BTC-EUR', 'Bitcoin']].filter(([k]) => MK[k] && MK[k].variacion_dia != null);
+  const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['^NDX', 'Nasdaq 100'], ['GC=F', L('Oro', 'Gold')], ['BTC-EUR', 'Bitcoin']].map(([k, n]) => fichaIndice(k, n)).filter(Boolean);
   const mercado = ((inf && inf.mercado) || []).slice(0, 3);
-  const tuyas = noticiasDeLoTuyo(M, 4), generales = (N.mercado || []).filter((n) => n.t && n.u).slice(0, 3);
+  // titulares: solo de las últimas horas (el fin de semana entero si es lunes), sin páginas de cotización ni noticias
+  // viejas que Google vuelve a fechar; los de la bolsa, uno por tema para que no salgan tres del bitcoin
+  const h = horasRecientes(30);
+  const tuyas = noticiasDeLoTuyo(M, 8).filter((n) => notValida(n, h + 18)).slice(0, 4);
+  const generales = (() => {
+    const vistos = new Set(), out = [];
+    for (const n of (N.mercado || []).filter((x) => notValida(x, h))) { const t = temaNoticia(n); if (vistos.has(t)) continue; vistos.add(t); out.push(n); if (out.length >= 3) break; }
+    return out;
+  })();
   // de tu comunidad, solo lo que toca tu dinero (impuestos, ayudas, vivienda), de los últimos 3 días y como mucho dos
-  const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3) : [];
+  const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3).filter((n) => notValida(n)) : [];
   const prox = (() => { try { return agendaLista(M, 2).filter((e) => !['festivo', 'media'].includes(e.tipo) || e.mio).slice(0, 4); } catch (e) { return []; } })();
   const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
-  const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
+  // el análisis de la IA puede ser de otro día: se dice
+  const iaVieja = ia && ia.fecha && edadHoras(ia.fecha) > 20 ? haceCuanto(ia.fecha) : '';
+  const noticia = (n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}" data-nw="${esc(n.w || '')}"><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
+  const movChip = (f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`;
   return `<div class="rdia">
-    <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
-    <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
-      ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</div>` : ''}</section>
-    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
-    ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.map(([k, n]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(n)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div>` : ''}
+    <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}${hp ? ` <span class="rdia-hora">· ${esc(L(`precios de las ${hp}`, `prices at ${hp}`))}</span>` : ''}</p>
+    <section class="rdia-car"><span class="k">${L('Tu cartera hoy', 'Your portfolio today')}</span><b class="rdia-tot">${B('total0')}</b>${B('dia0', 'rdia-dia')}
+      ${dc.nota ? `<p class="rdia-nota">${esc(dc.nota)}</p>` : ''}
+      ${mueven.length ? `<div class="mv-l">${mueven.map(movChip).join('')}</div>` : ''}
+      ${dc.antes ? `<dl class="rdia-desg"><div><dt>${esc(dc.antes.t)}</dt><dd class="${cls(dc.antes.e)}">${esc(`${eurS(dc.antes.e, 0)} (${pctS(dc.antes.p, 2)})`)}</dd></div></dl>` : ''}
+      ${dc.notaFondos ? `<p class="rdia-nota">${esc(dc.notaFondos)}</p>` : ''}</section>
+    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${iaVieja ? `<p class="rdia-nota">${esc(L(`Su último análisis es de ${iaVieja}.`, `Its latest review is from ${iaVieja}.`))}</p>` : ''}${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
+    ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.join('')}</div>` : ''}
+      ${fichas.some((x) => x.includes('fi-dia')) ? `<p class="rdia-nota">${esc(L('Lo que lleva un día al lado es su último cierre: esa bolsa aún no ha abierto hoy.', 'A day next to a figure means its last close: that market hasn’t opened yet today.'))}</p>` : ''}
       ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
     ${tuyas.length ? `<section><h3>Noticias de lo tuyo</h3><ul class="rdia-not">${tuyas.map(noticia).join('')}</ul></section>` : ''}
     ${generales.length ? `<section><h3>De la bolsa</h3><ul class="rdia-not">${generales.map(noticia).join('')}</ul></section>` : ''}
     ${regionales.length ? `<section><h3>${L('En', 'In')} ${esc(conArticulo(comunidadUsuario()))}</h3><ul class="rdia-not">${regionales.map(noticia).join('')}</ul></section>` : ''}
+    <a class="enlace acento rdia-ver" href="#noticias">${L('Todas las noticias', 'All the news')}</a>
     ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
   </div>`;
 }
@@ -573,6 +633,21 @@ function resumenDelDia(seguir = () => {}, forzar = false) {
    precios de widget.json, que publica la Action. Nunca sale de aquí la contraseña.
    ===================================================================== */
 let widgetT = 0, widgetFirma = '';
+/* 0.8.6 · modo discreto: la foto del widget en base 100. Todo lo que es dinero (total, hoy, invertido, lo fijo, el valor y
+   las unidades de cada posición y la gráfica) se multiplica por 100 / total: el widget recalcula con los precios igual
+   que siempre y le salen los mismos porcentajes, pero en el teléfono no queda guardado cuánto tienes */
+function fotoDiscreta(foto) {
+  const k = foto.total > 0 ? 100 / foto.total : 0, r = (v) => Math.round(v * k * 1e6) / 1e6;
+  return { ...foto, oculto: true, base100: true, total: r(foto.total), dia: r(foto.dia), invertido: r(foto.invertido), fijo: r(foto.fijo),
+    toca: String(foto.toca || '').replace(/[−-]?\d[\d.,]*\s?(mil\s)?€|€\s?\d[\d.,]*/g, '••••'),
+    pos: foto.pos.map((x) => ({ ...x, valor: r(x.valor), dia: r(x.dia), aj: x.aj ? r(x.aj) : undefined, uds: x.uds ? r(x.uds) : undefined })), serie: foto.serie.map(r) };
+}
+// encender o apagar el modo discreto: en toda la app, recordado en este dispositivo y, en el móvil, también en el widget
+function ponerDiscreto(on) {
+  S.oculto = !!on; LS.set('inv-oculto', S.oculto);
+  pintar();
+  try { enviarWidget(true); } catch (e) {}
+}
 function enviarWidget(forzar) {
   const app = window.InversionesApp;
   if (!app || !S.cartera || !S.M || S.demo || S.borrandoCuenta) return;
@@ -584,7 +659,7 @@ function enviarWidget(forzar) {
     const x = pend.find((y) => y.urgente) || pend[0];
     if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = trad(d.textContent.replace(/\s+/g, ' ').trim()); cuando = trad(x.cuando || ''); }
   } catch (e) {}
-  const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
+  const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100, aj: f.ajHoy ? Math.round(f.ajHoy * 100) / 100 : undefined }));
   // la gráfica del widget: el último mes, día a día, con el efectivo sumado para que acabe en el total de hoy
   let serie = [];
   try {
@@ -595,7 +670,11 @@ function enviarWidget(forzar) {
       serie = se.filter((x, k) => k % paso === 0 || k === se.length - 1).map((x) => Math.round(x.v + extra));
     }
   } catch (e) {}
-  const foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  // 12 nov: «hoy» es hoy también en el widget: con la fecha de la foto, mañana no repite lo de hoy; y con «aj» (lo
+  // comprado hoy, desde su precio de compra) el widget hace la misma cuenta que la app al ponerse al día con los precios
+  let foto = { v: 2, hoy: hoyIso(), total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  // 0.8.6 · modo discreto: al teléfono no llega ningún euro, solo la cartera en base 100 (mismos porcentajes y la misma gráfica)
+  if (S.oculto) foto = fotoDiscreta(foto);
   // los avisos (si están activados): las reglas que la app revisa sola cada media hora
   try { const c = avisosCfg(); if (c.on && appAvisos()) foto.avisos = { ...c, ...reglasAvisos(M) }; } catch (e) {}
   const firma = JSON.stringify({ ...foto, total: Math.round(foto.total), dia: Math.round(foto.dia) });
@@ -621,10 +700,10 @@ function pintar() {
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
-  for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
+  for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = (S.oculto ? ICONOS.ojoNo : ICONOS.ojo) + (bo.dataset.txt != null ? (S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')) : ''); bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
-  const html = { av: () => htmlPanelAv(), cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
+  const html = { av: () => htmlPanelAv(), noticias: vistaNoticias, cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => { plegarNotas($('#vista')); marcarDeslizables($('#vista')); }, 0);
   $('#vista').innerHTML = sinCortes(htmlK2Pest() + htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas, cripto y futuros, al instante.">Las bolsas, con 15 minutos de retraso; los fondos, con su precio de cada día. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan sin cookies ni datos tuyos.</p>`);
   if (S.scrollA != null) {
@@ -636,6 +715,8 @@ function pintar() {
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
+  // Noticias: igual, su contenido está en el trozo «noticias»
+  if (S.vista === 'noticias' && $('#panelNot')) pintarNoticias();
   ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));

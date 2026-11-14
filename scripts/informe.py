@@ -36,6 +36,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,6 +44,10 @@ import urllib.request
 import yfinance as yf
 
 import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
+# 9 nov 2026: precios.json guarda ahora hasta 60 titulares de mercado (para la página de Noticias); la IA sigue leyendo
+# 30, hasta 3 por zona, como antes: ni más gasto ni menos zonas
+elegir_mercado = P.elegir_mercado
+agrupar_notas = P.agrupar_notas
 import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
@@ -59,9 +64,14 @@ LOTE_LECTURA_LOTES = int(os.environ.get("INFORME_LECTURAS_POR_PASADA", "400"))  
 TANDA_MAX_CARACTERES = 260000  # una petición no pasa de esto (unos 75.000 tokens): si pasa, se parte antes de mandarla
 RONDAS_LOTE = 4             # lo que no sale se parte en dos y va en otro lote, hasta 3 veces después de la primera
 LOTE_MIN_PARTIR = 3         # si se atasca, se parte el lote hasta grupos de este tamaño
-# la Action tiene 20 minutos en total (precios, esto, traducción, publicar): esto no pasa de unos 11 desde que empieza
-PRESUPUESTO = int(os.environ.get("INFORME_PRESUPUESTO", "660"))
+# 13 nov 2026 (auditoría): la Action tiene 40 minutos en total (precios, esto, traducción, publicar). Antes eran 20 y esto
+# podía pasar de 13: tras la noche o el fin de semana tocaba todo a la vez (lecturas, temas, informe y decisión), la pasada
+# se cortaba sin publicar y lo que había cobrado Claude se tiraba (el 7 nov, 10 de 12 pasadas). Ahora cada cosa mira el
+# tiempo que queda antes de empezar (hay_tiempo) y, si no llega, se deja para la pasada siguiente, por lote y a mitad de
+# precio, en vez de pedirla deprisa en directo.
+PRESUPUESTO = int(os.environ.get("INFORME_PRESUPUESTO", "780"))
 INICIO = time.time()
+TIEMPO_TEMAS, TIEMPO_INFORME, TIEMPO_DECISION = 120, 180, 240   # segundos que tienen que quedar para empezar cada cosa
 INICIO_FICHAS = "2026-10-23T16:20"  # desde aquí, cada lectura rellena la ficha de la empresa (0.7)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
@@ -98,6 +108,19 @@ def hace_menos_de(iso, horas):
         return dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(iso) < dt.timedelta(hours=horas)
     except Exception:  # noqa: BLE001
         return False
+
+
+def queda():
+    """Los segundos que le quedan a esta pasada para la IA."""
+    return PRESUPUESTO - (time.time() - INICIO)
+
+
+def hay_tiempo(que, hace_falta):
+    """False (y lo dice) si a la pasada no le queda tiempo para empezar `que`: se hará en la siguiente."""
+    if queda() >= hace_falta:
+        return True
+    print(f"{que}: quedan {max(0, round(queda()))} s de la pasada y hacen falta {hace_falta}; se deja para la siguiente")
+    return False
 
 
 DIAG = {"yahoo_rss": 0, "yahoo_rss_vacias": 0, "yahoo_rss_error": 0, "yahoo_api": 0, "google": 0, "google_error": 0}
@@ -428,25 +451,28 @@ def material(instrumentos, precios, radar):
 
     def citar(lista):
         lineas = []
-        for x in lista:
-            fuentes.append({"t": x["t"], "u": x.get("u"), "f": x.get("f"), "d": x.get("d")})
+        # 14 nov 2026 (auditoría): la misma nota en varios medios va una sola vez y dice en cuáles más sale
+        for x in agrupar_notas(lista):
+            fuentes.append({"t": x["t"], "u": x.get("u"), "f": x.get("f"), "d": x.get("d"), **({"mas": x["mas"]} if x.get("mas") else {})})
             n = len(fuentes)
             zona = f" ({x['z']})" if x.get("z") else ""
-            lineas.append(f"[{n}] {(x.get('d') or '')[:10]} {x.get('f') or ''}{zona}: {x['t']}" + (f" — {x['r']}" if x.get("r") else ""))
+            mas = f" [la misma nota sale también en {', '.join(x['mas'])}: es una sola fuente]" if x.get("mas") else ""
+            lineas.append(f"[{n}] {dia_pub(x)} {x.get('f') or ''}{zona}: {x['t']}" + (f" — {x['r']}" if x.get("r") else "") + mas)
         return lineas
 
     N = precios.get("noticias") or {}
     P = precios.get("instrumentos") or {}
     # mercado
-    merc = list(N.get("mercado") or [])[:30]
+    merc = elegir_mercado(N.get("mercado") or [], por_zona=3, total=30)
     for s in MERCADO:
         merc += noticias_yahoo(s, 3)
     mm = precios.get("mercados") or {}
     grupos = {}
-    for v in mm.values():
+    hoy = hoy_madrid()
+    for sim, v in mm.items():
         r = v.get("rent") or {}
         grupos.setdefault(v.get("grupo") or "Otros", []).append(
-            f"{v.get('nombre')} {round(v['precio'], 4) if isinstance(v.get('precio'), (int, float)) else v.get('precio')} ({v.get('variacion_dia')} % hoy, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
+            f"{v.get('nombre')} {round(v['precio'], 4) if isinstance(v.get('precio'), (int, float)) else v.get('precio')}{unidad_mercado(sim, v)} ({v.get('variacion_dia')} % {dia_del_dato(v, hoy)}, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
     datos_m = "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
     fx = precios.get("fx") or {}
     if fx:
@@ -458,7 +484,7 @@ def material(instrumentos, precios, radar):
         p = P.get(iid) or {}
         a = p.get("analistas") or {}
         t = p.get("tecnico") or {}
-        datos = [f"{inst.get('nombre')} ({inst.get('corto')}, {inst.get('tipo')}, id {iid})", f"precio {p.get('precio')} €", f"hoy {p.get('variacion_dia')} %"]
+        datos = [f"{inst.get('nombre')} ({inst.get('corto')}, {inst.get('tipo')}, id {iid})"] + precio_y_dia(p)
         if inst.get("region"):
             datos.append("zonas " + ", ".join(f"{k} {v} %" for k, v in inst["region"].items()))
         if a.get("objetivo"):
@@ -481,6 +507,62 @@ def material(instrumentos, precios, radar):
         lista = list(NI.get(s) or [])[:5] + noticias_yahoo(s, 5)
         bloques.append(f"## Idea {s}\n{datos}\n" + "\n".join(citar(lista)))
     return "\n\n".join(bloques), fuentes
+
+
+# 14 nov 2026 (auditoría): los datos de mercado iban sin unidad («Bitcoin 62.576,99» en euros y «Brent 95,94» en dólares).
+# El informe del 13 nov sacó una alerta alta: «el precio en euros de la posición [de bitcoin] parece estar en dólares», porque
+# la prensa hablaba de 70.000 dólares y el dato decía 61.963 sin más.
+UNIDAD_MERCADO = {"^TNX": " % (rentabilidad del bono, no un precio)", "^IRX": " % (rentabilidad de la letra, no un precio)", "^VIX": " puntos",
+                  "DX-Y.NYB": " puntos", "EURUSD=X": " dólares por euro", "EURGBP=X": " libras por euro", "JPY=X": " yenes por dólar",
+                  "BZ=F": " dólares por barril", "GC=F": " dólares por onza", "SI=F": " dólares por onza", "HG=F": " dólares por libra de peso",
+                  "NG=F": " dólares por millón de BTU", "BTC-EUR": " euros"}
+MONEDA_PALABRA = {"EUR": "euros", "USD": "dólares", "GBP": "libras", "JPY": "yenes", "CHF": "francos suizos"}
+
+
+def unidad_mercado(sim, v):
+    """En qué va la cifra de un dato de mercado: los índices, en puntos; los tipos, en %; las divisas, las materias primas y
+    la cripto, en su moneda."""
+    if sim in UNIDAD_MERCADO:
+        return UNIDAD_MERCADO[sim]
+    if str(sim).startswith("^") or v.get("grupo") in ("Europa", "EEUU", "Asia y emergentes"):
+        return " puntos"
+    return f" {MONEDA_PALABRA.get(v.get('moneda'), v.get('moneda'))}" if v.get("moneda") else ""
+
+
+def dia_del_dato(v, hoy=None):
+    """«hoy», o de qué día es el dato de un mercado si no es de hoy (el fin de semana, o Wall Street antes de abrir)."""
+    fecha = str(v.get("fecha") or "")[:10]
+    return f"el {fecha}, su última sesión" if fecha and fecha < (hoy or hoy_madrid()) else "hoy"
+
+
+def hoy_madrid():
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.now(ZoneInfo("Europe/Madrid")).date().isoformat()
+    except Exception:  # noqa: BLE001
+        return dt.datetime.now(dt.timezone.utc).date().isoformat()
+
+
+def precio_y_dia(p, hoy=None):
+    """El precio de una posición y lo que se movió, diciendo de qué día es si no es de hoy. 13 nov 2026 (auditoría): los
+    fondos publican su valor con uno o dos días de retraso y se le pasaba a la IA como «hoy»: el informe decía «el fondo sube
+    un 1,87 % hoy, pero el S&P 500 baja» y ponía «mixto» en 6 de los 8 fondos que traían el dato del día 11."""
+    fecha = str(p.get("fecha") or "")[:10]
+    if fecha and fecha < (hoy or hoy_madrid()):
+        return [f"último precio {p.get('precio')} €, del {fecha} (no hay otro más nuevo)", f"ese día, el {fecha}, {p.get('variacion_dia')} % (no es de hoy)"]
+    return [f"precio {p.get('precio')} €", f"hoy {p.get('variacion_dia')} %"]
+
+
+# 14 nov 2026 (auditoría, quinta parte): la fecha del hecho. Cada noticia llevaba delante su fecha a secas y la IA la tomaba
+# por la del hecho: «El 13 de noviembre [Corteva] rebajó la guía… y la acción cayó un 24 %» (fue el jueves 12; los artículos
+# son del 13 y uno lo dice: «fell by 24.30 percent on Thursday»). Ahora la fecha va con su día de la semana, para que «el
+# jueves» o «ayer» se puedan contar, y en la hora del medio: una de cada diez noticias de Yahoo sale entre las 0:00 y las
+# 5:00 UTC, que en Nueva York todavía es la tarde del día anterior.
+DIAS_SEMANA = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+REGLA_FECHA = """La fecha que lleva delante cada noticia es el día en que se publicó (con su día de la semana), no el día del hecho: muchas
+cuentan lo que pasó el día anterior. Pon el día de un hecho solo si la noticia dice cuándo fue («ayer», «el jueves»,
+«el 12 de noviembre»), contándolo desde el día de publicación. Si no lo dice, no escribas «el 13 de noviembre hizo X»:
+cuenta el hecho sin día y, si quieres decir de cuándo es, ponlo al final entre paréntesis: «(noticias del 13 de noviembre)»."""
 
 
 INSTRUCCIONES = """Eres el analista de prensa de una web privada de inversión de un inversor particular español.
@@ -516,6 +598,23 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   una fecha suelta como 2026-10-28. Si no hay nada concreto, "nada especial".
 - No pongas la fecha de hoy en los textos ("este 21 de octubre de 2026"): ya se sabe que es de hoy.
 - Los datos de cada zona y de cada posición son los de hoy: si una noticia dice otra cifra (más vieja), manda la de los datos.
+- Salvo cuando el dato de una posición dice de qué día es («del 2026-11-11», «no es de hoy»): los fondos publican su valor
+  con uno o dos días de retraso. Ese movimiento no es de hoy: no lo llames «hoy» ni lo compares con lo que hacen hoy los
+  índices; di de qué día es («su último valor, del 11 de noviembre, subió un 1,9 %») y, para hoy, lo que hacen los
+  mercados que sigue. No digas que el dato no cuadra.
+- Cada dato de mercado lleva su unidad (puntos, %, dólares por barril, euros…) y los precios de las posiciones van en
+  euros. La prensa suele dar el bitcoin, el oro o el petróleo en dólares: no es un error ni un dato que no cuadre; con
+  «Euros por cada unidad de» sale la cuenta (70.000 dólares × 0,907 = 63.500 euros). No avises de que un precio «parece
+  estar en otra moneda». Si un dato de mercado dice de qué día es («el 2026-11-13, su última sesión»), no es de hoy: di
+  el día («el viernes el S&P 500 bajó un 0,4 %»), no «hoy».
+- Fuentes: cuando una noticia dice «la misma nota sale también en…», es una sola fuente aunque la publiquen varios medios;
+  dos fuentes son dos medios que lo cuentan cada uno por su lado.
+- {REGLA_FECHA}
+- Alertas: la urgencia «alta» es la excepción, para lo que puede cambiar en pocos días lo que vale una posición; como
+  mucho dos, y lo demás «media». Y «alta» solo si lo cuentan dos fuentes distintas (ponlas en "fuentes") o lo confirma un
+  dato de los que te doy (un precio o un movimiento de «Datos» o de la posición, no una cifra de un titular): copia en
+  "dato" solo esa cifra («Bitcoin -3,94 % hoy»). Con una sola fuente y sin dato propio, «media», y dilo en el texto
+  («según un solo medio»).
 - "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
   positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
@@ -524,10 +623,96 @@ Responde solo con un bloque ```json con este formato:
   "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral|mixto", "fuentes": [1, 2]}],
   "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra, escrita a la española: coma decimal y espacio antes del % (5,12 %; 1,1235)", "lectura": "una frase"}],
   "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
-  "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
+  "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media", "fuentes": [1, 2], "dato": "el dato propio que lo confirma, tal cual viene, o vacío"}]
 }
 Una entrada en "posiciones" por cada posición. "mercado": de 4 a 7, de al menos tres zonas distintas si
-hay noticias de ellas. "macro": de 0 a 5, solo los que tengan su cifra en los datos, en las noticias o en lo que encuentres. "alertas": de 0 a 4."""
+hay noticias de ellas. "macro": de 0 a 5, solo los que tengan su cifra en los datos, en las noticias o en lo que encuentres. "alertas": de 0 a 4.""".replace("{REGLA_FECHA}", REGLA_FECHA.replace("\n", "\n  "))
+
+
+def fuentes_distintas(fs):
+    """Cuántas fuentes de verdad hay en una lista de noticias: dos del mismo medio, o la misma nota en dos medios, cuentan
+    como una."""
+    fs = [f for f in fs if isinstance(f, dict) and f.get("t")]
+    grupo = list(range(len(fs)))
+
+    def raiz(i):
+        while grupo[i] != i:
+            i = grupo[i]
+        return i
+    for i in range(len(fs)):
+        for j in range(i):
+            mi, mj = _llano(fs[i].get("f")).strip(), _llano(fs[j].get("f")).strip()
+            # Yahoo Finance no es un medio: reúne los de otros
+            mismo_medio = mi and mi == mj and mi != "yahoo finance"
+            if mismo_medio or P.misma_nota(fs[i]["t"], fs[j]["t"]):
+                grupo[raiz(i)] = raiz(j)
+    return len({raiz(i) for i in range(len(fs))})
+
+
+def _cifras(texto, a_la_espanola=False):
+    """Las cifras de un texto, con sus decimales: [(valor, decimales)]. A la española, «62.576,99» y «5,15»."""
+    out = []
+    for m in re.findall(r"\d[\d.,]*", str(texto or "")):
+        m = m.rstrip(".,")
+        cands = [m.replace(".", "").replace(",", ".")] if a_la_espanola else []
+        cands.append(m.replace(",", "") if not a_la_espanola else m.replace(",", "."))
+        for c in cands:
+            try:
+                out.append((float(c), len(c.split(".")[1]) if "." in c else 0))
+            except ValueError:
+                continue
+    return out
+
+
+def dato_propio(dato, datos_txt):
+    """Si el «dato» de una alerta está de verdad en los datos que se le dieron a la IA (no en los titulares): alguna de sus
+    cifras, con decimales o de cuatro dígitos o más, coincide con una de los datos al redondear."""
+    propios = [abs(v) for v, _ in _cifras(datos_txt)]
+    for v, dec in _cifras(dato, a_la_espanola=True):
+        if dec == 0 and v < 1000:
+            continue  # «10 años», «S&P 500», «3 meses»: no son un dato
+        margen = 0.5 * 10 ** -dec + 1e-9
+        if any(abs(p - v) <= margen for p in propios):
+            return True
+    return False
+
+
+ALTAS_MAX = 2
+
+
+def asentar_alertas(inf, fuentes, texto):
+    """14 nov 2026 (auditoría): una alerta alta pide dos fuentes o un dato propio. La primera alerta del informe del 13 nov
+    («la Fed podría subir tipos en diciembre, probabilidad del 93,5 %», urgencia alta) salía de un solo titular de
+    Cryptonews.net. La IA cita ahora las noticias de cada alerta y el dato que la confirma; aquí se comprueba: con menos de
+    dos fuentes distintas y sin un dato que esté en lo que se le dio, la alerta baja a «media»."""
+    datos_txt = "\n".join(x for x in str(texto or "").splitlines() if not re.match(r"\s*\[\d+\]", x))
+    out = []
+    for a in inf.get("alertas") or []:
+        if not isinstance(a, dict) or not a.get("t"):
+            continue
+        fs = []
+        for n in a.get("fuentes") or []:
+            try:
+                f = fuentes[int(n) - 1]
+            except (ValueError, IndexError, TypeError):
+                continue
+            if f not in fs:
+                fs.append(f)
+        a = {**a, "fuentes": [f for f in fs if f.get("u")][:4]}
+        con_dato = bool(a.get("dato")) and dato_propio(a.get("dato"), datos_txt)
+        if not con_dato:
+            a.pop("dato", None)
+        if a.get("urgencia") == "alta" and fuentes_distintas(fs) < 2 and not con_dato:
+            a["urgencia"] = "media"
+            a["rebajada"] = 1
+        # y como mucho ALTAS_MAX altas (las primeras): en el primer ensayo, con la regla nueva, la IA puso «alta» a todo lo que
+        # tenía dos fuentes (4 de 4 alertas; con el encargo de antes daba 2)
+        elif a.get("urgencia") == "alta" and sum(1 for x in out if x.get("urgencia") == "alta") >= ALTAS_MAX:
+            a["urgencia"] = "media"
+            a["rebajada"] = 2
+        out.append(a)
+    inf["alertas"] = out
+    return inf
 
 
 def marcar(dir_salida, clave_id, valor):
@@ -560,6 +745,8 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
         return conservar("sin ANTHROPIC_RADAR_KEY, se deja el anterior")
     if previo.get("generado") and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
         return conservar("el último tiene menos de 2 horas")
+    if not hay_tiempo("informe", TIEMPO_INFORME):
+        return conservar("sin tiempo en esta pasada, se deja el anterior")
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     precios = leer(f"{dir_salida}/precios.json")
     radar = leer(f"{dir_salida}/radar.json")
@@ -599,6 +786,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
     for v in inf.get("mercado") or []:
         if isinstance(v, dict):
             v["fuentes"] = fuentes_de(v.get("fuentes"))
+    asentar_alertas(inf, fuentes, texto)
     inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda": busqueda, "web": web[:15]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
@@ -610,7 +798,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
 # ---------------------------------------------------------------- escaneo de toda la bolsa
 
 def nombre_corto(n, s):
-    n = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company)\b.*$", "", n or "")
+    n = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|p\.l\.c\.|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company|Aktiengesellschaft|A/S|KGaA|SGPS|\(publ\))(?![\w])(.*)$", "", n or "")
     return n.split(",")[0].strip() or s
 
 
@@ -642,13 +830,48 @@ def mezclar(cache, sim, nuevas, campo):
     e[campo] = ahora()
 
 
+# 14 nov 2026 (auditoría): la prensa en español (Google Noticias) solo la veían las 98 españolas, cada 50 minutos; las otras
+# 2.716 empresas, nunca. Y de las europeas, 330 de 1.063 no tienen en Yahoo ni un titular que las nombre (E.ON, Prosus,
+# Beiersdorf, British American Tobacco, Prudential, Ørsted…): la IA no tenía nada suyo que leer. Ahora las españolas se
+# repasan cada 3 horas y el resto del cupo de cada pasada es para esas europeas, cada 12 horas. El mismo número de consultas.
+HORAS_GOOGLE_ES = 3
+HORAS_GOOGLE_EU = 12
+
+
+def de_google(n):
+    return "news.google." in str(n.get("u") or "")
+
+
+def sin_titular_propio(cache, x):
+    """Si a la empresa ya la ha mirado Yahoo y no tiene de allí ni un titular que la nombre."""
+    e = cache.get(x["s"]) or {}
+    return bool(e.get("fy")) and not any(nombra(x, n) for n in (e.get("n") or []) if not de_google(n))
+
+
+def lote_google(cache, valores, ahora_dt=None):
+    """Las empresas a las que toca mirar la prensa en español en esta pasada: primero las españolas que llevan más de
+    HORAS_GOOGLE_ES sin mirarse y, con lo que quede del cupo, las europeas sin titulares propios en Yahoo que llevan más de
+    HORAS_GOOGLE_EU; en los dos grupos, antes las que más tiempo llevan."""
+    ahora_dt = ahora_dt or dt.datetime.now(dt.timezone.utc)
+
+    def fg(x):
+        return (cache.get(x["s"]) or {}).get("fg") or ""
+
+    def toca(x, horas):
+        d = cuando(fg(x)) if fg(x) else None
+        return d is None or ahora_dt - d >= dt.timedelta(hours=horas)
+    es = sorted((x for x in valores if x.get("z") == "España" and toca(x, HORAS_GOOGLE_ES)), key=fg)[:LOTE_GOOGLE]
+    eu = sorted((x for x in valores if x.get("z") == "Europa" and toca(x, HORAS_GOOGLE_EU) and sin_titular_propio(cache, x)), key=fg)
+    return es + eu[: max(0, LOTE_GOOGLE - len(es))]
+
+
 def actualizar_noticias(cache, valores):
     """Noticias de las empresas que más tiempo llevan sin mirar (las nuevas, primero)."""
     lote = sorted(valores, key=lambda x: (cache.get(x["s"]) or {}).get("fy") or "")[:LOTE_YAHOO]
     with cf.ThreadPoolExecutor(max_workers=HILOS_YAHOO) as ex:
         for x, ns in ex.map(lambda x: (x, noticias_yahoo(x["s"], 6)), lote):
             mezclar(cache, x["s"], ns, "fy")
-    lote_g = sorted(valores, key=lambda x: (x.get("z") != "España", (cache.get(x["s"]) or {}).get("fg") or ""))[:LOTE_GOOGLE]
+    lote_g = lote_google(cache, valores)
     for x in lote_g:
         nombre = nombre_corto(x.get("n"), x["s"])
         try:
@@ -670,8 +893,237 @@ def datos_idea(x, medianas):
     fav, con = P.contraste_idea(x, medianas)
     return (f"{x.get('n')} ({x['s']}, cotiza en {x.get('z')}, sede en {x.get('pais') or '?'}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
             f"consenso {x.get('r')}, objetivo medio a 12 meses {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
-            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, 1 año {x.get('c1a')} %, "
+            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, {en_un_ano(x.get('c1a'))}, "
             f"contraste de la web {fav} señales a favor y {con} en contra")
+
+
+def en_un_ano(c1a):
+    """Lo que ha hecho la cotización en el último año, dicho con verbo y en pasado. 14 nov 2026 (ensayos de la auditoría):
+    «últimos 12 meses 0,7 %» Haiku lo leyó dos veces como el beneficio de Técnicas Reunidas (iba detrás de «beneficio
+    esperado»), y «la acción en 12 meses 0,7 %», una de tres veces como una previsión («la web solo calcula un 0,7 %»)."""
+    try:
+        v = float(c1a)
+    except (TypeError, ValueError):
+        return "sin dato de lo que ha hecho la acción en el último año"
+    return f"en el último año la acción ha {'subido' if v >= 0 else 'bajado'} un {abs(c1a)} % (ya pasado, no es una previsión)"
+
+
+def tendencia_idea(x):
+    """La tendencia de la cotización, para la decisión: hoy, frente a sus medias de 50 y 200 sesiones y a su máximo de 52
+    semanas. 13 nov 2026 (auditoría): el encargo de la decisión dice que las candidatas traen «tendencia» y no la traían;
+    decidía con el recorrido hasta el precio objetivo, que se dispara justo cuando la acción se hunde y los analistas aún no
+    han tocado sus objetivos (Western Digital: 108 % de recorrido con el precio un 25 % por debajo de su media de 50)."""
+    p = x.get("p")
+    if not p:
+        return ""
+
+    def frente(v):
+        return f"{round((p / v - 1) * 100, 1)} %" if v else "?"
+    t = [f"hoy {x.get('v')} %" if x.get("v") is not None else "", f"{frente(x.get('m50'))} frente a su media de 50 sesiones",
+         f"{frente(x.get('m200'))} frente a la de 200", f"{frente(x.get('mx'))} desde su máximo de 52 semanas"]
+    return "Tendencia: " + ", ".join(y for y in t if y) + "."
+
+
+# 13 nov 2026 (auditoría): el RSS de Yahoo devuelve lo mismo para muchos tickers europeos que no conoce («AF Gruppen
+# reports strong Q3 profit» colgaba de 78 empresas). Un enlace que cuelga de COMPARTIDA_MIN empresas o más y no nombra a
+# la empresa (ni su nombre ni su ticker, en el titular o en el resumen) no se le pasa a la IA. Medido con los datos del
+# 13 nov: 875 titulares de 15.919 (5,5 %), de los que la propia IA había marcado 816 como relleno (peso 0), 5 con peso 1 y
+# ninguno con más; 81 empresas se quedan sin nada que leer.
+COMPARTIDA_MIN = 10
+GENERICAS = set("the and of de la el los las group grupo holding holdings company companies corporation corp inc plc sa se ag nv ab asa "
+                "oyj spa ltd limited co banco bank banca first american united national international global general new compagnie "
+                "societe sociedad financiere industries trust investment capital energy".split())
+
+
+def _llano(t):
+    return "".join(c for c in unicodedata.normalize("NFD", str(t or "").lower()) if unicodedata.category(c) != "Mn")
+
+
+def nombra(x, n):
+    """Si la noticia `n` nombra a la empresa `x`: una de las dos primeras palabras propias de su nombre, o su ticker en
+    mayúsculas, en el titular o en el resumen. Ante la duda (sin nombre ni ticker que buscar), sí."""
+    palabras = [w for w in re.split(r"[^a-z0-9]+", _llano(x.get("n"))) if len(w) >= 3 and w not in GENERICAS][:2]
+    raiz = re.split(r"[.\-]", str(x.get("s") or ""))[0]
+    raiz = raiz if len(raiz) >= 2 else ""
+    if not palabras and not raiz:
+        return True
+    crudo = f"{n.get('t') or ''} {n.get('r') or ''}"
+    texto = _llano(crudo)
+    if any(re.search(r"(?<![a-z0-9])" + re.escape(w) + r"(?![a-z0-9])", texto) for w in palabras):
+        return True
+    return bool(raiz) and re.search(r"(?<![A-Za-z0-9])" + re.escape(raiz.upper()) + r"(?![A-Za-z0-9])", crudo) is not None
+
+
+def compartidas(cache):
+    """Los enlaces que cuelgan de COMPARTIDA_MIN empresas o más."""
+    c = collections.Counter(n.get("u") for e in cache.values() if isinstance(e, dict) for n in (e.get("n") or []) if n.get("u"))
+    return {u for u, k in c.items() if k >= COMPARTIDA_MIN}
+
+
+def propias(cache, x, comp):
+    """Las noticias guardadas de la empresa, sin las compartidas que no la nombran."""
+    return [n for n in ((cache.get(x["s"]) or {}).get("n") or []) if not (n.get("u") in comp and not nombra(x, n))]
+
+
+# 14 nov 2026 (auditoría, quinta parte): la misma nota repetida, también en lo que lee la IA de cada empresa. Con la regla de
+# los titulares de mercado tal cual no vale: todos los titulares de una empresa comparten su nombre, y «Better Dividend
+# Stock for Retirees: IBM vs. ADP» pasaba por la misma nota que «…: IBM vs. Microchip» (1.263 «repetidos» de 12.224, casi
+# todos falsos). Aquí el nombre y el ticker de la empresa no cuentan y las dos tienen que ser de los mismos días: así
+# «Beam anuncia datos positivos» (10 nov) no se junta con «Beam presentará datos» (4 nov). Con los datos del 14 nov son 196
+# titulares de 12.224 en 158 empresas, y entran 143 que antes no cabían entre los seis que se leen.
+DIAS_MISMA_NOTA = 2
+OTROS_TITULOS = 3           # de una nota repetida, los otros titulares que se le enseñan a la IA
+
+
+def palabras_empresa(x):
+    """Las palabras del nombre de la empresa y su ticker: salen en casi todos sus titulares y no dicen si dos cuentan lo mismo."""
+    w = set(re.split(r"[^a-z0-9]+", _llano(x.get("n"))))
+    w.add(re.split(r"[.\-]", str(x.get("s") or ""))[0].lower())
+    return {y for y in w if y}
+
+
+def notas_de_empresa(x, lista):
+    """Las noticias de la empresa con cada nota una sola vez, en el mismo orden. Dos son la misma nota si cuentan lo mismo
+    (P.misma_nota, sin las palabras del nombre) y se publicaron con DIAS_MISMA_NOTA días de diferencia como mucho. De cada
+    grupo se queda la que más texto trae (titular y resumen) y lleva: en «mas», los otros medios que la publican; en
+    «_otros», los otros titulares (se le enseñan a la IA y heredan su marca en la ficha); y en «_d0», la primera fecha en
+    que salió, que es la que más se acerca a la del hecho."""
+    sin, grupos = palabras_empresa(x), []
+    for n in lista:
+        if not isinstance(n, dict) or not n.get("t"):
+            continue
+        d = fecha_de(n.get("d"))
+        for g in grupos:
+            cerca = d is not None and all(fecha_de(y.get("d")) is not None and abs((d - fecha_de(y.get("d"))).days) <= DIAS_MISMA_NOTA for y in g)
+            if cerca and any(P.misma_nota(n["t"], y["t"], sin) for y in g):
+                g.append(n)
+                break
+        else:
+            grupos.append([n])
+    out = []
+    for g in grupos:
+        if len(g) == 1:
+            out.append(g[0])
+            continue
+        uno = max(g, key=lambda y: len(y.get("t") or "") + len((y.get("r") or "")[:300]))
+        otros = [y for y in g if y is not uno]
+        medios = []
+        for y in otros:
+            if y.get("f") and y["f"] != uno.get("f") and y["f"] not in medios:
+                medios.append(y["f"])
+        rep = {**uno, "_otros": [{k: y.get(k) for k in ("t", "f", "d") if y.get(k)} for y in otros], "_d0": min(str(y.get("d") or "") for y in g)}
+        if medios:
+            rep["mas"] = medios[:4]
+        out.append(rep)
+    return out
+
+
+def dia_pub(n, d=None):
+    """El día en que se publicó una noticia, con el de la semana y en la hora de su medio (la prensa en español de Google
+    Noticias, la de Madrid; Yahoo Finance, la de Nueva York): «jue 2026-11-12»."""
+    t = cuando(d or n.get("d"))
+    if t is None:
+        return str(d or n.get("d") or "")[:10]
+    try:
+        from zoneinfo import ZoneInfo
+        t = t.astimezone(ZoneInfo("Europe/Madrid" if de_google(n) else "America/New_York"))
+    except Exception:  # noqa: BLE001
+        pass
+    return f"{DIAS_SEMANA[t.weekday()]} {t.date().isoformat()}"
+
+
+def hoy_con_dia():
+    """«sáb 2026-11-14», en la hora de Madrid."""
+    h = fecha_de(hoy_madrid())
+    return f"{DIAS_SEMANA[h.weekday()]} {h.isoformat()}"
+
+
+def linea_noticia(k, n, resumen=300):
+    """La línea numerada de una noticia en lo que lee la IA: el día en que se publicó (el primero, si la nota se repite), el
+    medio, el titular, el resumen y, si la nota se repite, dónde más sale."""
+    cola = ""
+    if n.get("_otros"):
+        otros = "; ".join((f"{o['f']}, " if o.get("f") and o["f"] != n.get("f") else "") + f"«{o['t'][:110]}»" for o in n["_otros"][:OTROS_TITULOS])
+        cola = f" [la misma nota, repetida: es una sola noticia y una sola fuente. También: {otros}]"
+    return (f"[{k}] {dia_pub(n, n.get('_d0'))} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:resumen]}" if resumen and n.get("r") else "") + cola)
+
+
+def citadas_por_peso(r, fuentes, s):
+    """Los números de las noticias que cita la lectura de `s`, de más a menos peso según la propia IA («tit») y sin las que
+    ella misma marca como relleno (peso 0), y la fecha de la más reciente con peso 2 o más. Solo las de su bloque. 13 nov
+    2026 (auditoría): se guardaban las dos primeras que citaba, y 305 de 2.409 lecturas enseñaban como fuente un titular que
+    la IA había marcado como relleno (en Audax, dos notas de Klépierre y Ramsay)."""
+    pesos = {}
+    tit = r.get("tit")
+    for k, v in (tit.items() if isinstance(tit, dict) else []):
+        try:
+            pesos[int(k)] = F.peso_de(v[2] if isinstance(v, (list, tuple)) and len(v) > 2 else 0)
+        except (TypeError, ValueError):
+            continue
+
+    def suya(k):
+        return 1 <= k <= len(fuentes) and fuentes[k - 1].get("_s", s) == s
+    nums = []
+    for k in r.get("fuentes") or []:
+        try:
+            k = int(k)
+        except (TypeError, ValueError):
+            continue
+        if suya(k) and k not in nums:
+            nums.append(k)
+    con_peso = sorted((k for k in nums if pesos.get(k, 1) > 0), key=lambda k: -pesos.get(k, 1))
+    # de una nota repetida cuenta la primera vez que salió: que otro medio la publique dos días después no la hace nueva
+    fechas = [str(fuentes[k - 1].get("_d0") or fuentes[k - 1].get("d") or "") for k, p_ in pesos.items() if p_ >= 2 and suya(k)]
+    return (con_peso or nums), (max(fechas) if any(fechas) else None)
+
+
+# 14 nov 2026 (auditoría, quinta parte): relevancia 3 («cambia la tesis») con una mención de pasada. PepsiCo salió «negativo,
+# cambia la tesis» por una frase del resumen de «Procter & Gamble or PepsiCo: The One Dividend Stock I'd Hold for the Next
+# 20 Years». La relevancia 3 es la que saca y mete ideas de un día para otro (gorda()), así que además de pedírselo a la IA
+# en el encargo se comprueba aquí: tiene que apoyarse en alguna noticia de peso que no sea una comparación entre acciones,
+# una lista o lo que hace un fondo. Con los datos del 14 nov, 9 de 12.164 titulares marcados son de esos y llevan peso 3, y
+# ninguna de las 173 lecturas de relevancia 3 se apoya solo en ellos: es una red para un caso raro, no un filtro.
+# OJO con el encargo (cuatro ensayos el 14 nov, 120 empresas leídas dos veces con cada redacción): con «el peso 3 y "rel" 3
+# son la excepción» Haiku bajó la relevancia de todo (12 y 8 lecturas con 3, frente a 27 y 32 con el código de antes; una
+# opa de exclusión se quedó en 2). Con la frase de ahora, 17 y 18; sin ninguna frase sobre esto, 13 y 14: lo que baja el
+# número no es esta regla, es el resto del cambio (el día de publicación y las notas repetidas). Las que se pierden son las
+# dudosas: de las 21 que dieron 3 las dos veces con el código de antes, 12 lo dan en al menos 4 de 6 lecturas nuevas
+# (Corteva, Super Micro, Stellantis, la fusión de Banco BPM…) y 4 en ninguna (Baidu −3,4 % por un informe, IREN por
+# contagio de Nvidia). Y la relevancia 3 baila ya con el código de antes: de 30 publicadas con 3, releídas dan 3 solo 12 y 16.
+DE_PASADA = re.compile(
+    r"\bvs\.?(?!\w)"                                                             # «Abbott vs. Medtronic»
+    r"|^[^:?]{2,60}\b(or|o)\b[^:?]{2,60}[:?]"                                     # «Visa or Mastercard: I Can Only Pick One…»
+    r"|^(top |the |best |los |las |mis )?\d+ [^:]{0,70}\b(stocks?|acciones|valores|etfs?)\b"   # «3 British Dividend Stocks…»
+    r"|\b(better|best)\b[^:]{0,50}\bstocks?\b|\bstocks? to (buy|watch|own|hold)\b|\bdividend stocks?\b"
+    r"|\$[\d.,]+ ?(million|billion|bn|m|b)? (fund|portfolio)\b|\bportfolio in\b"   # «A $9.2 Billion Fund Dumps These 3 Stocks»
+    r"|\b(buys|adds|sells|dumps)\b[^:]{0,60}\bon (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d", re.I)   # un ETF que compra
+
+
+def de_pasada(t):
+    """Si el titular es de un artículo que no va de una empresa: una comparación, una lista o las compras de un fondo."""
+    return bool(DE_PASADA.search(str(t or "")))
+
+
+def rel_fundada(rel, r, fuentes, s):
+    """La relevancia que se guarda. Un 3 se queda en 3 solo si alguna de las noticias de peso de la empresa (las de peso 3
+    según la propia IA; si no marca ninguna con 3, las de peso 2) va de ella y no es un artículo de pasada (de_pasada). Si
+    todas lo son, o si no ha marcado ninguna noticia suya con peso 2 o más, baja a 2."""
+    tit = r.get("tit")
+    if rel < 3 or not isinstance(tit, dict) or not tit:
+        return rel
+    pesos = {}
+    for k, v in tit.items():
+        try:
+            k = int(k)
+            if 1 <= k <= len(fuentes) and fuentes[k - 1].get("_s", s) == s:
+                pesos[k] = F.peso_de(v[2] if isinstance(v, (list, tuple)) and len(v) > 2 else 0)
+        except (TypeError, ValueError):
+            continue
+    fuertes = [k for k, p_ in pesos.items() if p_ >= 3] or [k for k, p_ in pesos.items() if p_ >= 2]
+    if fuertes and not all(de_pasada(fuentes[k - 1].get("t")) for k in fuertes):
+        return 3
+    print(f"escaneo: {s} baja de relevancia 3 a 2: " + ("solo la sostienen artículos de pasada" if fuertes else "ninguna de sus noticias lleva peso 2 o más"))
+    return 2
 
 
 LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
@@ -694,12 +1146,18 @@ El relleno (anuncios de productos, gráficos de cotización, notas de prensa vac
 con el mismo nombre) lleva peso 0 y no cuenta para los factores. Solo lo que digan las noticias: nada
 inventado. En español de España, con palabras normales (sin jerga como catalizador, soportes o múltiplos) y
 con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni malo.
+{REGLA_FECHA}
+Cuando una noticia dice «la misma nota, repetida», es una sola noticia aunque salga en varios medios o varias veces: no
+pesa más por repetirse.
+Para dar peso 3 o "rel" 3, el hecho tiene que ser el asunto de alguna de las noticias de la empresa. Lo que solo se menciona
+de pasada en un artículo que va de otra cosa (una comparación entre dos acciones, una lista de acciones o de dividendos,
+lo que compra o vende un fondo) no pasa de 2 por sí solo, y dilo en la frase («lo menciona de pasada un artículo sobre…»).
 Responde con un objeto JSON:
 {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "lo que puede moverla y cuándo, o vacío", "fuentes": [números],
   "tit": {"<número>": ["factor", "signo", peso]},
   "fa": {"<factor>": {"s": "signo", "p": peso, "plazo": "corto|medio|largo", "txt": "una frase", "fuentes": [números]}}}}
 "rel": 0 si no hay nada relevante, 1 poco, 2 importante, 3 cambia la tesis. Una entrada por empresa; en "fa",
-solo los factores que tengan noticias de peso 1 o más."""
+solo los factores que tengan noticias de peso 1 o más.""".replace("{REGLA_FECHA}", REGLA_FECHA)
 
 
 def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
@@ -709,12 +1167,12 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
     Con Claude y la API por lotes se leen hasta LOTE_LECTURA_LOTES empresas por pasada (peticiones de 50 dentro de un
     mismo lote); si no, LOTE_LECTURA como siempre."""
     global CLAUDE_APAGADO
-    pend = []
+    pend, comp, suyas = [], compartidas(cache), {}
     for x in valores:
-        e = cache.get(x["s"]) or {}
-        if not e.get("n"):
+        suyas[x["s"]] = propias(cache, x, comp)
+        if not suyas[x["s"]]:
             continue
-        h = huella(e["n"])
+        h = huella(suyas[x["s"]])
         antes = lectura.get(x["s"]) or {}
         # leída ya con estas noticias: no se vuelve a leer. Salvo si fue antes de las fichas y no tiene la suya: si no,
         # una empresa sin titulares nuevos se quedaría sin ficha hasta que salieran (el 24 oct, 322 de 814)
@@ -738,12 +1196,13 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
         fuentes, bloques = [], []
         for _, x, _ in trozo:
             lineas = []
-            for n in (cache[x["s"]]["n"] or [])[:6]:
-                fuentes.append(n)
-                lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
+            # cada nota, una vez (notas_de_empresa): las repetidas ya no ocupan sitio entre las seis que se leen. La huella
+            # («h») sigue siendo la de todos los titulares guardados: así este cambio no hace releer nada por sí solo
+            for n in notas_de_empresa(x, suyas[x["s"]])[:6]:
+                fuentes.append({**n, "_s": x["s"]})
+                lineas.append(linea_noticia(len(fuentes), n))
             bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
-        hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-        return pedido(LEER, f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques), 32768, json_=True), fuentes
+        return pedido(LEER, f"Hoy es {hoy_con_dia()}.\n\n" + "\n\n".join(bloques), 32768, json_=True), fuentes
 
     def aplicar(trozo, texto, fuentes):
         """Apunta lo que ha contestado la IA de estas empresas y devuelve (cuántas, las que no han venido)."""
@@ -757,19 +1216,25 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
             if not isinstance(r, dict):
                 continue
             fs = []
-            for k in r.get("fuentes") or []:
-                try:
-                    f = fuentes[int(k) - 1]
-                except (ValueError, IndexError, TypeError):
-                    continue
+            citadas, dn = citadas_por_peso(r, fuentes, x["s"])
+            for k in citadas:
+                f = fuentes[k - 1]
                 if f.get("u") and len(fs) < 2:
                     fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d", "w") if f.get(kk)})
             try:
                 rel = max(0, min(3, int(r.get("rel") or 0)))
             except (TypeError, ValueError):
                 rel = 0
-            lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
-                               "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+            rel = rel_fundada(rel, r, fuentes, x["s"])
+            antes = lectura.get(x["s"]) or {}
+            nueva = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
+                     "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+            if rel >= 3:  # desde cuándo es gorda con este signo y de cuándo es su última noticia de peso (ver gorda())
+                sigue = (antes.get("rel") or 0) >= 3 and antes.get("imp") == nueva["imp"]
+                nueva["g"] = (antes.get("g") or antes.get("d") or nueva["d"]) if sigue else nueva["d"]
+                if dn:
+                    nueva["dn"] = dn
+            lectura[x["s"]] = nueva
             if fichas is not None:
                 F.aplicar_lectura(fichas, x["s"], r, fuentes, lectura[x["s"]]["d"], x.get("n"))
             n += 1
@@ -880,6 +1345,10 @@ Decide tú. Reglas:
   analistas, o depende de una sola fuente, baja la confianza o descártala, y dilo.
 - Busca un motor concreto (un catalizador con fecha o un cambio de tendencia), que esté razonablemente
   barata y que el balance aguante.
+- Mira la línea «Tendencia» de cada una. El recorrido hasta el precio objetivo se dispara cuando la acción cae deprisa y
+  los analistas aún no han tocado sus objetivos: si cotiza muy por debajo de sus medias de 50 y de 200 sesiones, ese
+  recorrido vale menos; dilo en «riesgo» y baja la confianza, o espera a que deje de caer. Y no repitas la misma apuesta:
+  si varias candidatas dependen de lo mismo (el mismo sector, el mismo cliente, la misma noticia), elige la mejor.
 - El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. El objetivo de los analistas es
   a 12 meses; para cada idea estima tú en cuántos meses se puede materializar la mayor parte de la subida
   (por su catalizador) y cuánto esperas que suba en ese plazo (puede ser menos que lo de los analistas).
@@ -907,6 +1376,8 @@ Decide tú. Reglas:
   comparar cualquier idea en "al año". Si no hay un catalizador claro, usa 12 meses y lo de los analistas,
   o menos si la prensa o los números no lo sostienen.
 - Nada inventado; cita las noticias por número. En español de España, frases cortas.
+- {REGLA_FECHA}
+  Y «la misma nota, repetida» es una sola fuente aunque salga en varios medios.
 - Lenguaje llano: lo lee alguien que no es experto. Nada de jerga sin explicar (catalizador, capex,
   amplitud de mercado, soportes, recorrido, múltiplos, rotación sectorial, risk-off...): dilo con palabras
   normales o explícalo en la misma frase. La tesis, en una o dos frases que entienda cualquiera.
@@ -915,19 +1386,28 @@ Responde con un objeto JSON:
  "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
  "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}],
  "cambios": [{"s": "ticker", "antes": "idea|evitar|nada", "ahora": "idea|evitar|fuera", "motivo": "...", "fuentes": [n]}],
- "plazos": [{"s": "ticker", "meses": 6, "subida_pct": 15, "por": "qué marca ese plazo, en pocas palabras (por ejemplo: resultados del 6 nov)"}]}"""
+ "plazos": [{"s": "ticker", "meses": 6, "subida_pct": 15, "por": "qué marca ese plazo, en pocas palabras (por ejemplo: resultados del 6 nov)"}]}""".replace("{REGLA_FECHA}", REGLA_FECHA.replace("\n", "\n  "))
 
 
 def gorda(lectura, s, desde=None, signo="negativo"):
     """Una noticia que cambia la tesis (relevancia 3 de la lectura de prensa), de la última semana y, si se
     dice, posterior a la decisión anterior. Es lo único que deja cambiar de opinión de un día para otro."""
     le = lectura.get(s) or {}
+    # 13 nov 2026 (auditoría):
+    # «d» es la última vez que se leyó; «g», desde cuándo la lectura es gorda con este signo; «dn», la fecha de su última
+    # noticia de peso. Para «posterior a la decisión» cuentan «g» y «dn»: antes se miraba «d», y bastaba un titular de
+    # relleno nuevo para releer la empresa y que una noticia que la decisión ya había visto pasara por nueva y sacara la idea
     d = cuando(le.get("d"))
     if d is None or (le.get("rel") or 0) < 3 or le.get("imp") != signo:
         return False
     if d < dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7):
         return False
-    return desde is None or d > desde
+    if desde is None:
+        return True
+    g, dn = cuando(le.get("g")), cuando(le.get("dn"))
+    if g is None and dn is None:
+        return d > desde  # lecturas de antes del 13 nov, sin esas fechas: como siempre
+    return any(t is not None and t > desde for t in (g, dn))
 
 
 def rota(x):
@@ -1012,6 +1492,15 @@ def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
         cupo -= 1
         if previas:
             cam.append(cambio(s, i.get("n"), "evitar" if reciente(s, "evitar") else "nada", "idea", (dice.get(s) or {}).get("motivo") or i.get("tesis"), i.get("fuentes")))
+    # 14 nov 2026 (auditoría): el orden es el de la IA de hoy, no el de la vez anterior. Antes las que seguían conservaban
+    # su puesto: en el ensayo la IA ponía Western Digital la última, con confianza baja, y en la app seguía de idea n.º 1.
+    # Las que la IA ya no propone y siguen por constancia («sigue») van detrás, en el orden que tenían.
+    puesto = {i["s"]: k for k, i in enumerate(ideas)}
+    out.sort(key=lambda o: (0, puesto[o["s"]]) if o["s"] in puesto else (1, 0))
+    # y una de confianza baja nunca va por delante de una de media o alta (Carlos, 14 nov: «evidentemente, si es confianza
+    # baja no puede estar arriba»). En un ensayo la IA repitió el orden del día anterior y dejó primeras a Western Digital y
+    # a Coherent diciendo a la vez que les tenía confianza baja. Entre las de igual confianza, el orden de la IA.
+    out.sort(key=lambda o: 1 if o.get("confianza") == "baja" else 0)
     ids = {o["s"] for o in out}
     ev = []
     for e in evitar:
@@ -1059,13 +1548,69 @@ def revisar(decision, lectura, valores):
     return {**decision, "ideas": quedan, "cambios": (cam + (decision.get("cambios") or []))[:12], "revisada": ahora()}
 
 
+def con_ideas_previas(valores, todas, decision):
+    """Las empresas entre las que se decide (las de radar.json) más las ideas y las «evitar» de la vez anterior que ya no
+    están ahí pero siguen en el radar ampliado (radar-mas.json). 13 nov 2026 (auditoría): Salzgitter pasó al radar ampliado
+    el 6 nov y se quedó de idea sin que nadie volviera a mirar sus números (para «rota» era «un fallo de datos») ni se la
+    enseñara a la IA: no podía salir nunca."""
+    dentro = {x["s"] for x in valores}
+    por_s = {x["s"]: x for x in todas if x.get("s")}
+    previas = [i.get("s") for k in ("ideas", "evitar") for i in ((decision or {}).get(k) or []) if isinstance(i, dict)]
+    return list(valores) + [por_s[s] for s in dict.fromkeys(previas) if s in por_s and s not in dentro]
+
+
 def contexto_zonas(precios):
     """Una línea por zona con cómo van sus índices (hoy, mes y año), para que la IA pese la geografía."""
     grupos = {}
     for v in (precios.get("mercados") or {}).values():
         r = v.get("rent") or {}
-        grupos.setdefault(v.get("grupo") or "Otros", []).append(f"{v.get('nombre')} {v.get('variacion_dia')} % hoy, {r.get('1m')} % mes, {r.get('ytd')} % año")
+        # 14 nov 2026 (auditoría): con el día del dato si no es de hoy (el sábado decía «hoy» del cierre del viernes)
+        grupos.setdefault(v.get("grupo") or "Otros", []).append(f"{v.get('nombre')} {v.get('variacion_dia')} % {dia_del_dato(v)}, {r.get('1m')} % mes, {r.get('ytd')} % año")
     return "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
+
+
+# 14 nov 2026 (auditoría, quinta parte): las «mejores de la web» no miraban la prensa. Son las que mejor puntúan por sus
+# números (recorrido, consenso, analistas, PER y contraste); la decisión las protege (no pasan a «evitar» sin una noticia
+# mala gorda) y se las nombra a la IA. Nvidia seguía entre ellas, con un 76 % de recorrido, con su consejero delegado
+# fuera: los precios objetivo de los analistas tardan semanas en moverse y la prensa, horas. Ahora miran la lectura de
+# prensa de la última semana: con una noticia que cambia la tesis y no es buena (negativa o mixta) la empresa sale de la
+# lista hasta que la lectura cambie, y con una negativa importante pierde puntos. La web hace lo mismo (13-expertos.js,
+# prensaEnContra): si se toca aquí, allí también.
+PRENSA_DIAS = 7
+PRENSA_RESTA = 0.6
+
+
+def prensa_en_contra(le, ahora_dt=None):
+    """Lo que pesa la lectura de prensa de una empresa en las «mejores de la web»: "fuera" si en los últimos PRENSA_DIAS
+    días se ha leído una noticia que cambia la tesis (relevancia 3) y no es buena (negativa o mixta); "resta" si hay una
+    negativa importante (relevancia 2); None si no hay nada en contra o la lectura es más vieja."""
+    d = cuando((le or {}).get("d"))
+    if d is None or d < (ahora_dt or dt.datetime.now(dt.timezone.utc)) - dt.timedelta(days=PRENSA_DIAS):
+        return None
+    rel, imp = le.get("rel") or 0, le.get("imp")
+    if rel >= 3 and imp in ("negativo", "mixto"):
+        return "fuera"
+    return "resta" if rel >= 2 and imp == "negativo" else None
+
+
+def mejores_de_la_web(valores, medianas, tuyas=(), lectura=None, ahora_dt=None):
+    """Las que más le gustan a la web, de mejor a peor, como [(puntos, empresa)]: su misma puntuación aproximada (recorrido,
+    consenso, analistas, PER y contraste) y lo que diga su prensa de la última semana (prensa_en_contra)."""
+    web = []
+    for x in valores:
+        if x["s"] in tuyas or x.get("pot") is None:
+            continue
+        fav, con = P.contraste_idea(x, medianas)
+        rm, na, perf = x.get("rm") or 3, x.get("na") or 0, x.get("perf") or 0
+        if x["pot"] >= 10 and na >= 8 and rm <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
+            prensa = prensa_en_contra((lectura or {}).get(x["s"]), ahora_dt)
+            if prensa == "fuera":
+                continue
+            pts = 1.2 * min(x["pot"], 50) / 50 + max(-1, min(1, (2.6 - rm) / 1.6)) + 0.5 * min(na, 30) / 30 + 0.22 * fav - 0.3 * con
+            pts += 0.4 if 0 < perf < 10 else 0.3 if 0 < perf < 15 else 0.1 if 0 < perf < 22 else -0.3 if perf >= 30 else 0
+            web.append((pts - (PRENSA_RESTA if prensa == "resta" else 0), x))
+    web.sort(key=lambda t: -t[0])
+    return web
 
 
 def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None):
@@ -1086,22 +1631,12 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
     buenas.sort(key=lambda t: -t[0])
     malas.sort(key=lambda t: -t[0])
     cands = [x for _, x in buenas[:CANDIDATAS]] + [x for _, x in malas[:10]]
-    # las que más le gustan a la web (con su misma puntuación aproximada: recorrido, consenso, analistas,
-    # PER y contraste), aunque no tengan prensa reciente: la IA les pone plazo para que la web no compare
+    # las que más le gustan a la web, aunque no tengan prensa reciente: la IA les pone plazo para que la web no compare
     # su "al año" solo con el objetivo de los analistas
-    web = []
-    for x in valores:
-        if x["s"] in tuyas or x.get("pot") is None:
-            continue
-        fav, con = P.contraste_idea(x, medianas)
-        rm, na, perf = x.get("rm") or 3, x.get("na") or 0, x.get("perf") or 0
-        if x["pot"] >= 10 and na >= 8 and rm <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
-            pts = 1.2 * min(x["pot"], 50) / 50 + max(-1, min(1, (2.6 - rm) / 1.6)) + 0.5 * min(na, 30) / 30 + 0.22 * fav - 0.3 * con
-            pts += 0.4 if 0 < perf < 10 else 0.3 if 0 < perf < 15 else 0.1 if 0 < perf < 22 else -0.3 if perf >= 30 else 0
-            web.append((pts, x))
-    web.sort(key=lambda t: -t[0])
+    web = mejores_de_la_web(valores, medianas, tuyas, lectura)
     radar_top = [x["s"] for _, x in web[:9]]
     porval = {x["s"]: x for x in valores}
+    comp = compartidas(cache)
     # las ideas de la vez anterior entran siempre en la lista, para que la IA pueda mantenerlas
     de_antes = [porval[i["s"]] for i in ((previa or {}).get("ideas") or []) if isinstance(i, dict) and i.get("s") in porval and i["s"] not in tuyas]
     vistos, orden = set(), []
@@ -1116,11 +1651,11 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
     for x in cands:
         le = lectura.get(x["s"]) or {}
         lineas = []
-        for n in ((cache.get(x["s"]) or {}).get("n") or [])[:3]:
+        for n in notas_de_empresa(x, propias(cache, x, comp))[:3]:
             fuentes.append(n)
-            lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}")
+            lineas.append(linea_noticia(len(fuentes), n, resumen=0))
         prensa = f"Prensa ({le.get('imp')}, relevancia {le.get('rel')}): {le.get('txt')}" + (f" Catalizador: {le.get('cat')}." if le.get("cat") else "") if le else "Prensa: sin leer todavía."
-        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{prensa}\n" + "\n".join(lineas))
+        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{tendencia_idea(x)}\n{prensa}\n" + "\n".join(lineas))
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     obligadas = ", ".join(x["s"] for x in cands[:CANDIDATAS] if x not in [m for _, m in malas[:10]])
     zonas = contexto_zonas(precios or {})
@@ -1129,11 +1664,18 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
         li = "\n".join(f"- {i.get('s')} ({i.get('n')}), propuesta desde {i.get('desde') or str(previa.get('generado'))[:10]}: {i.get('tesis') or ''}" for i in previa.get("ideas") or [])
         le = "\n".join(f"- {e.get('s')} ({e.get('n')}): {e.get('motivo') or ''}" for e in previa.get("evitar") or [])
         memoria = (f"\n\n## Lo que dijiste la vez anterior ({str(previa.get('generado'))[:16].replace('T', ' ')} UTC)\nIdeas:\n{li or '- ninguna'}\nA evitar:\n{le or '- ninguna'}"
-                   f"\nLas que la web lleva entre sus mejores estos días: {', '.join(radar_top) or 'ninguna'}.")
+                   f"\nLas que la web lleva entre sus mejores estos días (por sus números, y sin las que tienen la prensa en contra): {', '.join(radar_top) or 'ninguna'}.")
     texto_pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
     # 0.8.2d: Haiku pensando (esfuerzo medio) y por lote. Si no sale, se quedan las ideas de la vez anterior y se reintenta
     # en otra pasada (a las 2 horas)
-    msg = ia(pedido(DECIDIR, texto_pedido, 32768, json_=True, pensar=True), "decidir")
+    # 14 nov 2026 (auditoría): la decisión puede ir con otro modelo (CLAUDE_DECIDIR_MODELO; en la Action, la variable del
+    # repositorio del mismo nombre). Vacío o un modelo que no esté en PRECIOS: el del radar, como siempre. En el ensayo,
+    # Sonnet 5.5 costó 0,053 US$ por decisión (Haiku, 0,006) y fue el único que no leyó mal ningún dato.
+    cuerpo = pedido(DECIDIR, texto_pedido, 32768, json_=True, pensar=True)
+    otro = os.environ.get("CLAUDE_DECIDIR_MODELO", "").strip()
+    if otro in PRECIOS:
+        cuerpo["model"] = otro
+    msg = ia(cuerpo, "decidir")
     texto, _ = texto_de(msg)
     modelo_usado = msg.get("model") or CLAUDE_MODELO
     d = extraer_json(texto)
@@ -1240,7 +1782,7 @@ def leer_temas(fichas, precios, valores=()):
     """0.7: cada 3 horas, la IA lee los titulares por tema y por sector (y los del mercado) y dice a qué
     zonas, países y sectores toca cada tema. Van a fichas.json → temas; la app los junta con la ficha de cada
     empresa por su país, su zona y su sector."""
-    if not clave_claude() or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS):
+    if not clave_claude() or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS) or not hay_tiempo("temas", TIEMPO_TEMAS):
         return 0
     fuentes, vistos = [], set()
 
@@ -1250,7 +1792,7 @@ def leer_temas(fichas, precios, valores=()):
             if n.get("t") and k not in vistos and not P.RUIDO.search(n["t"]):
                 vistos.add(k)
                 fuentes.append({kk: n.get(kk) for kk in ("t", "f", "d", "u") if n.get(kk)})
-    sumar(((precios or {}).get("noticias") or {}).get("mercado"))
+    sumar(elegir_mercado(((precios or {}).get("noticias") or {}).get("mercado") or [], por_zona=3, total=30))
     for q in TEMAS_CONSULTAS:
         try:
             sumar(P.noticias(q, 4, cuando="3d"))
@@ -1304,13 +1846,29 @@ def uso_anterior(esc):
     return [x for x in viejo if isinstance(x, dict) and hace_menos_de(x.get("t") or "", 48)]
 
 
+DIAS_COSTE = 40
+
+
+def coste_por_dias(previo, uso, hoy=None):
+    """{día (UTC): {cosa: US$}} de los últimos DIAS_COSTE días: lo que ya había más las llamadas de esta pasada. 13 nov 2026
+    (auditoría): «uso» solo guarda 48 horas, y para saber lo que cuesta un sábado o un domingo había que ir a la Console."""
+    dias = {d: dict(v) for d, v in (previo or {}).items() if isinstance(v, dict)}
+    for x in uso or []:
+        d = dias.setdefault(str(x.get("t") or "")[:10], {})
+        q = x.get("que") or "?"
+        d[q] = round(d.get(q, 0) + float(x.get("coste") or 0), 6)
+    limite = ((hoy or dt.datetime.now(dt.timezone.utc).date()) - dt.timedelta(days=DIAS_COSTE)).isoformat()
+    return {d: v for d, v in sorted(dias.items()) if d >= limite}
+
+
 def estado_ia(esc, hay_ia):
     """escaneo.json → ia: si hay clave (activo), si ha ido bien esta pasada (ok), si se ha apagado por la clave o el saldo,
     los últimos fallos, los modelos que han contestado, cada llamada de las últimas 48 horas (uso: t, m, que, in, cache,
     out, busq, lote, coste en US$) y lo que han costado las de las últimas 24 horas (coste_24h, US$)."""
     uso = uso_anterior(esc) + USO
     return {"activo": hay_ia, "ok": hay_ia and not CLAUDE_ERRORES and not CLAUDE_APAGADO, "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:],
-            "modelos": sorted(USADOS), "uso": uso, "coste_24h": round(sum(x.get("coste") or 0 for x in uso if hace_menos_de(x.get("t") or "", 24)), 4)}
+            "modelos": sorted(USADOS), "uso": uso, "coste_dias": coste_por_dias(((esc.get("ia") or {}).get("coste_dias")) if isinstance(esc.get("ia"), dict) else None, USO),
+            "coste_24h": round(sum(x.get("coste") or 0 for x in uso if hace_menos_de(x.get("t") or "", 24)), 4)}
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -1358,18 +1916,21 @@ def main(ruta_inst, dir_anterior, dir_salida):
     informe_cartera(ruta_inst, dir_anterior, dir_salida)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
+    valores_dec = con_ideas_previas(valores, todas, decision)
     if not viejo and valores:
-        decision = revisar(decision, lectura, valores)
+        decision = revisar(decision, lectura, valores_dec)
     # si la última vez falló (Claude saturado o sin saldo, por ejemplo), no se reintenta hasta pasadas 2 horas
     intento = esc.get("intento_decision")
     if viejo and intento and hace_menos_de(intento, 2):
         viejo = False
     # 0.8.2d: el ensayo de la Action (sin publicar) decide aunque no toque, para medir lo que cuesta
     viejo = viejo or bool(os.environ.get("INFORME_DECIDIR"))
-    if hay_ia and valores and viejo:
+    # (13 nov, auditoría) si no queda tiempo, la decisión se deja para la pasada siguiente, sin apuntar el intento: así no
+    # espera 2 horas
+    if hay_ia and valores and viejo and hay_tiempo("decisión", TIEMPO_DECISION):
         intento = ahora()
         try:
-            d = decidir(lectura, cache, valores, medianas, tuyas, leer(f"{dir_salida}/precios.json"), previa=decision)
+            d = decidir(lectura, cache, valores_dec, medianas, tuyas, leer(f"{dir_salida}/precios.json"), previa=decision)
             if d:
                 decision = d
                 print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")

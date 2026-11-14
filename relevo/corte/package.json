@@ -1,0 +1,8 @@
+{
+  "name": "toison-corte",
+  "private": true,
+  "type": "module",
+  "description": "Corte del gasto del relevo de Toisón: quita la facturación de su proyecto si el presupuesto llega al tope",
+  "scripts": { "start": "node servidor.mjs" },
+  "engines": { "node": ">=22" }
+}

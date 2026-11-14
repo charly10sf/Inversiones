@@ -26,11 +26,63 @@ async function cargarIntradia() {
     if (r.ok) { S.intra = await r.json(); return; }
   } catch (e) { console.warn(e); }
 }
+/* Lo que no está en intradia.json (lo que viene del catálogo o del radar: WDC, cualquier acción de EEUU, una cripto)
+   se pide al Worker (/intradia), que lo baja de Yahoo (o de Bitvavo) en el mismo formato y en euros. Se guarda en
+   memoria 15 minutos (2 si falló la red) para no volver a pedirlo. Los fondos no cotizan durante el día: no se piden. */
+const INTRA_MAS = {}, INTRA_PEND = new Set(), INTRA_LOTE = 12, INTRA_VIDA = 15 * 60e3;
+function simIntra(i, p) {
+  if (!i || i.clase === 'Efectivo' || /^Fondo/.test(i.tipo || '')) return null;
+  const s = String((p && p.simbolo) || i.yahoo || (i.clase === 'Cripto' && i.bitvavo) || '').toUpperCase();
+  return s && !s.startsWith('0P') && /^[A-Z0-9^][A-Z0-9.\-=^&]{0,24}$/.test(s) ? s : null;
+}
+// los precios cada 30 minutos de un instrumento: los de la Action o, si no, los del Worker
+function intraDe(id) {
+  const a = S.intra && S.intra.p && S.intra.p[id];
+  if (a && a.length > 1) return a;
+  const m = INTRA_MAS[id];
+  return m && m.p.length > 1 ? m.p : null;
+}
+// todavía se están pidiendo (para no decir «no hay precios por horas» antes de tiempo)
+const intraPendiente = (id) => INTRA_PEND.has(id);
+/* pide lo que falte de esas filas; al llegar, alLlegar() (una vez, y solo si ha llegado algo nuevo que pintar) */
+async function pedirIntradia(filas, alLlegar) {
+  const faltan = new Map(), ahora = Date.now();
+  for (const f of filas || []) {
+    const id = f.inst && f.inst.id;
+    if (!id || INTRA_PEND.has(id) || (S.intra && S.intra.p && (S.intra.p[id] || []).length > 1)) continue;
+    if (INTRA_MAS[id] && ahora - INTRA_MAS[id].t < INTRA_VIDA) continue;
+    const s = simIntra(f.inst, f.p); if (!s) continue;
+    if (!faltan.has(s)) faltan.set(s, []);
+    faltan.get(s).push(id); INTRA_PEND.add(id);
+  }
+  if (!faltan.size) return false;
+  const sims = [...faltan.keys()], lotes = [];
+  for (let k = 0; k < sims.length; k += INTRA_LOTE) lotes.push(sims.slice(k, k + INTRA_LOTE));
+  let nuevo = false;
+  await Promise.all(lotes.map(async (lote) => {
+    let d = null;
+    try {
+      const r = await conTiempo(fetchWorker(`/intradia?s=${lote.map(encodeURIComponent).join(',')}`), 10000);
+      if (r.ok) d = await r.json();
+    } catch (e) { console.warn('precios por horas', e); }
+    const t = d ? Date.now() : Date.now() - INTRA_VIDA + 2 * 60e3;
+    for (const s of lote) {
+      const p = d && d.p && Array.isArray(d.p[s]) ? d.p[s].filter((x) => Array.isArray(x) && x.length === 2 && +x[1] > 0) : [];
+      if (p.length > 1) nuevo = true;
+      for (const id of faltan.get(s)) { INTRA_PEND.delete(id); INTRA_MAS[id] = { t, p }; }
+    }
+  }));
+  // también si no ha llegado nada: lo que esperaba («cargando») tiene que decir ya que no hay
+  if (alLlegar) alLlegar(nuevo);
+  return nuevo;
+}
 /* El valor de la cartera en el día (desde el cierre anterior) o en la semana, con los precios cada 30
    minutos; los fondos, con su valor liquidativo del día. Lo que no tiene cantidad y el efectivo, fijos. */
 function serieIntradia(M, rango) {
-  const P = (S.intra && S.intra.p) || {};
   const items = M.filas.filter((f) => f.uds != null && f.valor > 0);
+  // los de la Action y, para el resto, los que ha traído el Worker
+  const P = {};
+  for (const f of items) { const h = intraDe(f.inst.id); if (h) P[f.inst.id] = h; }
   const ts = new Set();
   for (const f of items) for (const [t] of P[f.inst.id] || []) ts.add(t);
   let orden = [...ts].sort();
@@ -78,7 +130,7 @@ const BLOQUES_CAR = {
   vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y la IA de cada posición', w: 'estrecho' },
   informe: { n: 'Lo último, según la IA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
   noticias: { n: 'Noticias de lo tuyo', d: 'Los últimos titulares de lo que tienes', w: 'grande' },
-  movidas: { n: 'Lo que más se mueve', d: 'Las empresas que más suben y bajan', w: 'grande' },
+  movidas: { n: 'Lo que más se mueve', d: 'Lo tuyo que más se mueve hoy, y por qué', w: 'grande' },
   futuro: { n: 'Tu futuro', d: 'Lo que podrías tener en 5, 10 y 20 años', w: 'estrecho' },
   metas: { n: 'Tus metas', d: 'Si llegas a cada una con lo que aportas', w: 'estrecho' },
   renta: { n: 'Hacienda de este año', d: 'Lo que llevas ganado y lo que pagarías', w: 'estrecho' },
@@ -140,12 +192,53 @@ function htmlAvisoNovedades() {
     <span class="nov-aviso-b">${(esGorda(n.v) || grupoNuevo()) && pasosGuia().length ? `<button type="button" class="btn peq pri" data-accion="novedades-guia">${L('Guíame', 'Show me')}</button>` : ''}<button type="button" class="btn peq" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button></span>
     <button type="button" class="ib nov-aviso-x" data-accion="novedades-ocultar" aria-label="${L('Quitar el aviso', 'Dismiss')}">${ICONOS.cerrar}</button></div>`;
 }
+/* 0.8.6 · «Lo que más se mueve» en Hoy, con la regla «celebra el plan, no la operación» (claude/marca.md): solo tus
+   posiciones, con el porqué y sin botón. El porqué, en este orden y solo si es un hecho: el dividendo de hoy, unos
+   resultados de estos días, lo que dice la IA de esa posición en el informe de hoy, un titular suyo de hoy o, si no
+   hay nada, cómo va su bolsa. Nada de «compra», «vende» ni órdenes. Las 2.800 empresas del radar siguen en Mercados */
+const MOV_BOLSA = { ES: ['^IBEX', 'el Ibex 35'], US: ['^GSPC', 'el S&P 500'], DE: ['^GDAXI', 'el DAX'], FR: ['^FCHI', 'el CAC 40'], GB: ['^FTSE', 'el FTSE 100'], JP: ['^N225', 'el Nikkei'] };
+function porqueMovida(f, hoy = hoyIso()) {
+  const i = f.inst, p = f.p || {}, ayer2 = iso(new Date(deIso(hoy).getTime() - 2 * 864e5)), MK = (S.precios && S.precios.mercados) || {};
+  if (p.ex_dividendo === hoy) return L('Hoy es su fecha de dividendo: el precio baja más o menos lo que reparte.', 'Today is its ex-dividend date: the price drops by roughly what it pays.');
+  if (p.proximos_resultados && p.proximos_resultados >= ayer2 && p.proximos_resultados <= hoy) return p.proximos_resultados === hoy ? L('Presenta resultados hoy.', 'It reports results today.') : L(`Presentó resultados el ${fechaCorta(p.proximos_resultados)}.`, `It reported results on ${fechaCorta(p.proximos_resultados)}.`);
+  try {
+    const inf = informeVisible(), c = inf && inf.posiciones && inf.posiciones[i.id];
+    if (c && c.novedades && inf.generado && Date.now() - new Date(inf.generado).getTime() < 30 * 36e5) {
+      const t = String(c.novedades).replace(/\s*\((fuentes?|sources?)[^)]*\)/gi, '').trim();
+      const fr = t.split(/(?<=\.)\s+/), hoyFr = fr.slice(1).find((x) => /\bhoy\b|\btoday\b/i.test(x)) || fr[1] || fr[0];
+      if (hoyFr) return `${hoyFr} <small class="mvt-de">${L('Según la IA, con las noticias de hoy.', 'According to the AI, from today’s news.')}</small>`;
+    }
+  } catch (e) {}
+  const N = (S.precios && S.precios.noticias) || {}, lista = N[i.id] || (i.yahoo ? noticiasIdea(i.yahoo) : []);
+  const n = (lista || []).find((x) => x.t && (!x.d || Date.now() - new Date(x.d).getTime() < 30 * 36e5));
+  if (n) return `${L('Titular de hoy', 'Today’s headline')}: «${esc(n.t)}»${n.f ? ` <small class="mvt-de">${esc(n.f)}</small>` : ''}`;
+  const sin = L('No hay una noticia suya de hoy.', 'No news of its own today.');
+  const va = (k, nom) => (MK[k] && MK[k].variacion_dia != null ? L(`${nom.charAt(0).toUpperCase() + nom.slice(1)} va ${pctS(MK[k].variacion_dia, 1)} hoy.`, `${nom} is ${pctS(MK[k].variacion_dia, 1)} today.`) : '');
+  if (i.clase === 'Cripto') return `${sin} ${va('BTC-EUR', L('el bitcoin', 'bitcoin'))}`.trim();
+  if (i.clase === 'Oro') return `${sin} ${va('GC=F', L('el oro', 'gold'))}`.trim();
+  if (i.clase === 'Renta variable') {
+    const b = MOV_BOLSA[i.pais];
+    if (b && !/^(Fondo|ETF)/.test(i.tipo || '')) return `${sin} ${va(b[0], L(b[1], b[1].replace(/^el /, 'the ')))}`.trim();
+    const g = va('^GSPC', L('el S&P 500', 'the S&P 500')), e = va('^STOXX50E', L('el Euro Stoxx 50', 'the Euro Stoxx 50'));
+    return `${sin} ${L('Es un fondo de bolsa:', 'It is an equity fund:')} ${g} ${e}`.trim();
+  }
+  return sin;
+}
+function htmlMovidasTuyas(M) {
+  const filas = [...M.filas].filter((f) => f.varDia != null && isFinite(f.varDia) && !f.diaViejo && Math.abs(f.varDia) >= 0.05 && f.valor > 0);
+  const vistos = new Set(), mueven = filas.sort((a, b) => Math.abs(b.varDia) - Math.abs(a.varDia)).filter((f) => !vistos.has(f.inst.id) && vistos.add(f.inst.id)).slice(0, 4);
+  const cab = `<div class="sec-cab"><h2 id="hMovT">${L('Lo que más se mueve', 'What moves most')}</h2><span class="k">${L('de lo tuyo, hoy', 'of yours, today')}</span></div>`;
+  if (!mueven.length) return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<p class="nota">${L('Hoy no se ha movido nada de lo tuyo, o aún no hay precios de hoy.', 'Nothing of yours has moved today, or there are no prices for today yet.')}</p></section>`;
+  return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<ul class="mvt-l">${mueven.map((f) => `<li class="mvt"><span class="mvt-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<b>${esc(f.inst.corto || f.inst.nombre)}</b></span><span class="mvt-v ${cls(f.varDia)}">${pctS(f.varDia, 1)}<small>${esc(eurS(f.dia, 0))}</small></span><p class="mvt-p">${porqueMovida(f)}</p></li>`).join('')}</ul>
+    <p class="nota mvt-nota">${L('Lo que más se ha movido hoy de lo que tienes. Que algo se mueva un día no dice nada de tu plan.', 'What moved most today among what you own. A day’s move says nothing about your plan.')}</p></section>`;
+}
 function htmlBloqueCar(k, M) {
   const anio = new Date().getFullYear();
   try {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       ${htmlAvisoNovedades()}
+      ${htmlEntradaTuAno(M)}
       <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola"><small class="hola-fecha">${esc(new Date().toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</small>${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
@@ -187,10 +280,10 @@ function htmlBloqueCar(k, M) {
     if (k === 'mapa') return htmlMapaCartera(M, true);
     if (k === 'vistazo') return M.filas.length ? htmlVistazo(M, iaActual()).replace(/<button class="enlace acento ver-mas" data-exp="posiciones">([^<]*)<\/button>/, '<a class="enlace acento ver-mas" href="#expertos">$1</a>') : '';
     if (k === 'informe') return htmlResumenInforme(true, htmlHoyInforme(M));
-    if (k === 'movidas') return htmlMovidas();
+    if (k === 'movidas') return htmlMovidasTuyas(M);
     if (k === 'noticias') {
       const n = pasadoAg('mio');
-      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#agenda">Ver más</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
+      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#noticias">Todas las noticias</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
     }
     if (k === 'futuro') {
       const pr = proyeccion(M), fila = (m, t) => (pr.p50[m] != null ? `<div class="car-fut-f"><span class="k">${t}</span><b>${euCorto(pr.p50[m])}</b><small>entre ${euCorto(pr.p10[m])} y ${euCorto(pr.p90[m])}</small></div>` : '');
@@ -206,7 +299,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'renta') {
       const fa = fiscalAnio(anio);
       return `<section aria-labelledby="hRenC"><div class="sec-cab"><h2 id="hRenC">Hacienda de ${anio}</h2><div class="der"><a class="enlace acento" href="#fiscal">Ver Hacienda</a></div></div>
-        <div class="kpis car-renta"><div class="kpi"><span class="k">Ganancias y pérdidas</span><span class="v ${cls(fa.gp || 0)}">${eurS(fa.gp || 0, 0)}</span></div><div class="kpi"><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm || 0, 0)}</span></div><div class="kpi"><span class="k">Te tocaría pagar</span><span class="v">${eur(fa.cuota || 0, 0)}</span></div></div>
+        <div class="kpis car-renta"><div class="kpi"><span class="k">Ganancias y pérdidas</span><span class="v ${cls((fa.gp || 0) + (fa.rcmVentas || 0))}">${eurS((fa.gp || 0) + (fa.rcmVentas || 0), 0)}</span></div><div class="kpi"><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm || 0, 0)}</span></div><div class="kpi"><span class="k">Te tocaría pagar</span><span class="v">${eur(fa.cuota || 0, 0)}</span></div></div>
         <p class="nota">Con lo que llevas vendido y cobrado este año, antes de restar lo que ya te han retenido.</p></section>`;
     }
   } catch (e) { console.warn('bloque de Cartera', k, e); }
@@ -381,10 +474,10 @@ function htmlToca(M) {
     const hora = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     const cuando = ia.propio ? (dias === 0 ? `Hoy a las ${hora}` : dias === 1 ? `Ayer a las ${hora}` : `El ${fechaLarga(iso(d))}`) : 'Análisis de partida';
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>${esc(cuando)}${IA.generando ? ' · revisándolo ahora' : ''}</small></div><a class="enlace acento" href="#analisis">Ver el análisis</a></div>`;
-    tit = ia.titular ? `<p class="iac-tit">${rellenarIA(ia.titular, vIA)}</p>` : '';
+    tit = ia.titular ? `<p class="iac-tit">${rellenarIA(hoyConHoraIA(ia.titular, ia), vIA)}</p>` : '';
     const res = (ia.resumen || [])[0];
-    tit += res ? `<p class="iac-res">${rellenarIA(res, vIA)}</p>` : '';
-    notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
+    tit += res ? `<p class="iac-res">${rellenarIA(hoyConHoraIA(res, ia), vIA)}</p>` : '';
+    notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${notasDe5(ia.puntuaciones).slice(0, 5).map((x) => { const n = x.nota; return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
   } else if (!S.iaListo) {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Cargando lo que dice de tu cartera…</small></div></div>`;
   } else if (iaLista()) {

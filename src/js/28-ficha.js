@@ -64,8 +64,8 @@ function htmlFicha(f) {
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
     ${(() => { if (i.clase === 'Efectivo') return ''; const tp = tiempoPos(f); return tp ? `<div class="ficha-anual k">Desde hace ${duracion(tp.dias)}: <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b> (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %)</div>` : `<div class="ficha-anual k">¿Cuánto ganas al año? <button class="enlace acento" data-accion="editar-pos" data-id="${esc(id)}">Pon desde cuándo la tienes</button></div>`; })()}
     <div class="ficha-botones">
-      <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
-      <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
+      <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Apuntar compra</button>
+      <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Apuntar venta</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
       <button class="btn" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué está pasando con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y lo que dicen los analistas.` : `¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
     </div>
@@ -107,6 +107,7 @@ function fichaResumen(f) {
   <section>
     <div class="evo-cab"><div class="datos" id="fichaCab"></div><div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).filter((k) => k !== 'Inicio').map((k) => `<button data-frango="${k}" aria-pressed="${S.fichaRango === k}">${k}</button>`).join('')}</div></div>
     <div class="chart" id="fichaGraf"></div>
+    <p class="nota" id="fichaNotaGraf" hidden></p>
     ${medio ? `<div class="leyenda-graf"><span><i class="disc" style="border-color:var(--aviso)"></i>Tu precio medio, ${precioFmt(medio)}</span></div>` : ''}
     ${p.proxy ? `<p class="nota">Hasta el ${fechaLarga(p.proxy_hasta)} es el precio de ${esc(p.proxy)}, un ETF del mismo índice, porque el fondo no existía.</p>` : ''}
   </section>
@@ -191,7 +192,7 @@ function fichaExpertos(f) {
         fu.margen != null && ['Margen neto', pct(fu.margen, 1)],
         fu.roe != null && ['Rentabilidad sobre fondos propios', pct(fu.roe, 1)],
         fu.deuda_capital != null && ['Deuda / fondos propios', pct(fu.deuda_capital, 0)],
-        fu.beta != null && ['Beta', fmtNum(fu.beta, 2)],
+        fu.beta != null && [etiquetaBeta(p), fmtNum(fu.beta, 2)],
       ])}</div>
     </div>
     <details class="paso-mas"><summary>Qué significa cada dato</summary><dl class="glosa">
@@ -289,20 +290,62 @@ function fichaDatos(f) {
   ${anios.length ? `<section class="bloque"><h3>Año a año</h3><div class="anios">${anios.map(([y, v]) => `<div><span class="k">${y}</span><span class="${cls(v)}">${pctS(v, 1)}</span></div>`).join('')}</div><p class="nota">Rentabilidad del precio en euros de cada año natural. El último va hasta hoy.</p></section>` : ''}`;
 }
 
+/* lo mínimo para que la gráfica de un periodo tenga sentido (1M diario son unas 21 sesiones; 1A, unas 250); con
+   menos, la ficha espera al histórico diario del Worker o dice que solo hay cierres semanales */
+const MIN_PUNTOS = { '1M': 12, '3M': 35, '6M': 70, '1A': 120, '3A': 120, '5A': 150 };
+const NOMBRE_RANGO = { '1M': 'un mes', '3M': '3 meses', '6M': '6 meses', '1A': 'un año', '3A': '3 años', '5A': '5 años' };
+const NOMBRE_RANGO_EN = { '1M': 'a month', '3M': '3 months', '6M': '6 months', '1A': 'a year', '3A': '3 years', '5A': '5 years' };
 function dibujarFicha() {
   const g = $('#fichaGraf'); if (!g) return;
   const f = filaFicha(); if (!f) return;
-  const dias = RANGOS[S.fichaRango] || 366;
-  const pi = INTRADIA.has(S.fichaRango) && S.intra && S.intra.p && S.intra.p[f.inst.id];
+  const dias = RANGOS[S.fichaRango] || 366, intra = INTRADIA.has(S.fichaRango);
+  // lo que no trae intradia.json se pide al Worker; al llegar, se vuelve a dibujar (si sigue abierta y en 1D o 1S)
+  if (intra) pedirIntradia([f], () => { const f2 = filaFicha(); if (f2 && f2.inst.id === f.inst.id && INTRADIA.has(S.fichaRango)) dibujarFicha(); });
+  const pi = intra && intraDe(f.inst.id);
   let h;
-  if (pi && pi.length > 1) {
+  if (pi) {
     const dia = pi[pi.length - 1][0].slice(0, 10), antes = pi.filter(([t]) => t.slice(0, 10) < dia);
     const lim = S.fichaRango === '1D' ? (antes.length ? antes[antes.length - 1][0] : pi[0][0]) : new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 16) + 'Z';
     h = pi.filter(([t]) => t >= lim).map(([d, v]) => ({ d, v }));
     if (f.precio && h.length) h.push({ d: new Date().toISOString().slice(0, 16) + 'Z', v: f.precio });
+  } else if (S.fichaRango === '1D') {
+    // sin precios por horas (un fondo, sin red o Yahoo sin datos): no se enseñan los cierres de días como si fuera el día
+    const cab = $('#fichaCab'), esperando = intraPendiente(f.inst.id), fondo = /^Fondo/.test(f.inst.tipo || '');
+    const hs = (f.hist || []).filter(([, v]) => +v > 0), ult = hs[hs.length - 1], prev = hs[hs.length - 2];
+    if (cab) cab.innerHTML = !esperando && ult && prev ? (() => { const p = (ult[1] / prev[1] - 1) * 100; return `<span class="${cls(p)}">${pctS(p)}</span><span class="k">${L(`en la sesión del ${fechaPunto(ult[0])}`, `in the ${fechaPunto(ult[0])} session`)}</span>`; })() : '';
+    g.innerHTML = `<div class="vacio sin-horas">${esperando ? L('Cargando los precios de hoy…', 'Loading today\'s prices…') : fondo ? L('Los fondos tienen un solo precio al día: no hay precios por horas. Mira 1S o más.', 'Funds have a single price per day: there are no hourly prices. Look at 1W or longer.') : L('No hay precios por horas de esto ahora mismo. Mira 1S o más.', 'There are no hourly prices for this right now. Look at 1W or longer.')}</div>`;
+    return;
   } else {
-    const desde = iso(new Date(Date.now() - Math.max(dias, INTRADIA.has(S.fichaRango) ? 9 : 0) * 86400000));
-    h = (f.hist || []).filter(([d]) => d >= desde).map(([d, v]) => ({ d, v }));
+    // los cierres de cada día. En 1S (sin precios por horas), los de la última semana con el último de antes, para
+    // tener desde dónde empezar (lo del radar viene semanal hasta hace poco: sin él no habría ni dos puntos).
+    // Máx: todo lo que hay (antes se cortaba en 10 años)
+    const hs = f.hist || [], maxR = S.fichaRango === 'Máx';
+    const desde = maxR && hs.length ? hs[0][0] : iso(new Date(Date.now() - dias * 86400000));
+    const nota = $('#fichaNotaGraf'), cab0 = $('#fichaCab');
+    if (nota) { nota.hidden = true; nota.textContent = ''; }
+    if (!INTRADIA.has(S.fichaRango)) {
+      const pend = histLargoPendiente(f.inst.id), n = hs.filter(([d]) => d >= desde).length;
+      // mientras llega el histórico diario del Worker, no se dibujan 4 cierres semanales como si fuera un mes
+      if (pend && (maxR || n < (MIN_PUNTOS[S.fichaRango] || 2))) {
+        if (cab0) cab0.innerHTML = '';
+        g.innerHTML = `<div class="vacio sin-horas">${L('Cargando los precios de cada día…', 'Loading daily prices…')}</div>`;
+        return;
+      }
+      // el periodo pide más de lo que hay (3A de algo que cotiza desde hace un año): se dice, en vez de dibujar lo mismo que 1A
+      if (!maxR && hs.length > 1 && diasEntre(desde, hs[0][0]) > Math.max(6, dias * 0.08)) {
+        const dur = diasEntre(hs[0][0], hoyIso());
+        if (cab0) cab0.innerHTML = '';
+        // con solo cierres semanales es que no se ha podido traer más (WDC cotiza desde hace décadas), no que no lo haya
+        g.innerHTML = `<div class="vacio sin-horas"><div>${histFlojo(hs) ? L(`Ahora solo hay un cierre por semana desde el ${fechaLarga(hs[0][0])}: no se ha podido traer más.`, `Right now there is only one close per week since ${fechaLarga(hs[0][0])}: more could not be loaded.`) : L(`Solo hay precios desde el ${fechaLarga(hs[0][0])} (${duracion(dur)}): no llega a ${NOMBRE_RANGO[S.fichaRango] || S.fichaRango}.`, `There are only prices since ${fechaLarga(hs[0][0])} (${trad(duracion(dur))}): not ${NOMBRE_RANGO_EN[S.fichaRango] || S.fichaRango}.`)}<br><button class="btn peq" type="button" data-frango="Máx">${L('Ver todo lo que hay', 'See all there is')}</button></div></div>`;
+        return;
+      }
+      // con menos puntos de los que pide el periodo (el Worker no ha podido traer los de cada día): se dibuja y se dice
+      if (nota && n > 1 && n < (MIN_PUNTOS[S.fichaRango] || 2)) { nota.textContent = L('Aquí solo hay un precio por semana: ahora no se han podido traer los de cada día.', 'Only one price per week here: daily prices could not be loaded right now.'); nota.hidden = false; }
+    }
+    let k0 = hs.findIndex(([d]) => d >= desde);
+    if (k0 < 0) k0 = hs.length;
+    if (k0 > 0 && (k0 === hs.length || hs[k0][0] > desde)) k0--;
+    h = (INTRADIA.has(S.fichaRango) ? hs.slice(k0) : hs.filter(([d]) => d >= desde)).map(([d, v]) => ({ d, v }));
     if (h.length && f.precio) { const hoy = hoyIso(); if (h[h.length - 1].d === hoy) h[h.length - 1].v = f.precio; else h.push({ d: hoy, v: f.precio }); }
   }
   const cab = $('#fichaCab');

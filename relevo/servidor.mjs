@@ -21,7 +21,7 @@ import { pipeline } from 'node:stream/promises';
 
 export const DESTINO_POR_DEFECTO = 'https://growfolio.growfolio-web-app.workers.dev';
 // las rutas del Worker que usa la app (lo demás no se reenvía: el relevo no es un proxy abierto)
-const RUTAS = [/^\/salud$/, /^\/claude$/, /^\/isin$/, /^\/banco\/[a-z0-9-]{1,40}$/, /^\/correo$/, /^\/correo\/[a-z0-9-]{1,40}$/];
+const RUTAS = [/^\/salud$/, /^\/claude$/, /^\/isin$/, /^\/intradia$/, /^\/historico$/, /^\/banco\/[a-z0-9-]{1,40}$/, /^\/correo$/, /^\/correo\/[a-z0-9-]{1,40}$/];
 // lo que se copia de la petición al Worker. User-Agent, Accept, Accept-Language, Accept-Charset y Referer los usa el
 // banco (cabeceras PSU); Origin, para que el Worker aplique su lista de sitios. Nada más (ni cookies ni IP)
 const CABECERAS_IDA = ['authorization', 'content-type', 'origin', 'user-agent', 'accept', 'accept-language', 'accept-charset', 'referer'];

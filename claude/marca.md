@@ -35,3 +35,14 @@
 - La app de Android mira cada 3 horas version.json (versión publicada y su título; lo deja al día la Action del release) y app.json (la última APK). Si hay una versión que no has abierto, manda un aviso al móvil con el título; si además hay APK nueva, lo dice. Cada versión, un aviso; de 22:00 a 9:00, nada.
 - Canal propio de Android «Versiones nuevas». Viene encendido y se quita en Ajustes > Avisos y resumen. Si falta el permiso de notificaciones, la web lo pregunta una vez.
 - Solo funciona en la app de Android, a partir de la APK de la 0.3.3.
+
+## Celebra el plan, no la operación (0.8.6, 10 nov 2026)
+
+La regla de la ESMA para que una app de inversión no empuje a operar, escrita para Toisón. Vale para todo lo que celebra, resume o enseña lo que se mueve: Hoy, Tu año, los avisos, el widget y lo que la IA escribe en la app.
+
+- Lo que se celebra es el plan: aportar cada mes, no sacar dinero, tener el dinero repartido, los años que lleva invertido. Nunca una compra, una venta, una operación que salió bien ni cuánto se ganó un día.
+- Los hechos, sin decir que sean lo bueno. «Aportaste 11 de 11 meses», no «¡Genial, no fallaste ni un mes!». Sin «compra», «vende», «deberías» ni otras órdenes, sin confeti, rachas, medallas ni «¡Enhorabuena!», y sin comparar con otros usuarios.
+- Lo que se mueve, solo de lo tuyo y con el porqué. En Hoy, «Lo que más se mueve» enseña solo tus posiciones (las 2.800 empresas del radar están en Mercados), cada una con un hecho que lo explica: su dividendo de hoy, unos resultados de estos días, lo que dice la IA de ella en el informe de hoy, un titular suyo de hoy o, si no hay nada de eso, cómo va su bolsa. Y sin botón: ni «Comprar», ni «Vender», ni «Ver» que lleve a operar. Al pie, que un día no dice nada de tu plan.
+- Tu año, sobrio: en Hoy solo sale en diciembre y enero, como una tarjeta que lleva a él; el resto del año, en las listas. La imagen para compartir va sin euros por defecto y «Cantidades en euros» sale siempre apagada al abrir.
+- El modo discreto (el ojo, Ajustes › Modo discreto o «Ocultar cantidades» en Tu año) quita los euros de toda la app y del widget, y se recuerda en el dispositivo. Al widget no le llega ningún euro: la cartera va en base 100.
+- Sin candados de Dorado en lo que celebra el plan.

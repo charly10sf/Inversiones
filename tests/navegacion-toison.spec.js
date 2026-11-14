@@ -33,7 +33,8 @@ test('cinco abajo con Hoy en el medallón, la IA arriba y cada cosa en su pesta�
   await ir(page, 'posiciones');
   expect(await barra(page)).toBe('posiciones*,mercados,cartera,expertos,tu');
   await expect(page.locator('.ts-total')).toHaveCount(0);
-  expect((await page.locator('.pest-av a').allInnerTexts()).slice(0, 3)).toEqual(['Posiciones', 'Rentabilidad', 'Riesgo']);
+  // 0.8.6: en básico va además «Entiende tu cartera» (tiene su prueba)
+  expect((await page.locator('.pest-av a').allTextContents()).filter((t) => t !== 'Entiende tu cartera').slice(0, 3)).toEqual(['Posiciones', 'Rentabilidad', 'Riesgo']);
   await expect(page.locator('#vista .car-pos')).toBeVisible();
   // las direcciones de siempre siguen valiendo: Análisis y Hacienda están en Cartera; Objetivos, en Tú
   await ir(page, 'fiscal');
