@@ -222,9 +222,9 @@ test('la rueda de la cifra no lee en voz alta la tira del 0 al 9: solo el dígit
   const rd = page.locator('#heroNum [data-b="totalE"] .rd').first();
   await expect(rd).toBeVisible();
   // la tira es contenido de CSS con texto alternativo vacío (content: "…" / ""): el lector de pantalla se la salta
-  const c = await rd.evaluate((el) => getComputedStyle(el, '::before').content);
-  expect(c.length).toBeGreaterThan(10);
-  expect(c).toMatch(/\/\s*""\s*$/);
+  // 0.9a: la página se repinta entera con cada dato que llega; se lee la rueda que está puesta en ese momento (antes se
+  // leía la de la primera búsqueda, que a veces ya se había quitado, y daba vacío: fallaba a ratos en la Action)
+  await expect.poll(() => page.evaluate(() => { const el = document.querySelector('#heroNum [data-b="totalE"] .rd'); return el ? getComputedStyle(el, '::before').content : ''; })).toMatch(/^.{10,}\/\s*""\s*$/s);
   // y el texto de verdad sigue dentro
   expect(await page.locator('#heroNum [data-b="totalE"]').textContent()).toMatch(/^\d{1,3}(\.\d{3})*$/);
 });
