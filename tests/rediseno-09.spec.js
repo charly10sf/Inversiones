@@ -249,20 +249,21 @@ test('el acabado liso: fondo plano, sin cajas, se guarda y se vuelve a la piedra
   expect(await page.evaluate(() => /data-acabado-b="liso"/.test(htmlSelectorAcabado()))).toBe(true);
 });
 
-// 15 nov (decidido el 13): sin elegir, tarjetas en el móvil y liso en el ordenador (corte de la K2, 1.180 px); lo pone ya el
+// 15 nov (decidido el 13; desde la maqueta del 15 nov, el híbrido en vez del liso): sin elegir, tarjetas en el móvil e
+// híbrido en el ordenador (corte de la K2, 1.180 px); lo pone ya el
 // script de index.html, antes del primer pintado; «Según la pantalla» borra lo elegido y vuelve a eso
-test('el acabado por defecto va con el ancho: tarjetas en el móvil, liso en el ordenador, y se cambia en Ajustes', async ({ page }, info) => {
+test('el acabado por defecto va con el ancho: tarjetas en el móvil, híbrido en el ordenador, y se cambia en Ajustes', async ({ page }, info) => {
   await abrir(page, 'avanzado', 'estres');
   // sin elegir (ayuda.js abre las pruebas con la piedra elegida)
   await page.evaluate(() => LS.del('inv-acabado'));
   await page.reload(); await quitarCapas(page);
-  const pc = info.project.name === 'pc', porDefecto = pc ? 'liso' : null;
+  const pc = info.project.name === 'pc', porDefecto = pc ? 'hibrido' : null;
   const estado = () => page.evaluate(() => [document.documentElement.getAttribute('data-acabado'), LS.get('inv-acabado', null)]);
   expect(await estado()).toEqual([porDefecto, null]);
   // el primer pintado ya lo trae (sin esperar al JS de la app)
   expect(await page.evaluate(async () => { const h = await (await fetch(location.pathname)).text(); return /inv-acabado/.test(h) && /innerWidth>=1180/.test(h); })).toBe(true);
-  // el mando de Ajustes: tres botones, y «Según la pantalla» marcado
-  expect(await page.evaluate(() => { const d = document.createElement('div'); d.innerHTML = htmlSelectorAcabado(); return [...d.querySelectorAll('[data-acabado-b]')].map((b) => b.dataset.acabadoB + ':' + b.getAttribute('aria-pressed')); })).toEqual(['auto:true', 'piedra:false', 'liso:false']);
+  // el mando de Ajustes: cuatro botones, y «Según la pantalla» marcado
+  expect(await page.evaluate(() => { const d = document.createElement('div'); d.innerHTML = htmlSelectorAcabado(); return [...d.querySelectorAll('[data-acabado-b]')].map((b) => b.dataset.acabadoB + ':' + b.getAttribute('aria-pressed')); })).toEqual(['auto:true', 'piedra:false', 'hibrido:false', 'liso:false']);
   // lo elegido manda sobre el ancho y se queda al volver a abrir
   const otro = pc ? 'piedra' : 'liso';
   await page.evaluate((o) => ponerAcabado(o), otro);
@@ -273,7 +274,7 @@ test('el acabado por defecto va con el ancho: tarjetas en el móvil, liso en el 
   expect(await estado()).toEqual([porDefecto, null]);
   // sin elegir, cambia al cruzar el corte
   await page.setViewportSize(pc ? { width: 1000, height: 800 } : { width: 1300, height: 800 });
-  await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-acabado')), { timeout: 5_000 }).toBe(pc ? null : 'liso');
+  await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-acabado')), { timeout: 5_000 }).toBe(pc ? null : 'hibrido');
 });
 
 // 15 nov: la cuenta atrás de GTA VI se quitó entera (su sitio será el del Paso a paso del modo fundador; de momento, nada):

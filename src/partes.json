@@ -37,7 +37,8 @@
     "34-sistema.css",
     "35-liso.css",
     "36-paso.css",
-    "37-hoy.css"
+    "37-hoy.css",
+    "38-hibrido.css"
   ],
   "js": [
     "01-base.js",

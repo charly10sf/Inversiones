@@ -1,0 +1,32 @@
+/* =====================================================================
+   0.9 · El acabado híbrido (maqueta del 15 nov, B4; claude/decisiones-15nov-maqueta-paso-hoy.md): el de por defecto en el
+   ordenador desde 1.180 px (64-movimiento.js). Es el de tarjetas con el fondo plano del liso:
+     1. Fondo plano: sin vetas, sin grano y sin brillo de piedra (la regla 1 de 35-liso.css).
+     2. Cada bloque en su tarjeta, por tono y no por borde: la superficie un punto más clara que el fondo, el borde casi
+        invisible y sin sombra («profundidad por tono, no por bordes», principio 3 del rediseño).
+   Y para el híbrido y las tarjetas del móvil, «más tarjetas»: lo que iba suelto sobre el fondo (Lo que viene, las
+   secciones de Tu plan y tus movimientos y, en el Paso a paso, los bloques de al lado) va en su tarjeta. El título de la
+   página y los rótulos de sección, fuera; ninguna caja dentro de otra (dentro, filas con hilo).
+   ===================================================================== */
+html[data-acabado="hibrido"] #acabadoTema, html[data-acabado="hibrido"][data-dorado] #acabadoTema { background-image: none !important; background-color: var(--fondo) !important; }
+html[data-acabado="hibrido"] #acabadoTema::after, html[data-acabado="hibrido"] #acabadoTema .grano { display: none !important; }
+:root[data-acabado="hibrido"][data-tema="marmol"] { --fondo: #08080a; --fondo-2: #08080a; --superficie: #121215; --superficie-2: #1b1b1f; }
+:root[data-acabado="hibrido"][data-tema] { --sombra-1: none; --sombra-t: none; --filo-suave: color-mix(in srgb, var(--texto) 6%, transparent); --filo-luz: transparent; }
+html[data-acabado="hibrido"] #vista :is(.hero-panel, .pav-t, .fis-c, .pf-card, .aj-caja, .agp-c, .tp-llega, .merc-busca, .mapa-w, .mapa-caja, .mfilas, .informe, .ag-mes2, .tu-cab, .num-sec, .fx3-lista, .ir-objetivos, .ls-t, .nt-bloque, .tarjeta, .idea, .tarea, .pp-mes, .pp-op) {
+  border-color: var(--filo-suave); box-shadow: none;
+}
+html[data-acabado="hibrido"] #vista .hero-panel { border-width: 1px; }
+html[data-acabado="hibrido"] #vista .toca { box-shadow: none; }
+
+/* más tarjetas: en el híbrido y en las tarjetas del móvil (en el liso, no) */
+html:not([data-acabado="liso"]) #vista :is(.ag-card, .car-plan .pila > section, .rlado > .rbloque) { padding: 16px 18px; border-radius: var(--r-t); background: var(--superficie); border: 1px solid var(--filo-suave); box-shadow: var(--sombra-1); }
+html:not([data-acabado="liso"]) #vista .car-plan .lista.agenda { border: 0; background: none; box-shadow: none; border-radius: 0; }
+html:not([data-acabado="liso"]) #vista .car-plan .pila { gap: 14px; }
+html:not([data-acabado="liso"]) #vista .rlado { gap: 14px; }
+html:not([data-acabado="liso"]) #vista .rlado .rfecha { background: none; border: 0; border-top: 1px solid var(--filo-suave); border-radius: 0; box-shadow: none; padding: 12px 0; }
+html:not([data-acabado="liso"]) #vista .rlado .rfechas { gap: 0; }
+html:not([data-acabado="liso"]) #vista .rlado .rfechas > li:first-child { border-top: 0; padding-top: 2px; }
+html:not([data-acabado="liso"]) #vista .rlado .rfechas > li:last-child { padding-bottom: 0; }
+html:not([data-acabado="liso"]) #vista .rlado .rsolo { padding-bottom: 0; }
+html:not([data-acabado="liso"]) #vista .rlado .rbloque > .t-pq:last-child { margin-bottom: 0; }
+@media (max-width: 759px) { html:not([data-acabado="liso"]) #vista :is(.ag-card, .car-plan .pila > section, .rlado > .rbloque) { padding: 16px; } }
