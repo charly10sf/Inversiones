@@ -146,6 +146,9 @@
     "salud": [
       "trozos/salud-ia.js"
     ],
+    "espera": [
+      "trozos/lista-espera.js"
+    ],
     "presentacion": {
       "archivos": [
         "trozos/presentacion.js"

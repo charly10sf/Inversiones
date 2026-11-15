@@ -7,6 +7,10 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6e', f: '2026-11-15', h: '03:15', t: 'La lista de espera, con correo', arreglos: [
+    { t: 'En Ajustes, «Lista de espera»: quien ha pedido acceso en toison.es, con la fecha y si ya le diste acceso. «Dar acceso» le manda el correo «Ya tienes acceso», en su idioma, con un botón que abre Toisón en «Crear cuenta».', solo: 'dueno' },
+    { t: 'Quien pide acceso en toison.es recibe ahora un correo de Toisón diciendo que está en la lista.', solo: 'dueno' },
+  ] },
   { v: '0.8.6d', f: '2026-11-14', h: '19:45', t: 'La IA, también con fútbol', arreglos: [
     'Durante los partidos de LaLiga, algunos operadores bloquean parte de internet y la IA, la conexión con el banco, la búsqueda por ISIN y las gráficas de 1D a Máx se quedaban sin respuesta. Ahora, si no llegan al servidor de siempre, van por otro camino y siguen funcionando.',
     'Si aun así no llegan, Toisón te dice que puede ser ese bloqueo y qué hacer (probar al acabar el partido o con los datos de otro operador), en vez de un error sin explicar.',

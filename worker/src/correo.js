@@ -3,6 +3,11 @@
    · confirmar  — con sesión: el correo de confirmación de ESA cuenta (sin confirmar). 1 por minuto y 5 al día por cuenta;
                   además 3 por hora y 10 al día por IP y 5 al día por correo (cuentas creadas en serie): pasados, «cupo».
    · bienvenida — con sesión y el correo ya confirmado: una sola vez por cuenta.
+   · apuntado   — SIN sesión, solo desde toison.es (0.8.3, 15 nov): «te hemos apuntado» al pedir acceso en la lista de espera.
+                  Sin texto del usuario (solo su correo). Una vez por correo para siempre, tope por IP (IPv6 por su /64) y
+                  sale del cupo del día antes que nada: con el día al 40 %, ya no se manda. No por el relevo de Google. Contesta lo mismo pase lo que pase.
+   · acceso     — con sesión del dueño (BANCO_EMAILS, correo confirmado): «ya tienes acceso», con el botón a la app en
+                  «Crear cuenta». Lo manda Carlos desde Ajustes › Lista de espera; la app marca la solicitud en Firestore.
    · clave      — SIN sesión, por correo: contraseña nueva. Tope por IP (las IPv6, por su /64) y por correo; pasados, «cupo»
                   y la app manda el de Firebase. La respuesta es la misma exista o no la cuenta y llega antes de preguntar a
                   Firebase (el enlace y el envío van aparte), para que tampoco lo diga el tiempo.
@@ -33,7 +38,24 @@ const TOPE_CLAVE_CORREO = [[36e5, 3], [864e5, 6]];
 const TOPE_CLAVE_IP = [[36e5, 10], [864e5, 30]];
 const TOPE_CONFIRMAR_IP = [[36e5, 3], [864e5, 10]];
 const TOPE_CONFIRMAR_CORREO = [[864e5, 5]];
+const TOPE_APUNTADO_IP = [[36e5, 3], [864e5, 10]];
+const TOPE_ACCESO = [[60e3, 10], [864e5, 40]];
 const POR_DIA = 90, POR_DIA_MAX = 200;
+// «apuntado» es lo primero que se deja de mandar si el día se llena: solo cabe con el día por debajo del 40 % (revisión
+// aparte del 15 nov: aunque alguien lo gaste desde varias IP, a los demás correos les queda el 60 % del día)
+const PARTE_APUNTADO = 0.4;
+// «apuntado» solo desde la web (el formulario de toison.es); los demás, desde la web o la app
+const ORIGEN_WEB = 'https://toison.es';
+export const TIPOS = ['confirmar', 'clave', 'bienvenida', 'apuntado', 'acceso'];
+// los que no llevan enlace de Firebase: el botón va a toison.es o a la app
+const SIN_ENLACE_FB = ['bienvenida', 'apuntado', 'acceso'];
+// a dónde lleva el botón de los que no llevan enlace de Firebase. «acceso»: la app abre en «Crear cuenta» (34-entrar.js);
+// el correo no va en la dirección
+export function enlaceFijo(tipo, base = BASE_APP) {
+  if (tipo === 'apuntado') return 'https://toison.es/';
+  if (tipo === 'acceso') return base + '?entrar=crear';
+  return base;
+}
 // la ruta de pruebas (solo en el Worker de pruebas, el que tiene PRUEBA_TOKEN): solo a estas direcciones
 export const CORREOS_PRUEBA = ['toison.web.app+revision@gmail.com'];
 const CORREO_RE = /^[^\s@<>()",;:]{1,64}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
@@ -114,9 +136,11 @@ async function unaVez(env, nombre, op) {
   const r = await env.CUOTAS.get(env.CUOTAS.idFromName(' correo ' + nombre)).fetch('https://cuotas/', { method: 'POST', body: JSON.stringify({ op }) });
   return r.json();
 }
-const porDia = (env) => [[864e5, Math.min(POR_DIA_MAX, Math.max(1, Number(env.CORREO_POR_DIA) || POR_DIA))]];
+const topeDia = (env) => Math.min(POR_DIA_MAX, Math.max(1, Number(env.CORREO_POR_DIA) || POR_DIA));
+const porDia = (env) => [[864e5, topeDia(env)]];
+const porDiaApuntado = (env) => [[864e5, Math.max(1, Math.floor(topeDia(env) * PARTE_APUNTADO))]];
 
-export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes }) {
+export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes, esDueno }) {
   const url = new URL(req.url), workerUrl = url.origin;
   // las imágenes: públicas, para siempre en caché
   if (url.pathname.startsWith('/correo/img/')) {
@@ -133,19 +157,69 @@ export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, ori
   let d; try { d = JSON.parse(txt); } catch (e) { return res({ ok: false, motivo: 'pedido' }, 400); }
   if (!d || typeof d !== 'object') return res({ ok: false, motivo: 'pedido' }, 400);
   const tipo = d.tipo, lang = d.lang === 'en' ? 'en' : 'es', origen = req.headers.get('Origin') || '';
-  if (!['confirmar', 'clave', 'bienvenida'].includes(tipo)) return res({ ok: false, motivo: 'pedido' }, 400);
+  if (!TIPOS.includes(tipo)) return res({ ok: false, motivo: 'pedido' }, 400);
   const sa = cuentaServicio(env);
   if (!env.RESEND_API_KEY || !sa || !env.CUOTAS) return res({ ok: false, motivo: 'sin-config' }, 503);
   const base = BASE_APP;
 
-  // ---- el Worker de pruebas: los tres correos, solo a las direcciones de prueba
+  // ---- el Worker de pruebas: los cinco correos, solo a las direcciones de prueba
   if (prueba) {
     const correo = String(d.correo || CORREOS_PRUEBA[0]).toLowerCase();
     if (!CORREOS_PRUEBA.includes(correo)) return res({ ok: false, motivo: 'pedido' }, 400);
-    const codigo = tipo === 'bienvenida' ? null : await oob(env, sa, tipo, correo);
-    if (tipo !== 'bienvenida' && !codigo) return res({ ok: false, motivo: 'sin-cuenta' });
-    await mandar(env, workerUrl, tipo, lang, correo, tipo === 'bienvenida' ? base : enlaceCuenta(base, tipo, codigo, lang));
+    const fijo = SIN_ENLACE_FB.includes(tipo);
+    const codigo = fijo ? null : await oob(env, sa, tipo, correo);
+    if (!fijo && !codigo) return res({ ok: false, motivo: 'sin-cuenta' });
+    await mandar(env, workerUrl, tipo, lang, correo, fijo ? enlaceFijo(tipo, base) : enlaceCuenta(base, tipo, codigo, lang));
     return res({ ok: true, tipo, lang });
+  }
+
+  // ---- «te hemos apuntado»: sin sesión, solo desde el formulario de toison.es. Pasado el tope de la IP, «cupo»; lo demás
+  // (ya se le mandó, el día va lleno, Resend falla) contesta igual que si hubiera salido: la web dice «apuntado» de todos modos
+  if (tipo === 'apuntado') {
+    // la web no pasa nunca por el relevo, y por él llegaría con la IP de Google (el tope por IP no valdría)
+    if (origen !== ORIGEN_WEB || req.headers.get('X-Toison-Relevo')) return res({ ok: false, motivo: 'origen' }, 403);
+    const correo = String(d.correo || '').trim().toLowerCase();
+    if (correo.length > 120 || !CORREO_RE.test(correo)) return res({ ok: false, motivo: 'correo' }, 400);
+    const li = await limite(env, 'aip ' + (await huella(grupoIp(req.headers.get('CF-Connecting-IP') || 'sin-ip'))), TOPE_APUNTADO_IP);
+    if (!li.ok) return res({ ok: false, motivo: 'cupo' }, 503);
+    ctx.waitUntil((async () => {
+      const nombre = 'apuntado ' + (await huella(claveCorreo(correo)));
+      let marcada = false;
+      try {
+        const una = await unaVez(env, nombre, 'una');
+        if (!una.ok) return;
+        marcada = true;
+        const lg = await limite(env, 'dia', porDiaApuntado(env));
+        if (!lg.ok) throw new Error('día casi lleno');
+        await mandar(env, workerUrl, 'apuntado', lang, correo, enlaceFijo('apuntado', base));
+      } catch (e) {
+        console.log('correo apuntado:', String(e.message || e).slice(0, 80));
+        // no ha salido: que pueda salir si vuelve a apuntarse otro día
+        if (marcada) { try { await unaVez(env, nombre, 'desmarcar'); } catch (e2) {} }
+      }
+    })());
+    return res({ ok: true });
+  }
+
+  // ---- «ya tienes acceso»: solo el dueño (el token de Firebase, con el correo confirmado y en BANCO_EMAILS)
+  if (tipo === 'acceso') {
+    if (!origenes.includes(origen)) return res({ ok: false, motivo: 'origen' }, 403);
+    const u = await quienEs(req, env);
+    if (!u) return res({ ok: false, motivo: 'sesion' }, 401);
+    if (!esDueno || !esDueno(u, env)) return res({ ok: false, motivo: 'dueno' }, 403);
+    const correo = String(d.correo || '').trim().toLowerCase();
+    if (correo.length > 120 || !CORREO_RE.test(correo)) return res({ ok: false, motivo: 'correo' }, 400);
+    const l = await limite(env, 'acceso ' + (await huella(u.uid)), TOPE_ACCESO);
+    if (!l.ok) return res({ ok: false, motivo: 'espera', espera: l.espera }, 429);
+    const lg = await limite(env, 'dia', porDia(env));
+    if (!lg.ok) return res({ ok: false, motivo: 'cupo' }, 503);
+    try {
+      await mandar(env, workerUrl, 'acceso', lang, correo, enlaceFijo('acceso', base));
+      return res({ ok: true });
+    } catch (e) {
+      console.log('correo acceso:', String(e.message || e).slice(0, 80));
+      return res({ ok: false, motivo: 'fallo' }, 502);
+    }
   }
 
   // ---- contraseña nueva: sin sesión

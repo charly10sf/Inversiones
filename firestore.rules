@@ -110,7 +110,9 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     // 0.8.2 (web, 4 nov): lista de espera de toison.es («Pedir acceso»). Cualquiera puede apuntar un correo sin cuenta
-    // (la web escribe por REST con la clave web); solo lo lee el dueño; nadie lo cambia ni lo borra desde fuera
+    // (la web escribe por REST con la clave web); solo lo lee el dueño; nadie lo cambia ni lo borra desde fuera.
+    // 0.8.3 (15 nov): el dueño marca que le ha dado acceso (Ajustes › Lista de espera, tras mandar «Ya tienes acceso»):
+    // solo «dado» (true) y «dadoCuando» (la hora del servidor); nada más del documento
     match /acceso/{id} {
       allow create: if request.resource.data.keys().hasOnly(['correo', 'cuando', 'idioma', 'desde'])
         && request.resource.data.correo is string && request.resource.data.correo.size() <= 120
@@ -118,7 +120,11 @@ service cloud.firestore {
         && request.resource.data.cuando is string && request.resource.data.cuando.size() <= 30
         && request.resource.data.idioma in ['es', 'en'] && request.resource.data.desde == 'web';
       allow read, list: if esDueno();
-      allow update, delete: if false;
+      allow update: if esDueno()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dado', 'dadoCuando'])
+        && request.resource.data.dado == true
+        && request.resource.data.dadoCuando == request.time;
+      allow delete: if false;
     }
   }
 }

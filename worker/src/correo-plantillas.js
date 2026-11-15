@@ -1,7 +1,7 @@
 // Los correos de Toisón (diseño «Carta» mejorado, elegido por Carlos el 7 nov 2026): confirmar el correo, contraseña nueva y
 // bienvenida, en español e inglés, con su versión de solo texto. Las imágenes las sirve el propio Worker (/correo/img/…).
 // render(tipo, lang, d) -> { asunto, previa, html, texto }
-//   tipo: 'confirmar' | 'clave' | 'bienvenida'
+//   tipo: 'confirmar' | 'clave' | 'bienvenida' | 'apuntado' | 'acceso' (los dos de la lista de espera, 15 nov)
 //   lang: 'es' | 'en'
 //   d: { correo, enlace, img: nombre => url }  (img('hero-es'), img('i-cartera')…)
 
@@ -52,6 +52,31 @@ const T = {
       boton: 'Abrir Toisón',
       notu: '',
     },
+    apuntado: {
+      asunto: 'Te hemos apuntado en la lista de Toisón',
+      previa: 'Te escribiremos a este correo cuando tengas sitio.',
+      titulo: 'Ya estás en la lista',
+      cuerpo: [
+        'Hemos apuntado tu correo en la lista de espera de Toisón. Cuando haya sitio para ti, te escribimos aquí mismo con el enlace para crear tu cuenta.',
+        'Toisón es una web y app para llevar todas tus inversiones en un solo sitio: fondos, acciones, ETF, oro y cripto de cualquier bróker.',
+      ],
+      chip: 'Correo apuntado',
+      boton: 'Ver Toisón',
+      notu: 'Si no te has apuntado tú, responde a este correo y lo quitamos de la lista.',
+      piePor: c => `Te lo mandamos porque se apuntó ${c} en la lista de espera de toison.es.`,
+    },
+    acceso: {
+      asunto: 'Ya tienes acceso a Toisón',
+      previa: 'Crea tu cuenta y empieza a llevar tus inversiones.',
+      titulo: 'Ya puedes entrar',
+      cuerpo: ['Te apuntaste en la lista de espera de Toisón y ya tienes sitio. Pulsa el botón para crear tu cuenta.'],
+      chip: 'Invitación para',
+      aviso: 'Al crearla te mandaremos un correo para confirmar tu dirección. Confírmala: sin eso, la IA no te contesta.',
+      boton: 'Crear mi cuenta',
+      nota: 'Si algo no funciona, escríbenos a hola@toison.es o responde a este correo.',
+      notu: 'Si no te apuntaste tú, no hagas nada. Si quieres que borremos tu correo de la lista, responde a este correo.',
+      piePor: c => `Te lo mandamos porque ${c} estaba en la lista de espera de toison.es.`,
+    },
     cuenta: 'Cuenta',
     enlace: 'Si el botón no funciona, copia este enlace en el navegador:',
     pie: 'Toisón · tus inversiones en un solo sitio',
@@ -92,6 +117,31 @@ const T = {
       ],
       boton: 'Open Toisón',
       notu: '',
+    },
+    apuntado: {
+      asunto: 'You’re on the Toisón waiting list',
+      previa: 'We’ll write to this address when there’s a spot for you.',
+      titulo: 'You’re on the list',
+      cuerpo: [
+        'We’ve added your email to the Toisón waiting list. When there’s a spot for you, we’ll write to this address with the link to create your account.',
+        'Toisón is a website and app to keep all your investments in one place: funds, stocks, ETFs, gold and crypto from any broker.',
+      ],
+      chip: 'Email on the list',
+      boton: 'See Toisón',
+      notu: 'If you didn’t sign up, reply to this email and we’ll take it off the list.',
+      piePor: c => `We sent it because ${c} was added to the waiting list on toison.es.`,
+    },
+    acceso: {
+      asunto: 'You now have access to Toisón',
+      previa: 'Create your account and start tracking your investments.',
+      titulo: 'You can get in now',
+      cuerpo: ['You joined the Toisón waiting list and now there’s a spot for you. Tap the button to create your account.'],
+      chip: 'Invitation for',
+      aviso: 'When you create it, we’ll send you an email to confirm your address. Confirm it: without that, the AI won’t answer you.',
+      boton: 'Create my account',
+      nota: 'If something doesn’t work, write to hola@toison.es or reply to this email.',
+      notu: 'If you didn’t sign up, just ignore this email. If you want us to delete your address from the list, reply to this email.',
+      piePor: c => `We sent it because ${c} was on the waiting list on toison.es.`,
     },
     cuenta: 'Account',
     enlace: 'If the button doesn’t work, paste this link into your browser:',
@@ -137,7 +187,7 @@ export function render(tipo, lang, d) {
   // la cabecera (símbolo, TOISÓN, el lema y la línea de oro) en los tres correos (Carlos, 7 nov)
   const cabecera = `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${esc(img('hero-' + (T[lang] ? lang : 'es')))}" width="574" alt="Toisón" style="display:block;border:0;width:100%;max-width:574px;height:auto;border-radius:13px 13px 0 0"></td></tr>`;
 
-  const chip = tipo !== 'bienvenida' ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px"><tr><td class="t-chip" bgcolor="${C.chip}" style="background:${C.chip};border-radius:8px;padding:8px 12px;font:400 14px/20px ${SANS};color:${C.texto2}">${esc(L.cuenta)}: <b class="t-texto" style="color:${C.texto};font-weight:600">${esc(correo)}</b></td></tr></table>` : '';
+  const chip = tipo !== 'bienvenida' ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px"><tr><td class="t-chip" bgcolor="${C.chip}" style="background:${C.chip};border-radius:8px;padding:8px 12px;font:400 14px/20px ${SANS};color:${C.texto2}">${esc(t.chip || L.cuenta)}: <b class="t-texto" style="color:${C.texto};font-weight:600">${esc(correo)}</b></td></tr></table>` : '';
 
   const aviso = t.aviso ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:2px 0 20px"><tr><td class="t-caja" bgcolor="${C.caja}" style="background:${C.caja};border-left:3px solid ${C.oro};border-radius:0 8px 8px 0;padding:12px 14px;font:400 15px/22px ${SANS};color:${C.texto}">${esc(t.aviso)}</td></tr></table>` : '';
 
@@ -157,7 +207,7 @@ ${nota}${enlace}${notu}
 
   const pie = `<tr><td class="t-pie-pad" style="padding:22px 40px 8px">
 <p class="t-pie" style="margin:0 0 6px;font:600 12px/18px ${SANS};color:${C.tenue}">${esc(L.pie)} · <a href="https://toison.es" class="t-pie" style="color:${C.tenue};text-decoration:underline">toison.es</a></p>
-<p class="t-pie" style="margin:0;font:400 12px/18px ${SANS};color:${C.tenue}">${esc(L.pieResp)} <a href="mailto:hola@toison.es" class="t-pie" style="color:${C.tenue};text-decoration:underline">hola@toison.es</a>. ${esc(L.piePor(correo))}</p>
+<p class="t-pie" style="margin:0;font:400 12px/18px ${SANS};color:${C.tenue}">${esc(L.pieResp)} <a href="mailto:hola@toison.es" class="t-pie" style="color:${C.tenue};text-decoration:underline">hola@toison.es</a>. ${esc((t.piePor || L.piePor)(correo))}</p>
 </td></tr>`;
 
   const html = `<!doctype html>
@@ -205,13 +255,13 @@ ${pie}
   const bloquesTxt = t.bloques ? t.bloques.map(([, a, b]) => `· ${a}: ${b}`) : [];
   const texto = [
     'TOISÓN', '', t.titulo, '', ...t.cuerpo,
-    ...(tipo !== 'bienvenida' ? ['', `${L.cuenta}: ${correo}`] : []),
+    ...(tipo !== 'bienvenida' ? ['', `${t.chip || L.cuenta}: ${correo}`] : []),
     ...(t.aviso ? ['', t.aviso] : []),
     ...(bloquesTxt.length ? ['', ...bloquesTxt] : []),
     '', `${t.boton}:`, url,
     ...(t.nota ? ['', t.nota] : []),
     ...(t.notu ? ['', t.notu] : []),
-    '', '—', L.pie, `https://toison.es · hola@toison.es`, L.piePor(correo),
+    '', '—', L.pie, `https://toison.es · hola@toison.es`, (t.piePor || L.piePor)(correo),
   ].join('\n');
   return { asunto: t.asunto, previa: t.previa, html, texto };
 }
