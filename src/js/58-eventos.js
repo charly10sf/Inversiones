@@ -2,9 +2,10 @@
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-bench],[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-mas],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
+  const t = e.target.closest('[data-hpest],[data-bench],[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-mas],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
+  if (d.hpest) { S.hpest = d.hpest; LS.set('inv-hoy-pest', S.hpest); pintar(); return; }
   if (d.rango) {
     // la primera vez que tocas «Inicio», te pregunta desde cuándo inviertes (no desde que usas GrowFolio)
     if (d.rango === 'Inicio' && !((S.cartera.perfil || {}).inicio_inversion)) preguntarInicio(() => { S.rango = 'Inicio'; LS.set('inv-rango', S.rango); pintar(); });
@@ -41,6 +42,7 @@ document.addEventListener('click', (e) => {
     const a = d.accion;
     if (a === 'ocultar') ponerDiscreto(!S.oculto);
     else if (a === 'tuano-entrada-x') { LS.set('inv-tuano-entrada-x', periodoTuAno().anio); const e = $('.ta-entrada'); if (e) e.remove(); }
+    else if (a === 'comparar-rend') { LS.set('inv-rend-cmp', !rendCmp()); pintar(); }
     else if (a === 'comparar') { S.comparar = !S.comparar; LS.set('inv-comparar', S.comparar); pintar(); }
     else if (a === 'inicio-inv') preguntarInicio(() => pintar());
     else if (a === 'ver-div12') { const x = $('#hDiv12'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }

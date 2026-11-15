@@ -1,0 +1,46 @@
+/* 0.9 · Hoy por dentro (maqueta del 15 nov, B2 y B3): las cuatro pestañas de la gráfica, el marcador de Rendimiento
+   (lo pinta el trozo «hoy») y lo del día, debajo de la gráfica */
+.hero-panel { grid-template-areas: "cifra" "pest" "marc" "graf" "rangos" "pie"; }
+.hoy-pest { grid-area: pest; display: flex; margin: 14px 16px 2px; position: relative; z-index: 3; justify-self: stretch; }
+.hoy-pest button { flex: 1; padding: 0 6px; font-size: 12.5px; }
+.hero-rangos button:disabled { opacity: .26; cursor: default; }
+.hero-panel:not(.hp-valor) > .chart { margin-top: 10px; }
+.hp-rend .hero-var { display: none; }
+.hoy-marc { grid-area: marc; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 20px; margin: 14px 16px 2px; position: relative; z-index: 2; }
+.hoy-marc:empty { display: none; }
+@media (min-width: 760px) {
+  .hero-panel { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto auto 1fr auto auto; grid-template-areas: "cifra pest" "cifra rangos" "cifra pie" "cifra ." "marc marc" "graf graf"; }
+  .hoy-pest { justify-self: end; align-self: start; margin: 2px 24px 10px 0; }
+  .hoy-pest button { flex: none; padding: 0 14px; font-size: 13px; }
+  .hoy-marc { margin: 18px 28px 6px; gap: 8px 30px; }
+}
+
+/* lo del día: qué ha pasado hoy y, al lado, lo que más mueve la cartera con su motivo */
+.hoy-dia { margin-top: 16px; padding: 18px 16px 14px; border-radius: var(--r-t); background: var(--superficie); border: 1px solid var(--filo-suave); box-shadow: var(--sombra-1); }
+.hoy-dia > .hd { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.hoy-dia:has(> .hd:empty) { display: none; }
+html[data-acabado="liso"] .hoy-dia { background: none; border: 0; border-top: 1px solid var(--hilo-liso); border-radius: 0; box-shadow: none; padding: 24px 0 26px; }
+.hd-tit { margin: 0 0 8px; font: var(--tit-2); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.hd-tit .k { font: var(--nota-s); color: var(--tenue); }
+.hd-frase { margin: 0; font-size: 15.5px; line-height: 1.5; max-width: 64ch; }
+.hd-frase b.up, .hd-ayer b.up, .hd-mv .up .hd-mv-v b { color: var(--sube); }
+.hd-frase b.down, .hd-ayer b.down, .hd-mv .down .hd-mv-v b { color: var(--baja); }
+.hd-ayer { display: flex; gap: 12px; justify-content: space-between; align-items: baseline; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--filo-suave); font: var(--cuerpo-s); }
+.hd-ayer .k { color: var(--tenue); }
+.hd-ayer b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hd-viene { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; font: var(--cuerpo-s); color: var(--texto-2); }
+.hd-viene li { display: flex; gap: 10px; }
+.hd-viene .t-cuando { flex: none; min-width: 84px; color: var(--oro-texto); font-weight: 600; }
+.hd-b .rotulo { margin: 2px 0 4px; }
+.hd-mv { list-style: none; margin: 0; padding: 0; }
+.hd-mv li + li { border-top: 1px solid var(--filo-suave); }
+.hd-mv button { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; min-height: 44px; padding: 10px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.hd-mv-n b { display: block; font: 600 14.5px/1.3 var(--ui); }
+.hd-mv-n small { display: block; margin-top: 2px; font: var(--nota-s); color: var(--tenue); }
+.hd-mv-v { text-align: right; font-variant-numeric: tabular-nums; }
+.hd-mv-v b { display: block; font: 650 14.5px/1.3 var(--ui); white-space: nowrap; }
+.hd-mv-v small { font: var(--nota-s); color: var(--tenue); }
+@media (min-width: 760px) {
+  .hoy-dia { padding: 22px 24px 18px; }
+  .hoy-dia > .hd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px 56px; }
+}

@@ -352,6 +352,14 @@ function dibujar(M) {
    y, cuando llegan, se vuelve a dibujar sola (sin repintar la página) */
 function dibujarEvo(M) {
   const g = $('#grafEvo');
+  // 0.9: Rendimiento, Caída y Cobros los dibuja el trozo «hoy» (se baja la primera vez que se abre una)
+  if (g && hoyPest() !== 'valor') {
+    S.heroVar = null;
+    if (typeof window.HOY_GRAF === 'function') { window.HOY_GRAF(g, M); return; }
+    g.innerHTML = `<div class="vacio">${L('Un momento…', 'One moment…')}</div>`;
+    cargarTrozo('hoy').then(() => { const g2 = $('#grafEvo'); if (g2 && S.M && hoyPest() !== 'valor') window.HOY_GRAF(g2, S.M); }, () => { const g2 = $('#grafEvo'); if (g2) g2.innerHTML = `<div class="vacio">${L('Sin conexión: esta gráfica no se ha podido bajar.', 'Offline: this chart could not be loaded.')}</div>`; });
+    return;
+  }
   if (g) {
     const dias = diasRango(S.rango);
     const intra = INTRADIA.has(S.rango);

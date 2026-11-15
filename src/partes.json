@@ -36,7 +36,8 @@
     "33-cascara.css",
     "34-sistema.css",
     "35-liso.css",
-    "36-paso.css"
+    "36-paso.css",
+    "37-hoy.css"
   ],
   "js": [
     "01-base.js",
@@ -178,6 +179,9 @@
     ],
     "paso": [
       "trozos/paso.js"
+    ],
+    "hoy": [
+      "trozos/hoy.js"
     ]
   }
 }

@@ -301,6 +301,8 @@ function binds(M) {
   // color. 0.7: con su logo (el mismo que en el mapa) en vez de la flechita: el signo y el color ya dicen si sube o baja
   const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)} ${pctS(f.varDia, 1)}`).join(', ');
   b.movers = { txt: tm, html: mueven.length ? `<p class="mv-t">${L('Lo que más ha movido hoy tu cartera', 'What moved your portfolio most today')}</p><div class="mv-l" style="--n:${mueven.length}">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'mv-logo')}<span class="mv-nn">${esc(f.inst.corto)}</span></span><span class="mv-v">${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span></button>`).join('')}</div>` : '' };
+  // lo del día, debajo de la gráfica de Hoy (solo en Hoy: lleva sus motivos y su agenda); se rehace si cambia algo
+  { const h = S.vista === 'cartera' ? htmlHoyDia(M) : ''; let x = h.length; for (let i = 0; i < h.length; i++) x = (x * 31 + h.charCodeAt(i)) | 0; b.hoydia = { txt: String(x), html: h }; }
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (vis.has(x.s)) bindsRadar(b, x);

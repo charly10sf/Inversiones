@@ -23,10 +23,11 @@ test('lo que más ha movido hoy lleva el logo de cada cosa', async ({ page, erro
   await inicio(page);
   // con la bolsa cerrada no hay nada «de hoy» (0.8.6c): dos precios en directo, para que la prueba no dependa de la hora
   await page.evaluate(() => { for (const f of S.M.filas.filter((x) => x.precio > 0).slice(0, 2)) S.live[f.inst.id] = { precio: f.precio * 1.02, var: 2, t: Date.now(), fuente: 'en directo' }; pintar(); });
-  const chips = page.locator('.hero-movers .mv-c');
+  // 0.9: van en lo del día, debajo de la gráfica, cada una con su motivo
+  const chips = page.locator('.hoy-dia .hd-mv button');
   await expect(chips.first()).toBeVisible();
   const n = await chips.count();
-  await expect(page.locator('.hero-movers .mv-c .mv-logo')).toHaveCount(n);
+  await expect(page.locator('.hoy-dia .hd-mv button .logo-a')).toHaveCount(n);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width + 1);
 });
 

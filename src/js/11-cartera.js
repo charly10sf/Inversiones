@@ -12,6 +12,16 @@ function inicioCartera() {
 }
 const diasRango = (r) => (r === 'Inicio' ? (inicioCartera() ? Math.max(8, diasEntre(inicioCartera(), hoyIso())) : 366) : RANGOS[r] || 366);
 const INTRADIA = new Set(['1D', '1S']);
+/* 0.9 · Hoy por dentro (maqueta del 15 nov): la gráfica con cuatro pestañas. Valor es la de siempre; Rendimiento, Caída
+   y Cobros se dibujan en el trozo «hoy». Los periodos que no tienen sentido en una pestaña se apagan (el elegido no se
+   pierde: al volver a Valor sigue ahí) */
+const HPEST = [['valor', 'Valor', 'Value'], ['rend', 'Rendimiento', 'Return'], ['caida', 'Caída', 'Drawdown'], ['cobros', 'Cobros', 'Income']];
+const HPEST_VALE = { rend: ['1S', '1M', '3M', '6M', '1A', '3A', '5A', 'Máx', 'Inicio'], caida: ['1M', '3M', '6M', '1A', '3A', '5A', 'Máx', 'Inicio'], cobros: ['6M', '1A', '3A', '5A', 'Máx', 'Inicio'] };
+const hoyPest = () => { if (!S.hpest) S.hpest = LS.get('inv-hoy-pest', 'valor'); return HPEST.some((x) => x[0] === S.hpest) ? S.hpest : 'valor'; };
+const rangoHoy = () => { const v = HPEST_VALE[hoyPest()]; return !v || v.includes(S.rango) ? S.rango : '1A'; };
+const rendCmp = () => LS.get('inv-rend-cmp', true) !== false;
+// «Comparar con el MSCI World» (y la lista de índices), en Valor y en Rendimiento
+const pieCmp = (on, acc) => `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="${acc}" aria-pressed="${on}"><i aria-hidden="true"></i>${on ? L('Comparado con', 'Compared with') : L(`Comparar con el ${nombreBench(benchDe(S.bench))}`, `Compare with the ${nombreBench(benchDe(S.bench))}`)}</button>${on ? `<select class="hp-sel" id="hpBench" aria-label="${L('Índice con el que comparar', 'Index to compare with')}">${BENCH.map((b) => `<option value="${b.id}"${b.id === S.bench ? ' selected' : ''}>${esc(nombreBench(b))}</option>`).join('')}</select>` : ''}</div>`;
 /* fechas con hora (las de la gráfica de 1 día y 1 semana vienen así: 2026-10-19T14:30Z) */
 const tiempoDe = (d) => (String(d).length > 10 ? new Date(d).getTime() : deIso(d).getTime());
 const DIAS_SEM = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
@@ -204,7 +214,8 @@ function porqueMovida(f, hoy = hoyIso()) {
     const inf = informeVisible(), c = inf && inf.posiciones && inf.posiciones[i.id];
     if (c && c.novedades && inf.generado && Date.now() - new Date(inf.generado).getTime() < 30 * 36e5) {
       const t = String(c.novedades).replace(/\s*\((fuentes?|sources?)[^)]*\)/gi, '').trim();
-      const fr = t.split(/(?<=\.)\s+/), hoyFr = fr.slice(1).find((x) => /\bhoy\b|\btoday\b/i.test(x)) || fr[1] || fr[0];
+      // la frase se parte tras un punto de final de palabra y antes de mayúscula: «EE. UU.» no la parte (salía «UU.» solo)
+      const fr = t.split(/(?<=[a-záéíóúñü0-9%)»]\.)\s+(?=[A-ZÁÉÍÓÚÑ¿¡«])/), hoyFr = fr.slice(1).find((x) => /\bhoy\b|\btoday\b/i.test(x)) || fr[1] || fr[0];
       if (hoyFr) return `${hoyFr} <small class="mvt-de">${L('Según la IA, con las noticias de hoy.', 'According to the AI, from today’s news.')}</small>`;
     }
   } catch (e) {}
@@ -231,6 +242,49 @@ function htmlMovidasTuyas(M) {
   return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<ul class="mvt-l">${mueven.map((f) => `<li class="mvt"><span class="mvt-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<b>${esc(f.inst.corto || f.inst.nombre)}</b></span><span class="mvt-v ${cls(f.varDia)}">${pctS(f.varDia, 1)}<small>${esc(eurS(f.dia, 0))}</small></span><p class="mvt-p">${porqueMovida(f)}</p></li>`).join('')}</ul>
     <p class="nota mvt-nota">${L('Lo que más se ha movido hoy de lo que tienes. Que algo se mueva un día no dice nada de tu plan.', 'What moved most today among what you own. A day’s move says nothing about your plan.')}</p></section>`;
 }
+/* 0.9 · lo del día (maqueta del 15 nov, B3), debajo de la gráfica: qué ha pasado hoy y por qué, el último día de bolsa,
+   lo que viene y, al lado, lo que más mueve hoy la cartera con su motivo (el de porqueMovida: la IA, un titular o su
+   bolsa). «Hoy es hoy»: las cifras son las de «Hoy» (M.dia y f.dia). Va en un binding: se pone al día con los precios */
+let hdCache = { k: '' };
+function htmlHoyDia(M) {
+  if (!M || !M.filas.length) return '';
+  const hoy = hoyIso(), ahora = new Date(), mad = estadoBolsa(BOLSAS_MUNDO[0]), en = IDIOMA === 'en';
+  const dsem = (d) => (en ? d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric' }) : `${DIAS_LARGOS[d.getDay()]} ${d.getDate()}`);
+  // lo que no cambia con cada precio (el último día de bolsa y lo que viene), una vez por día y por cartera
+  const k = [hoy, S.hist && S.hist.generado, M.filas.map((f) => f.uds).join()].join('|');
+  if (hdCache.k !== k) {
+    let u = null, ev = null;
+    try { u = cambiosPorDia(M, 12).filter((x) => x.d < hoy && deIso(x.d).getDay() % 6).pop() || null; } catch (e) {}
+    try { ev = eventos(M, 30).find((x) => x.d >= hoy) || null; } catch (e) {}
+    hdCache = { k, u, ev };
+  }
+  const { u, ev } = hdCache;
+  const mv = M.filas.filter((f) => isFinite(f.dia) && Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 5);
+  const d = isFinite(M.dia) ? M.dia : 0, nom = (f) => esc(f.inst.corto || f.inst.nombre);
+  let fr;
+  if (!mv.length || Math.abs(d) < 1) fr = L('De momento, hoy no se mueve nada de lo tuyo.', 'Nothing of yours is moving yet today.');
+  else {
+    const t = mv[0], parte = Math.sign(t.dia) === Math.sign(d) ? Math.abs(t.dia) / Math.abs(d) : 0;
+    fr = `${d > 0 ? L('Subes', 'You’re up') : L('Bajas', 'You’re down')} <b class="${cls(d)}">${eur(Math.abs(d), 0)}</b> ${parte > 1.1 ? L(`y lo que más tira es ${nom(t)}`, `and ${nom(t)} pulls hardest`) : parte >= 0.9 ? L(`y todo es ${nom(t)}`, `and it’s all ${nom(t)}`) : parte >= 0.6 ? L(`y la mayor parte es ${nom(t)}`, `and most of it is ${nom(t)}`) : parte >= 0.38 ? L(`y casi la mitad es ${nom(t)}`, `and almost half is ${nom(t)}`) : L(`y lo que más mueve es ${nom(t)}`, `and ${nom(t)} moves most`)}.`;
+  }
+  // la bolsa: abierta, antes de abrir, ya cerrada o cerrada todo el día; los fondos dan su valor al día siguiente
+  const fondos = M.filas.some((f) => /fondo/i.test(f.inst.tipo || '') && !/ETF|ETC/.test(f.inst.tipo || '')), abre = /abre hoy a las (\d+:\d\d)/.exec(mad.txt);
+  const bolsa = mad.on ? (fondos ? L('Tus fondos todavía no cuentan: su valor de hoy sale mañana.', 'Your funds don’t count yet: today’s value comes out tomorrow.') : '')
+    : abre ? L(`La bolsa abre a las ${abre[1]}; hasta entonces lo demás no se mueve.`, `The market opens at ${abre[1]}; until then nothing else moves.`)
+    : ahora.getDay() % 6 && !/cerrada por/.test(mad.txt) ? L(`La bolsa ya ha cerrado.${fondos ? ' El valor de hoy de tus fondos sale mañana.' : ''}`, `The market has closed.${fondos ? ' Your funds’ value for today comes out tomorrow.' : ''}`)
+    : L(`Las bolsas están cerradas${fondos ? ' y tus fondos no dan valor hasta el próximo día de bolsa' : ''}.`, `Markets are closed${fondos ? ' and your funds won’t price until the next trading day' : ''}.`);
+  const viene = [];
+  const cierra = mad.on && /cierra a las (\d+:\d\d)/.exec(mad.txt), abreC = !mad.on && /abre (hoy|mañana|el \S+) a las (\d+:\d\d)/.exec(mad.txt);
+  if (cierra) viene.push([L(`hoy, ${cierra[1]}`, `today, ${cierra[1]}`), L('Cierra la bolsa española', 'The Spanish market closes')]);
+  else if (abreC) viene.push([L(abreC[1].replace(/^el /, ''), { hoy: 'today', mañana: 'tomorrow' }[abreC[1]] || abreC[1].replace(/^el /, '')), L(`Abre la bolsa a las ${abreC[2]}`, `The market opens at ${abreC[2]}`)]);
+  if (ev) { const n = diasEntre(hoy, ev.d); viene.push([n === 0 ? L('hoy', 'today') : n === 1 ? L('mañana', 'tomorrow') : fechaCorta(ev.d), tituloAg(ev)]); }
+  const ayer = u ? (diasEntre(u.d, hoy) === 1 ? L(`Ayer, ${dsem(deIso(u.d))}`, `Yesterday, ${dsem(deIso(u.d))}`) : L(`El último día de bolsa, ${dsem(deIso(u.d))}`, `The last trading day, ${dsem(deIso(u.d))}`)) : '';
+  return `<div class="hd-a"><h2 class="hd-tit">${L(`Hoy, ${dsem(ahora)}`, `Today, ${dsem(ahora)}`)}<span class="k">${L('desde el cierre de ayer', 'since yesterday’s close')}</span></h2>
+    <p class="hd-frase">${fr}${bolsa ? ' ' + bolsa : ''}</p>
+    ${u ? `<p class="hd-ayer"><span class="k">${ayer}</span><b class="${cls(u.e)}">${esc(eurS(u.e, 0))} (${esc(pctS(u.p, 2))})</b></p>` : ''}
+    ${viene.length ? `<ul class="hd-viene">${viene.map(([q, t]) => `<li><span class="t-cuando">${q}</span><span>${t}</span></li>`).join('')}</ul>` : ''}</div>
+    <div class="hd-b"><h3 class="rotulo">${L('Lo que más mueve hoy tu cartera', 'What moves your portfolio most today')}</h3>${mv.length ? `<ul class="hd-mv">${mv.map((f) => `<li><button type="button" class="${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<span class="hd-mv-n"><b>${nom(f)}</b><small>${porqueMovida(f)}</small></span><span class="hd-mv-v"><b>${esc(eurS(f.dia, 0))}</b>${f.varDia != null ? `<small>${esc(pctS(f.varDia, 1))}</small>` : ''}</span></button></li>`).join('')}</ul>` : `<p class="nota">${L('Hoy no se ha movido nada de lo tuyo, o aún no hay precios de hoy.', 'Nothing of yours has moved today, or there are no prices for today yet.')}</p>`}</div>`;
+}
 function htmlBloqueCar(k, M) {
   const anio = new Date().getFullYear();
   try {
@@ -239,7 +293,7 @@ function htmlBloqueCar(k, M) {
       ${htmlAvisoNovedades()}
       ${htmlEntradaTuAno(M)}
       <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola"><small class="hola-fecha">${esc(new Date().toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</small>${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
-      <div class="hero-panel">
+      <div class="hero-panel hp-${hoyPest()}">
         <div class="hero-cifra">
           <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span>${B('estado', 'estado ts-vivo')}<button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
           <div class="hero-num" id="heroNum" aria-label="${L('Patrimonio', 'Net worth')}">${B('totalE')}${B('totalD', 'dec')}</div>
@@ -249,11 +303,12 @@ function htmlBloqueCar(k, M) {
             <div class="hs" title="${L('Ganado desde que compraste', 'Gained since you bought')}"><span class="k">${L('Ganado', 'Gained')}</span>${B('pl')}</div>
           </div>
         </div>
-        ${!M.filas.length ? `<p class="hero-vacia">${L('La gráfica de tu patrimonio sale en cuanto metas lo que tienes.', 'Your net worth chart shows up as soon as you add what you own.')}</p>` : `<div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Total', 'Total') : r}</button>`).join('')}</div>
-        ${INTRADIA.has(S.rango) ? '' : `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="comparar" aria-pressed="${!!S.comparar}"><i aria-hidden="true"></i>${S.comparar ? L('Comparado con', 'Compared with') : L(`Comparar con el ${nombreBench(benchDe(S.bench))}`, `Compare with the ${nombreBench(benchDe(S.bench))}`)}</button>${S.comparar ? `<select class="hp-sel" id="hpBench" aria-label="${L('Índice con el que comparar', 'Index to compare with')}">${BENCH.map((b) => `<option value="${b.id}"${b.id === S.bench ? ' selected' : ''}>${esc(nombreBench(b))}</option>`).join('')}</select>` : ''}</div>`}
+        ${!M.filas.length ? `<p class="hero-vacia">${L('La gráfica de tu patrimonio sale en cuanto metas lo que tienes.', 'Your net worth chart shows up as soon as you add what you own.')}</p>` : `<div class="seg2 hoy-pest" role="tablist" aria-label="${L('Qué enseña la gráfica', 'What the chart shows')}">${HPEST.map(([k, es, en]) => `<button type="button" role="tab" data-hpest="${k}" aria-selected="${hoyPest() === k}">${L(es, en)}</button>`).join('')}</div>
+        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${rangoHoy() === r}"${HPEST_VALE[hoyPest()] && !HPEST_VALE[hoyPest()].includes(r) ? ' disabled' : ''}${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Total', 'Total') : r}</button>`).join('')}</div>
+        ${hoyPest() === 'rend' ? `${pieCmp(rendCmp(), 'comparar-rend')}<div class="hoy-marc" id="hoyMarc"></div>` : hoyPest() !== 'valor' || INTRADIA.has(S.rango) ? '' : pieCmp(!!S.comparar, 'comparar')}
         <div class="chart gh" id="grafEvo"></div>`}
-        <div class="movers hero-movers">${B('movers')}</div>
       </div>
+      ${M.filas.length ? `<section class="hoy-dia" aria-label="${L('Lo del día', 'Today')}">${B('hoydia', 'hd')}</section>` : ''}
       ${((pr) => (pr ? `<div class="hero-bajo">${pr}</div>` : ''))(htmlPreguntasIA(true))}
     </section>`;
     }
