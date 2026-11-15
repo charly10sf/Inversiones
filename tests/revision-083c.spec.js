@@ -13,7 +13,8 @@ const test = base.extend({
   }, { auto: true }],
 });
 const ir = async (page, h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(400); };
-const lista = async (page) => { await crearCuenta(page); await meterCartera(page); await quitarCapas(page); await ir(page, 'cartera'); await quitarCapas(page); };
+// sin la hoja de «Primeros pasos», que sale sola al rato de crear la cuenta (en la Action, a veces encima del botón)
+const lista = async (page) => { await crearCuenta(page); await meterCartera(page); await page.evaluate(() => { S.recienCreada = false; }); await quitarCapas(page); await ir(page, 'cartera'); await quitarCapas(page); };
 const tocar = async (page, sel) => { await quitarCapas(page); await page.locator(sel).first().evaluate((e) => e.click()); };
 // sin Worker la IA no puede contestar y no sale la caja: se hace como si estuviera lista (como en cabecera-ia.spec.js)
 const abrirIA = async (page, sel = '.riel-ia') => {

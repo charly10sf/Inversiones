@@ -14,7 +14,7 @@ const test = base.extend({
 
 async function hoy(page) {
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); S.rango = '1A'; location.hash = 'cartera'; pintar(); });
+  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); S.recienCreada = false; S.rango = '1A'; location.hash = 'cartera'; pintar(); });
   await quitarCapas(page);
   await expect(page.locator('#grafEvo svg')).toBeVisible();
 }

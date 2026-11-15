@@ -15,7 +15,7 @@ const test = base.extend({
 
 async function hoy(page, acabado) {
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await page.evaluate((a) => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); ponerAcabado(a); location.hash = 'cartera'; pintar(); }, acabado);
+  await page.evaluate((a) => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); S.recienCreada = false; ponerAcabado(a); location.hash = 'cartera'; pintar(); }, acabado);
   await quitarCapas(page);
   await expect(page.locator('#vista .ag-card')).toBeVisible();
 }

@@ -4,7 +4,7 @@
 import { test as base, expect } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, tocar } from './ayuda.js';
 
 const test = base.extend({
   errores: [async ({ context }, use) => {
@@ -18,7 +18,8 @@ const test = base.extend({
 async function fundador(page, { reparto = true, limite = 5 } = {}) {
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
   await page.evaluate(async ([reparto, limite]) => {
-    LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true);
+    // la hoja de «Primeros pasos» sale sola al rato de crear la cuenta (en la Action, a veces encima de un botón)
+    LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); S.recienCreada = false;
     S.acceso = 'privado';
     S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_empresa: limite };
     if (reparto) S.cartera.perfil.reparto_fondos = { 'ishares-us': 30, 'amundi-europe': 40 };
@@ -113,7 +114,7 @@ test('la aportación va al fondo más lejos de su objetivo, con su dibujo y sus 
 
 test('«Qué mira cada mes»: doce opciones, diez encendidas, el umbral del 10 % y apagar una quita sus pasos', async ({ page }) => {
   await fundador(page); await abrirPaso(page);
-  await page.locator('[data-pp-sub="opciones"]').click();
+  await tocar(page, '[data-pp-sub="opciones"]');
   await expect(page.locator('.pp-op')).toHaveCount(12);
   await expect(page.locator('.pp-sw[aria-checked="true"]')).toHaveCount(10);
   await expect(page.locator('.pp-sw[data-pp-op="oport"]')).toHaveAttribute('aria-checked', 'false');
@@ -127,7 +128,7 @@ test('«Qué mira cada mes»: doce opciones, diez encendidas, el umbral del 10 %
   await page.locator('[data-pp-sub="mes"]').first().click();
   await expect(page.locator('.tarea.pp-paso[data-id^="aportd:"]')).toHaveCount(0);
   // el reparto por fondo se pone en la misma hoja
-  await page.locator('[data-pp-sub="opciones"]').click();
+  await tocar(page, '[data-pp-sub="opciones"]');
   await page.locator('[data-pp-rep="amundi-europe"]').fill('35');
   await page.locator('[data-pp-rep="amundi-europe"]').dispatchEvent('change');
   expect(await page.evaluate(() => S.cartera.perfil.reparto_fondos['amundi-europe'])).toBe(35);
