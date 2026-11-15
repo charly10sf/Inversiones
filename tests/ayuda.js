@@ -22,9 +22,11 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
   context.__errores = errores;
   // lo de fuera que no se sirve aquí, cortado (Yahoo, Bitvavo, Gemini, el Worker, YouTube…)
   await context.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, (r) => r.abort());
-  // los WebSocket de los precios en directo (Yahoo, Bitvavo) no pasan por context.route: se cortan aparte. Con red, un precio
-  // de verdad que llegaba a media prueba cambiaba las cifras (revisión del 15 nov: hoy-dentro-09 fallaba así, por un céntimo)
-  await context.routeWebSocket(/^wss?:\/\/(?!localhost|127\.0\.0\.1)/, (ws) => ws.close());
+  // los WebSocket de los precios en directo (Yahoo, Bitvavo) no pasan por context.route: van aparte, a un servidor de
+  // mentira que no dice nada. Con red, un precio de verdad que llegaba a media prueba cambiaba las cifras (revisión del
+  // 15 nov: hoy-dentro-09 fallaba así, por un céntimo). OJO: no cerrarlos (ws.close()): la app ve que abre y se cierra,
+  // vuelve a conectar cada segundo y repinta sin parar (así falló «Pruebas» el 15 nov, run 43740375301)
+  await context.routeWebSocket(/^wss?:\/\/(?!localhost|127\.0\.0\.1)/, () => {});
   await context.route('https://www.gstatic.com/firebasejs/**', (r) => {
     const f = r.request().url().split('/').pop().split('?')[0];
     const ruta = join(AQUI, 'stub', f);
