@@ -128,7 +128,7 @@ const VISTAS = [
 // 0.8: las dos que solo tiene Toisón (Cartera con tus posiciones, y Tú)
 const VISTAS_APARTE = [['posiciones', 'Análisis', 'Análisis'], ['tu', 'Tú', 'Tú'], ['av', 'Análisis', 'Análisis']];
 // el nombre de la pestaña del Paso a paso: en el modo público (0.5) su sitio es «Tu plan», que llega completo en la 0.9
-const RUTA_NOM = { get t() { return esPublico() ? 'Tu plan' : 'Paso a paso'; }, get c() { return esPublico() ? 'Plan' : 'Pasos'; }, get en() { return esPublico() ? 'Plan' : 'Steps'; } };
+const RUTA_NOM = { get t() { return !pasoVisible() ? 'Tu plan' : 'Paso a paso'; }, get c() { return !pasoVisible() ? 'Plan' : 'Pasos'; }, get en() { return !pasoVisible() ? 'Plan' : 'Steps'; } };
 /* 0.8 (rediseño, decidido con Carlos el 2 nov a las 21:44): con un diseño de Toisón la app se ordena de otra forma.
    Abajo, cinco: Cartera · Mercados · Hoy (el medallón, se abre ahí) · Ideas · Tú. Hoy es lo de Inicio sin tus
    posiciones ni el reparto; Cartera lleva tu total en pequeño y Posiciones, Análisis y Hacienda; Ideas es lo de
@@ -396,6 +396,7 @@ function montar() {
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}<b>TOISÓN</b>${marcaDorado()}</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => (g.k === 'tu' ? `<a href="#tu" data-ir="tu" data-mas>${L('Más', 'More')}</a>` : `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`)).join('')}</nav>
+    <div class="paso-top-w" id="pasoTop" hidden></div>
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <span class="top-mini" id="topMini" aria-hidden="true"></span>
     <div class="acciones">
@@ -698,6 +699,7 @@ function pintar() {
   pintarNavNuevo();
   pintarK2(); apuntarReciente(paginaActual());
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
+  pintarPasoTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
   for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = (S.oculto ? ICONOS.ojoNo : ICONOS.ojo) + (bo.dataset.txt != null ? (S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')) : ''); bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
@@ -718,6 +720,8 @@ function pintar() {
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
   // Noticias: igual, su contenido está en el trozo «noticias»
   if (S.vista === 'noticias' && $('#panelNot')) pintarNoticias();
+  // 0.9: el Paso a paso del modo fundador, en el trozo «paso»
+  if (S.vista === 'ruta' && $('#panelPaso')) pintarPasoMes();
   ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));

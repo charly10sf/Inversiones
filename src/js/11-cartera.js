@@ -488,8 +488,10 @@ function htmlToca(M) {
       <p class="iac-tit iac-act">${sin === 'tareas' ? esc(txtSinTareaIA(sin)) : L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes.', 'It analyses your portfolio every day, explains what is going on and answers your questions.')}</p>
       ${sin === 'tareas' ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}${L('Abrir la IA', 'Open the AI')}</button>`}`;
   }
-  const lista = v.length ? `<div class="iac-sub"><h3>${L('Tu mes', 'Your month')}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
-    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
+  const med = (c) => (c ? `<span class="pp-conf-s" data-c="${c}" title="Confianza ${c}"><i class="pp-med" data-n="${CONF_N[c]}" aria-hidden="true"><i></i><i></i><i></i></i></span>` : '');
+  const lista = v.length || R.decidir.length ? `<div class="iac-sub"><h3>${L('Tu mes', 'Your month')}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Abrir el Paso a paso'}</button></div>
+    ${v.length ? `<ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span>${x.hecho ? '' : med(x.conf)}</li>`).join('')}</ul>` : '<p class="t-pq k">Este mes, nada que hacer.</p>'}
+    ${R.decidir.length ? `<p class="iac-pie k">y ${R.decidir.length} para decidir tú</p>` : ''}` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;
 }

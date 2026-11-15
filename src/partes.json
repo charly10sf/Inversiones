@@ -25,7 +25,8 @@
     "23-tu.css",
     "24-navegacion.css",
     "25-cristal.css",
-    "26-dorado.css", "27-revision-083b.css",
+    "26-dorado.css",
+    "27-revision-083b.css",
     "28-lista-seguimiento.css",
     "29-noticias.css",
     "29-frente-indexado.css",
@@ -34,7 +35,8 @@
     "32-seleccion-plana.css",
     "33-cascara.css",
     "34-sistema.css",
-    "35-liso.css"
+    "35-liso.css",
+    "36-paso.css"
   ],
   "js": [
     "01-base.js",
@@ -56,6 +58,7 @@
     "14-mercados.js",
     "15-mapa-mundo.js",
     "16-paso-a-paso.js",
+    "16b-paso-mes.js",
     "17-cartera-de-un-vistazo.js",
     "18-peor-caida.js",
     "19-plan.js",
@@ -172,6 +175,9 @@
     },
     "noticias": [
       "trozos/noticias.js"
+    ],
+    "paso": [
+      "trozos/paso.js"
     ]
   }
 }

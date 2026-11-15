@@ -35,7 +35,8 @@ function pasosParecidos(a, b) {
 }
 function pasosRuta(M) {
   // 0.5: en el modo público no hay Paso a paso (ni nada sacado de él: lo que toca en Inicio, el widget, el resumen del día)
-  if (esPublico()) return { mes: [], seis: [], anio: [], largo: [] };
+  // 0.9: y solo con el modo de la cuenta ya leído, nunca encendido desde fuera (pasoVisible, 16b-paso-mes.js)
+  if (!pasoVisible()) return { mes: [], seis: [], anio: [], largo: [] };
   // un segundo vale: si cambias algo del paso a paso se vuelve a pintar con un cálculo nuevo
   const c = cacheDe(M, '__ruta'), x = c.get('r');
   if (x && performance.now() - x.t < 1000) return x.v;
@@ -45,7 +46,8 @@ function pasosRuta(M) {
 function pasosRuta0(M) {
   const P = { mes: [], seis: [], anio: [], largo: [] };
   const hoy = hoyIso(), anio = new Date().getFullYear();
-  const add = (plazo, o) => P[plazo].push({ fuente: 'web', ...o });
+  // 0.9: lo que sale de una opción apagada en «Qué mira cada mes» no se añade
+  const add = (plazo, o) => { const k = opcionDe(o); if (k && !opRuta(k)) return; P[plazo].push({ fuente: 'web', ...o }); };
   const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
   // 1. ventas que propone la web
   for (const pl of planes) {
@@ -56,27 +58,27 @@ function pasosRuta0(M) {
       pq: esc(f.senal.motivos[0] || ''),
       como: `${esc(pl.cuando[0].replace(/^(Ya|Now): /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? L(` Con lo que cobres: ${destino}.`, ` With what you collect: ${destino}.`) : ''}`,
       imp: `${pl.ganancia > 0 ? L(`Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.`, `You declare a gain of ${eurS(pl.ganancia, 0)}: about ${eur(pl.impuesto, 0)} in your ${anio} tax return, paid between April and June ${anio + 1}. Keep it in cash until then. Since you're selling at a gain, you can buy it back whenever you like.`) : `${L(`Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de ${esRCMVenta(f.inst) ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}.`, `You declare a loss of ${eur(-pl.ganancia, 0)}: it reduces ${esRCMVenta(f.inst) ? "this year's investment income (dividends, interest and other ETCs)" : "this year's gains"}.`)} ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? L(`No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}`, `Don't buy it back until ${fechaCortaL(l)} ${l.slice(0, 4)}: ${trad(reglaRecompra(f.inst).corto)}`) : reglaRecompra(f.inst).corto; })()}`}`,
-      acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
+      acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>`, ref: { pl } });
     const top = pl.ideas[0], dVenta = res ? sumarDias(res, -1) : hoy;
     if (pl.aColchon > 0.5) add('mes', { id: `colchonv:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Poner ${eur(pl.aColchon, 0)} en tu colchón`,
       pq: `Te faltan ${eur(faltaColchon(M), 0)} para los meses de gastos que te pusiste: va antes que meter más en bolsa.`,
-      como: 'Déjalo en el efectivo remunerado de tu bróker o en un fondo monetario: no baja y lo tienes cuando lo necesites.' });
+      como: 'Déjalo en el efectivo remunerado de tu bróker o en un fondo monetario: no baja y lo tienes cuando lo necesites.', ref: { pl } });
     if (pl.aIdea > 0 && top) {
       const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
       add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Comprar ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`,
         pq: `De las ${radarVals().length} empresas del radar, la mejor contrastada para una acción nueva que no repita lo que ya tienes: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
         como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(nombreRadar(top))} (${esc(top.s)}), Comprar, orden limitada a ${precioR(top.p, top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
-        acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}? Contrástalo con las noticias de esta semana y dime la tasa, la comisión y cómo quedarían mis límites.` : `Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que la IA la contraste antes</button>` });
+        acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}? Contrástalo con las noticias de esta semana y dime la tasa, la comisión y cómo quedarían mis límites.` : `Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que la IA la contraste antes</button>`, ref: { pl, top } });
     }
     if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: L(`Meter ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, `Putting ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^to /, 'into ')}`),
       pq: pl.nivel === 'reducir' ? L('Bajas riesgo sin dejar de estar invertido.', 'You lower risk without stopping being invested.') : pl.aIdea > 0 ? L('La otra parte, a lo seguro.', 'The other part, somewhere safe.') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite.', 'Your individual stocks have no more room within your limit.'),
-      como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
+      como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).', ref: { pl } });
   }
   // 2. tus reglas de salida cerca
   for (const f of M.filas) {
     const stop = +f.pos.stop;
-    if (stop && f.precio && f.precio > stop && (f.precio / stop - 1) * 100 < 6) add('mes', { id: `stop:${f.pos.id}:${hoy.slice(0, 7)}`, urgente: true, cuando: 'vigila', t: `${esc(f.inst.corto)} está a un ${fmtNum((f.precio / stop - 1) * 100, 1)} % de tu precio de salida`, pq: `Tu regla de salida: si cierra por debajo de ${precioFmt(stop)}, la tesis se ha roto y se vende.`, como: `En ${esc(f.pos.plataforma || 'tu bróker')}: orden stop de venta a ${precioFmt(stop)} para toda la posición, si no la tienes ya.` });
+    if (stop && f.precio && f.precio > stop && (f.precio / stop - 1) * 100 < 6) add('mes', { id: `stop:${f.pos.id}:${hoy.slice(0, 7)}`, urgente: true, cuando: 'vigila', t: `${esc(f.inst.corto)} está a un ${fmtNum((f.precio / stop - 1) * 100, 1)} % de tu precio de salida`, pq: `Tu regla de salida: si cierra por debajo de ${precioFmt(stop)}, la tesis se ha roto y se vende.`, como: `En ${esc(f.pos.plataforma || 'tu bróker')}: orden stop de venta a ${precioFmt(stop)} para toda la posición, si no la tienes ya.`, ref: { f } });
   }
   // 3. fechas de tus empresas: resultados y dividendos
   const vistos = new Set();
@@ -118,13 +120,13 @@ function pasosRuta0(M) {
       const ahorro = fiscalAnio(anio, ganPrevG, ganPrevR).cuota - fiscalAnio(anio, ganPrevG + (esR ? 0 : x.g), ganPrevR + (esR ? x.g : 0)).cuota;
       if (ahorro < 15) continue;
       const cripto = x.f.inst.clase === 'Cripto' && !esR;
-      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Opción: vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, véndelo (reembolso, no traspaso: con un traspaso la pérdida no cuenta) y compra otro fondo parecido de otra gestora' : esR ? ' y, si quieres seguir dentro, compra otro ETC parecido de otro emisor, no el mismo' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'el año' : 'los dos meses'} anterior${reglaRecompra(x.f.inst).plazo === 'un año' ? '' : 'es'}). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría en mi renta vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.` : `¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
+      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Opción: vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, véndelo (reembolso, no traspaso: con un traspaso la pérdida no cuenta) y compra otro fondo parecido de otra gestora' : esR ? ' y, si quieres seguir dentro, compra otro ETC parecido de otro emisor, no el mismo' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'el año' : 'los dos meses'} anterior${reglaRecompra(x.f.inst).plazo === 'un año' ? '' : 'es'}). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría en mi renta vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.` : `¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>`, ref: { f: x.f, x, ahorro, ganPrevG, ganPrevR } });
     }
   }
   // 7. colchón que rinde poco
   for (const f of M.filas.filter((f) => f.inst.clase === 'Renta fija' && /^Fondo/.test(f.inst.tipo || ''))) {
     const r1 = f.p && f.p.rent && f.p.rent['1a'];
-    if (r1 != null && r1 < 2) add('seis', { id: `colchon:${f.pos.id}:${anio}`, cuando: 'sin prisa', t: `Mira si te compensa cambiar ${esc(f.inst.corto)} por un monetario`, pq: `Ha dado un ${fmtNum(r1, 1)} % en un año, menos que un fondo monetario, que va pegado al tipo del BCE.`, como: `En ${esc(f.pos.plataforma || 'tu bróker')}: traspasa desde ${esc(f.inst.corto)} a un fondo monetario. Pregúntale a la IA cuál antes.`, imp: 'Entre fondos es un traspaso: no pagas nada.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Cómo se comparan ${f.inst.nombre || f.inst.corto} y un fondo monetario${f.pos.plataforma ? ` de ${f.pos.plataforma}` : ''} en rentabilidad y gastos?` : `¿Qué fondo monetario${f.pos.plataforma ? ` de ${f.pos.plataforma}` : ''} me conviene para el colchón en vez de ${f.inst.nombre || f.inst.corto}? Compara rentabilidad y gastos.`)}">Pregúntale a la IA</button>` });
+    if (r1 != null && r1 < 2) add('seis', { id: `colchon:${f.pos.id}:${anio}`, cuando: 'sin prisa', t: `Mira si te compensa cambiar ${esc(f.inst.corto)} por un monetario`, pq: `Ha dado un ${fmtNum(r1, 1)} % en un año, menos que un fondo monetario, que va pegado al tipo del BCE.`, como: `En ${esc(f.pos.plataforma || 'tu bróker')}: traspasa desde ${esc(f.inst.corto)} a un fondo monetario. Pregúntale a la IA cuál antes.`, imp: 'Entre fondos es un traspaso: no pagas nada.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Cómo se comparan ${f.inst.nombre || f.inst.corto} y un fondo monetario${f.pos.plataforma ? ` de ${f.pos.plataforma}` : ''} en rentabilidad y gastos?` : `¿Qué fondo monetario${f.pos.plataforma ? ` de ${f.pos.plataforma}` : ''} me conviene para el colchón en vez de ${f.inst.nombre || f.inst.corto}? Compara rentabilidad y gastos.`)}">Pregúntale a la IA</button>`, ref: { f, r1 } });
   }
   // 8. renta y modelos informativos: de enero a junio, la renta que toca es la del año pasado
   const aR = new Date().getMonth() < 6 ? anio - 1 : anio;
@@ -137,7 +139,7 @@ function pasosRuta0(M) {
   const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
   const lim = (+(S.cartera.limite_acciones ?? 20) / 100) * M.total;
   const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
-  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres comprar una acción nueva: ${esc(nombreRadar(top))}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué hace ${top.n} (${top.s}) y qué dicen los analistas? Contrástalo con las noticias y dime qué pagaría de tasa y comisión si la comprara.` : `¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
+  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres comprar una acción nueva: ${esc(nombreRadar(top))}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué hace ${top.n} (${top.s}) y qué dicen los analistas? Contrástalo con las noticias y dime qué pagaría de tasa y comisión si la comprara.` : `¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>`, ref: { top } });
   // 10. a un año y más: proyección, hueco que se abre y revisión
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
   if (pr) {
@@ -155,6 +157,9 @@ function pasosRuta0(M) {
   if (total > 0) add('largo', { id: 'subir', cuando: 'con cada subida de sueldo', t: 'Sube la aportación cuando suba tu sueldo', det: `Es lo que más mueve el resultado a 10 y 20 años. Pruébalo en Análisis > Tus objetivos > Proyección, con «Subes la aportación cada año».`, acc: '<a class="enlace" href="#proyeccion">Probarlo</a>' });
   // 11. lo que sale de tu perfil y tus metas
   try { pasosPerfil(M, add); } catch (e) { console.warn(e); }
+  // 12. (0.9) lo que sale de las opciones nuevas de «Qué mira cada mes»
+  // (están en el trozo «paso», que se baja solo en fundador; hasta que llega, no salen)
+  if (typeof window.PASO_OPC === 'function') try { window.PASO_OPC(M, add, { hoy, act, total, anio }); } catch (e) { console.warn(e); }
   // los de la IA, de su última revisión
   const ia = iaActual(), hr = ia && ia.hoja_de_ruta;
   if (hr) {
@@ -207,6 +212,8 @@ function cotizaEnUE(inst) {
 
 /* el tipo de cada paso, por cómo empieza su id: decide el icono y el color */
 const TIPO_PASO = [
+  // 0.9: los de las opciones nuevas («aportd» va antes que «aport», que es una fecha)
+  [/^aportd:|^reinv:|^costes:/, 'info', 'fondo'], [/^caida:|^oport:|^cripto:|^libres:/, 'compra', 'compra'], [/^tesis:/, 'aviso', 'alerta'], [/^efectivo:/, 'info', 'futuro'],
   [/^venta:|^perdida:/, 'venta', 'venta'], [/^compra:|^idea:/, 'compra', 'compra'], [/^nucleo|^subir/, 'info', 'fondo'],
   [/^limcripto:/, 'venta', 'venta'], [/^perfil:|^deuda:/, 'dato', 'lapiz'], [/^colchonf:|^metaseg:|^metafalta:|^perfilbolsa:/, 'info', 'futuro'],
   [/^stop:/, 'aviso', 'alerta'], [/^res:|^div:|^aport/, 'fecha', 'calendario'], [/^fiscal:|^informe:|^renta:|^m720:|^colchon:/, 'fiscal', 'fiscal'],
@@ -216,102 +223,11 @@ function tipoPaso(x) { for (const [re, c, i] of TIPO_PASO) if (re.test(x.id)) re
 // 0.8 (paso 4): los de plumilla de su pareja
 const PAREJA_PASO = { venta: 'bajar', compra: 'subir', fondo: 'futuro', alerta: 'aviso', calendario: 'calendario', fiscal: 'fiscalidad', lapiz: 'lapiz', growia: 'asistente', chispa: 'asistente', futuro: 'objetivos' };
 const ICONO_PASO = Object.fromEntries(Object.entries(PAREJA_PASO).map(([k, p]) => [k, ICONOS_PL[p]]));
-function htmlPaso(x, n) {
-  const tp = tipoPaso(x);
-  const detalle = x.como || x.imp;
-  return `<li class="paso t-${tp.c}${x.hecho ? ' hecho' : ''}${x.urgente && !x.hecho ? ' urgente' : ''}">
-    <span class="paso-ico" aria-hidden="true">${ICONO_PASO[tp.i] || ''}</span>
-    <div class="paso-cuerpo">
-      ${x.cuando || x.fuente === 'ia' || x.coincideIA || x.auto ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'La IA')}</span>` : x.coincideIA ? `<span class="chip info">${L('La IA coincide', 'GrowIA agrees')}</span>` : ''}${x.auto ? '<span class="chip">va solo</span>' : ''}</div>` : ''}
-      <b class="paso-t">${x.t.replace(/ €/g, ' €')}</b>
-      ${x.pq ? `<p class="paso-pq">${x.pq}</p>` : ''}${x.det ? `<p class="paso-pq">${x.det}</p>` : ''}
-      ${detalle ? `<details class="paso-mas"><summary>${x.como ? 'Cómo hacerlo' : 'Impuestos'}${x.como && x.imp ? ' y lo que pagas' : ''}</summary><dl class="ruta-dl">${x.como ? `<dt>Cómo</dt><dd>${x.como}</dd>` : ''}${x.imp ? `<dt>Impuestos</dt><dd>${x.imp}</dd>` : ''}</dl></details>` : ''}
-      ${x.acc && !x.hecho ? `<div class="ruta-acc">${x.acc}</div>` : ''}
-    </div>
-    ${x.auto ? '<span class="paso-solo" title="Va solo: no tienes que hacer nada">auto</span>' : `<button class="ruta-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n}</span></button>`}
-  </li>`;
-}
 /* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
 const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo hablaste con la IA', info: 'Plan', fecha: 'Fecha' };
 const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
 function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${n ? n + '. ' : ''}${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
-}
-/* lo de Hacienda va a la vista en cada paso; el cómo, plegado */
-function masRuta(x, conHecho) {
-  // lo de Hacienda, en una frase; si es largo, el resto plegado
-  let impC = x.imp || '', impR = '';
-  if (impC.replace(/<[^>]+>/g, '').length > 170) {
-    // se corta en la primera frase que acabe después del carácter 40 (con 80, si la primera era corta no se plegaba nada)
-    const k = impC.indexOf('. ', 40), c = k > 0 ? impC.slice(0, k + 1) : '';
-    const abiertas = (c.match(/<(b|i|a|span)\b/g) || []).length, cerradas = (c.match(/<\/(b|i|a|span)>/g) || []).length;
-    if (c && abiertas === cerradas && impC.length - c.length > 30) { impR = impC.slice(k + 2); impC = c; }
-  }
-  const hac = x.imp && !x.hecho ? `<div class="t-imp">${ICONO_PASO.fiscal}<span><b>Hacienda:</b> ${impC}${impR ? `<details class="imp-mas"><summary>Más sobre Hacienda</summary><span>${impR}</span></details>` : ''}</span></div>` : '';
-  const hecho = conHecho ? `<button type="button" class="t-hecho" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}">${x.hecho ? 'Hecho. Deshacer' : '✓ Marcar como hecho'}</button>` : '';
-  if (!x.como && !(x.acc && !x.hecho) && !hecho) return hac;
-  return `${hac}<div class="t-pie">${x.como && !x.hecho ? `<details class="paso-mas"><summary>Cómo hacerlo</summary><div class="t-como">${x.como}</div></details>` : ''}${x.acc && !x.hecho ? `<span class="ruta-acc">${x.acc}</span>` : ''}${hecho}</div>`;
-}
-function htmlTarea(x, n, primero) {
-  const tp = tipoPaso(x), txt = [x.pq, x.det].filter(Boolean).join(' ');
-  return `<li class="tarea t-${tp.c}${x.hecho ? ' hecho' : ''}${primero ? ' primero' : ''}">
-    ${checkRuta(x, n)}
-    <div class="t-c">
-      <div class="t-meta"><span class="t-tipo">${ICONO_PASO[tp.i] || ''}${TIPO_ETQ[tp.c] || 'Plan'}</span>${x.cuando ? `<span class="t-cuando">${esc(x.cuando)}</span>` : ''}${primero ? '<span class="t-primero">Lo primero</span>' : ''}</div>
-      <b class="t-t">${x.t.replace(/ €/g, ' €')}</b>
-      ${txt && !x.hecho ? `<p class="t-pq">${txt}</p>` : ''}
-      ${masRuta(x, true)}
-    </div>
-  </li>`;
-}
-function htmlFechaRuta(x) {
-  const d = x.d ? deIso(x.d) : null;
-  return `<li class="rfecha${x.hecho ? ' hecho' : ''}">
-    <span class="rf-d">${d ? `<b>${d.getDate()}</b><small>${MESES[d.getMonth()]}</small>` : `<small>${esc(x.cuando || '')}</small>`}</span>
-    <div class="t-c"><b class="t-t">${x.t.replace(/ €/g, ' €')}</b>${x.pq || x.det ? `<p class="t-pq">${x.pq || x.det}</p>` : ''}${masRuta(x)}</div>
-    ${checkRuta(x, '')}
-  </li>`;
-}
-function htmlSoloRuta(x) {
-  return `<li class="rsolo">
-    <span class="rs-ico" aria-hidden="true">${ICONO_PASO[tipoPaso(x).i] || ''}</span>
-    <div class="t-c">${x.cuando ? `<span class="t-cuando">${esc(x.cuando)}</span>` : ''}<b class="t-t">${x.t.replace(/ €/g, ' €')}</b>${x.det || x.pq ? `<p class="t-pq">${x.det || x.pq}</p>` : ''}${x.como ? `<p class="t-pq k">${x.como}</p>` : ''}${x.acc ? `<span class="ruta-acc">${x.acc}</span>` : ''}</div>
-  </li>`;
-}
-function htmlRuta(M) {
-  const P = pasosRuta(M);
-  const hasta = (dias) => fechaCorta(iso(new Date(Date.now() + dias * 86400000)));
-  const sub = { mes: `hasta el ${hasta(31)}`, seis: `hasta ${MESES[new Date(Date.now() + 183 * 86400000).getMonth()]}`, anio: `hasta ${MESES[new Date().getMonth()]} de ${new Date().getFullYear() + 1}`, largo: 'lo que se construye despacio' };
-  const ia = iaActual();
-  const cuenta = [...P.mes, ...P.seis].filter((x) => !x.auto && claseRuta(x) === 'tarea'), hechas = cuenta.filter((x) => x.hecho).length;
-  const primero = P.mes.find((x) => !x.hecho && claseRuta(x) === 'tarea') || (!P.mes.some((x) => claseRuta(x) === 'tarea' && !x.hecho) ? P.seis.find((x) => !x.hecho && claseRuta(x) === 'tarea') : null);
-  const columna = ([k, t]) => {
-    const tareas = P[k].filter((x) => claseRuta(x) === 'tarea'), fechas = P[k].filter((x) => claseRuta(x) === 'fecha'), solos = P[k].filter((x) => claseRuta(x) === 'solo' && !x.espera);
-    const espera = P[k].find((x) => x.espera);
-    const ht = tareas.filter((x) => x.hecho).length;
-    let n = 0;
-    const lado = fechas.length || solos.length;
-    return `<section class="rcol" data-p="${k}" aria-labelledby="hRuta-${k}">
-      <header class="rcol-cab"><h2 id="hRuta-${k}">${t}</h2><span class="k">${sub[k]}</span></header>
-      <div class="rcol-grid${lado ? ' con-lado' : ''}">
-        <div class="rbloque">
-          ${espera ? `<div class="ruta-espera" role="note"><span class="re-ico ia-av" aria-hidden="true">${AVATAR_IA}</span><div><span class="re-de" data-no-trad>${conIA('La IA te dice', 'GrowIA says')}</span><b>${espera.t}</b>${espera.pq ? `<p>${espera.pq}</p>` : ''}</div></div>` : ''}
-          <h3 class="rh">Por hacer${tareas.length ? `<span class="k">${ht} de ${tareas.length} hechos</span>` : ''}</h3>
-          ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">${espera ? 'Nada más.' : `Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.`}</div>`}
-        </div>
-        ${lado ? `<div class="rlado">
-          ${fechas.length ? `<div class="rbloque"><h3 class="rh">Fechas que vigilar <a class="rh-mas" href="#agenda">Ver el calendario</a></h3><ul class="rfechas">${fechas.map(htmlFechaRuta).join('')}</ul></div>` : ''}
-          ${solos.length ? `<div class="rbloque"><h3 class="rh">Va solo<span class="k">no tienes que hacer nada</span></h3><ul class="rsolos">${solos.map(htmlSoloRuta).join('')}</ul></div>` : ''}
-        </div>` : ''}
-      </div>
-    </section>`;
-  };
-  return `<div class="ruta-barra-top">
-      <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto && claseRuta(x) === 'tarea').length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
-      <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses. Cuando hagas uno, márcalo y se queda tachado.</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
-    </div>
-    <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
-    <p class="nota ruta-nota">${ia && ia.hoja_de_ruta ? `Los que llevan la etiqueta «${esc(ia.autor && ia.autor !== 'GrowIA' ? ia.autor : 'La IA')}» los propone ella tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con la IA activada, añade los suyos tras leer las noticias.'}</p>`;
 }
 /* Cómo vas (en Análisis, encima de tus objetivos): lo urgente que queda del Paso a paso, lo del mes y tus objetivos.
    Si no hay nada que hacer, se dice: esperar también vale */
@@ -346,8 +262,9 @@ function vistaTuPlan(M) {
     <div>${htmlObjetivosVs(M)}<p class="nota">${L('Tus límites, tu perfil y tus metas se cambian en', 'Your limits, profile and goals are changed in')} <a href="#objetivos">${L('Análisis, Tus objetivos', 'Analysis, Your goals')}</a>.</p></div></div>`;
 }
 function vistaRuta(M) {
-  if (esPublico()) return vistaTuPlan(M);
-  return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
+  if (!pasoVisible()) return vistaTuPlan(M);
+  // 0.9: la página la pinta el trozo «paso» (pintarPaso); mientras llega, la cabecera
+  return `<div id="panelPaso" class="pp"><div class="vista-cab"><h1>Paso a paso</h1><p>Qué hacer este mes, en orden.</p></div><p class="k pp-cargando">Preparando tu mes…</p></div>`;
 }
 /* Los pasos de la IA cambian de texto cada vez que revisa la cartera («Pon un stop en Repsol» un día, «Protege
    lo ganado en Repsol con una orden stop» al siguiente), así que lo hecho no se busca solo por el texto exacto:
