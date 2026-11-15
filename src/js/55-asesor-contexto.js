@@ -25,7 +25,7 @@ function fichaTexto(f, corto = false, est = esPublico()) {
   const L = [];
   L.push(`### ${i.corto || i.nombre} (id "${f.pos.id}")`);
   L.push(`${i.nombre || ''}. ${i.tipo || ''}, ${i.clase || ''}${i.pais ? `, ${PAISES[i.pais] || i.pais}` : ''}, en ${f.pos.plataforma || '?'}. ${[i.yahoo && 'Ticker ' + i.yahoo, i.isin && 'ISIN ' + i.isin].filter(Boolean).join(', ')}.`);
-  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
+  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : 'participaciones'}${f.estimada ? ' (cantidad estimada por Toisón, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (${f.varDia == null && f.varUlt != null && f.fecha ? `aún sin precio de hoy: el último es del ${diaConSemana(f.fecha)} y ese día se movió ${P1(f.varUlt)}` : `hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}`}${f.vivo && f.varDia != null ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
   // 0.8.2: con las reglas del estándar (también el fundador con Claude), la señal de los analistas y no la de Toisón
   const sn = est && f.senal && !f.senal.analistas ? senalAnalistas(f) : f.senal;
   L.push(sn.analistas ? `Lo que opinan los analistas: ${sn.txt || 'no la sigue ninguno'}. ${sn.motivos.join(' ')}` : `Señal automática de Toisón: ${sn.txt}. ${sn.motivos.join(' ')}`);
@@ -39,7 +39,7 @@ function fichaTexto(f, corto = false, est = esPublico()) {
     } catch (e) {}
     if (a.cambios && a.cambios.length) L.push('Cambios recientes de analistas: ' + a.cambios.slice(0, corto ? 3 : 5).map((c) => [c.fecha, c.firma, c.accion, c.de && c.a ? `${c.de} → ${c.a}` : c.a, c.objetivo ? `objetivo ${fmtNum(c.objetivo, 2)} €` : ''].filter(Boolean).join(' ')).join('; ') + '.');
   }
-  const val = [fu.per && `PER ${fmtNum(fu.per, 1)}`, (fu.per_futuro || p.per_futuro) && `PER futuro ${fmtNum(fu.per_futuro || p.per_futuro, 1)}`, fu.peg && `PEG ${fmtNum(fu.peg, 2)}`, fu.ev_ebitda && `EV/EBITDA ${fmtNum(fu.ev_ebitda, 1)}`, fu.pvc && `precio/valor contable ${fmtNum(fu.pvc, 2)}`, p.dividendo_pct && `dividendo ${fmtNum(p.dividendo_pct, 2)} %`, fu.payout && `payout ${fmtNum(fu.payout, 0)} %`, fu.capitalizacion && `capitalización ${fmtNum(fu.capitalizacion / 1e9, 1)} mil millones`, fu.deuda_capital && `deuda/capital ${fmtNum(fu.deuda_capital, 0)} %`, fu.roe && `ROE ${fmtNum(fu.roe, 1)} %`, fu.margen && `margen ${fmtNum(fu.margen, 1)} %`, fu.crec_ingresos != null && `ingresos ${P1(fu.crec_ingresos)} interanual`, fu.crec_beneficio != null && `beneficio ${P1(fu.crec_beneficio)} interanual`, fu.beta != null && `beta ${fmtNum(fu.beta, 2)}`].filter(Boolean);
+  const val = [fu.per && `PER ${fmtNum(fu.per, 1)}`, (fu.per_futuro || p.per_futuro) && `PER futuro ${fmtNum(fu.per_futuro || p.per_futuro, 1)}`, fu.peg && `PEG ${fmtNum(fu.peg, 2)}`, fu.ev_ebitda && `EV/EBITDA ${fmtNum(fu.ev_ebitda, 1)}`, fu.pvc && `precio/valor contable ${fmtNum(fu.pvc, 2)}`, p.dividendo_pct && `dividendo ${fmtNum(p.dividendo_pct, 2)} %`, fu.payout && `payout ${fmtNum(fu.payout, 0)} %`, fu.capitalizacion && `capitalización ${fmtNum(fu.capitalizacion / 1e9, 1)} mil millones`, fu.deuda_capital && `deuda/capital ${fmtNum(fu.deuda_capital, 0)} %`, fu.roe && `ROE ${fmtNum(fu.roe, 1)} %`, fu.margen && `margen ${fmtNum(fu.margen, 1)} %`, fu.crec_ingresos != null && `ingresos ${P1(fu.crec_ingresos)} interanual`, fu.crec_beneficio != null && `beneficio ${P1(fu.crec_beneficio)} interanual`, fu.beta != null && `beta ${fmtNum(fu.beta, 2)}${refBeta(p) ? ` frente al ${refBeta(p)} (último año, semana a semana)` : ''}`].filter(Boolean);
   if (val.length) L.push('Valoración y cuentas: ' + val.join(', ') + '.');
   if (p.estimaciones) { const e = p.estimaciones; L.push(`Beneficio por acción que esperan los analistas: este año ${P1(e.este_anio && e.este_anio.crec)}, el que viene ${P1(e.siguiente && e.siguiente.crec)}.`); }
   const re = [['1m', '1 mes'], ['3m', '3 meses'], ['ytd', 'en el año'], ['1a', '1 año'], ['3a_anual', '3 años, anual'], ['5a_anual', '5 años, anual'], ['10a_anual', '10 años, anual']].filter(([k]) => r[k] != null).map(([k, tt]) => `${tt} ${P1(r[k])}`);
@@ -104,7 +104,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     try {
       const D = dividendosMeses(M);
-      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12, mes del ex-dividendo): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos; ${D.meses.filter((m) => m.bruto).map((m) => `${m.k}: ${E0(m.neto)} (${m.de.map((x) => x.n).join(', ')})`).join('; ')}.`);
+      // 14 nov (auditoría): pago a pago, con su fecha y de quién es. Antes iba el total de cada mes con los nombres detrás («2026-12:
+      // 78 € (BAT, IAG)») y la revisión se liaba: «ex-dividendo de IAG: unos 26 € brutos al año por acción» (eran 26 € netos de junio)
+      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12; cada cifra es lo que cobraría por todo lo que tiene de esa posición, no por acción; las fechas son aproximadas, las del año pasado más doce meses, salvo el próximo ex-dividendo de cada una si ya está anunciado): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos. Pago a pago, por fecha del ex-dividendo: ${D.meses.filter((m) => m.bruto).flatMap((m) => m.de).sort((a, b) => (a.d < b.d ? -1 : 1)).map((x) => `${x.d} ${x.n} ${E0(x.neto)} netos (${E0(x.bruto)} brutos)`).join('; ')}.`);
       const SO = solapamientos(M);
       if (SO.pares.length) L.push('Fondos que se pisan (llevan las mismas grandes empresas de una zona): ' + SO.pares.map((x) => `${x.a.inst.corto} y ${x.b.inst.corto} en un ${fmtNum(x.pct, 0)} %`).join('; ') + '.');
       const sg = siguiendo();
@@ -147,7 +149,8 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     L.push('', '## Mercados');
     // 0.7: en el chat, más corto (hoy, un mes y en el año)
-    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: hoy ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    // 14 nov (auditoría): si el dato no es de hoy (fin de semana, o la bolsa aún sin abrir), dice de qué día es en vez de «hoy»
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}, dv = diaDatoMerc(sym), cu = dv ? `el ${diaConSemana(dv)}, su última sesión,` : 'hoy'; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: ${cu} ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (${cu} ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
     try {
       const pr = proyeccion(M), c = pr.cfg;
       L.push('', `## Proyección de Toisón (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
@@ -397,7 +400,7 @@ function hBuscarEmpresa(q, est = esPublico()) {
   const tasa = tasaRadar(x);
   return {
     en_su_cartera: false, nombre: x.n, ticker: x.s, zona: x.z, pais: PAISES[PAIS_DE_NOMBRE[x.pais]] || x.pais, sector: x.sector, industria: x.ind,
-    precio: `${fmtNum(x.p, 2)} ${x.m}`, precio_eur: R2(x.pe, 2), hoy_pct: x.v, en_directo: !!x.vivo,
+    precio: `${fmtNum(x.p, 2)} ${x.m}`, precio_eur: R2(x.pe, 2), [x.vivo ? 'hoy_pct' : 'ultimo_cambio_pct']: x.v, en_directo: !!x.vivo,
     analistas: { consenso: CONSENSO[x.r] || null, nota_media_1_a_5: x.rm, numero: x.na, votos_ahora: x.v0, votos_hace_3_meses: x.v3, objetivo_medio: x.obj, objetivo_bajo: x.tb, objetivo_alto: x.ta, potencial_pct: R2(x.pot, 1) },
     valoracion: { per: x.per, per_futuro: x.perf, crecimiento_beneficio_esperado_pct: x.epsg, crecimiento_beneficio_pct: x.eg, crecimiento_ingresos_pct: x.rg, roe_pct: x.roe, margen_pct: x.mg, deuda_capital_pct: x.de, dividendo_pct: x.div, capitalizacion_eur: x.cap, beta: x.beta },
     precio_y_tendencia: { cambio_1_anio_pct: x.c1a, media_50: x.m50, media_200: x.m200, sobre_media_200_pct: x.m200 && x.p ? R2((x.p / x.m200 - 1) * 100, 1) : null, maximo_52s: x.mx, minimo_52s: x.mn },
@@ -774,7 +777,7 @@ function pausarClaude(motivo, ms) { try { LS.set(LS_CLAUDE_PAUSA, { hasta: Date.
    app hace sola, pero no lo que pides tú: al preguntar o al abrir la IA se quita y se vuelve a intentar. Carlos, 8 nov: dos
    cortes seguidos apartaron a Claude 5 minutos y sus dos «Volver a preguntar» fallaron al momento sin llegar a intentarlo.
    Las pausas de la cuenta (topes, créditos, correo sin confirmar, la clave, una petición que no vale) siguen como estaban */
-const PAUSAS_DE_RED = ['red', 'cambio', 'tiempo', 'sondeo'];
+const PAUSAS_DE_RED = ['red', 'cambio', 'tiempo', 'sondeo', 'bloqueo'];
 function quitarPausaDeRed() {
   const p = claudePausado();
   if (!p || !PAUSAS_DE_RED.includes(p.motivo)) return false;
@@ -843,14 +846,16 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
-      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      // 0.8.3d: con relevo, más (el sondeo de la ruta y, si toca, el arranque del relevo)
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), urlRelevo() ? 18000 : 10000);
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { repetible: true });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
       else apartarClaude(errorClaude(r.status, j));
     } catch (e) {
       if (signal && signal.aborted) throw new DOMException('Parado', 'AbortError');
-      apartarClaude(Object.assign(e, { corte: true }));
+      // 0.8.3d: si llega Toisón pero no el Worker, es el bloqueo del fútbol: se dice tal cual
+      apartarClaude(Object.assign(e, { corte: true }, (await esBloqueoWorker()) ? { tipo: 'bloqueo' } : {}));
     } finally { clearTimeout(tt); if (signal) signal.removeEventListener('abort', parar); }
   }
   if (!puede) return false;
@@ -878,13 +883,14 @@ function sondearClaude() {
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
-      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      // 0.8.3d: con relevo, más (el sondeo de la ruta y, si toca, el arranque del relevo)
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), urlRelevo() ? 18000 : 10000);
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { repetible: true });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
       const ms = pausaClaude(errorClaude(r.status, j)) || 5 * 6e4; pausarClaude((j && j.error) || 'sondeo', ms);
       return false;
-    } catch (e) { pausarClaude('sondeo', 5 * 6e4); return false; }
+    } catch (e) { pausarClaude((await esBloqueoWorker()) ? 'bloqueo' : 'sondeo', 5 * 6e4); return false; }
     finally { clearTimeout(tt); SONDEO_EN_CURSO = null; }
   })();
   SONDEO_EN_CURSO.then((ok) => {
@@ -959,6 +965,8 @@ function errorSinIA(e, aMedias) {
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace del último correo de confirmación que te llegó. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link in the latest confirmation email you got. Once you open it, come back here: Toisón will notice by itself.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
     // 0.8.3c: un corte de la conexión o una respuesta que no empieza, dicho como lo que es (antes, «no está disponible»)
+    // 0.8.3d: llega Toisón pero no el servidor de la IA (el bloqueo de los operadores durante LaLiga)
+    : c === 'bloqueo' ? TXT_BLOQUEO()
     : c === 'red' || c === 'cambio' ? L('Se ha cortado la conexión con la IA. Vuelve a preguntar.', 'The connection to the AI dropped. Ask again.')
     : c === 'tiempo' ? L('La IA no ha empezado a contestar a tiempo. Vuelve a preguntar.', "The AI didn't start answering in time. Ask again.")
     // 0.8.3c: el tope de peticiones por minuto del Worker (cuentan también las rondas de herramientas de una misma pregunta)
@@ -1095,7 +1103,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   };
   try {
     const token = await conTiempo(tokenCuenta(), 9000);
-    const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
+    const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) }, { repetible: true });
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
     { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
@@ -1151,7 +1159,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   // 16.000–24.000 tokens de salida, de los que el JSON eran unos 3.500 (7 nov, banco de la revisión)
   let esfuerzo = esfuerzo0, maxRepetido = false, pensar = pensar0;
   turno.modelo = modelo;
-  let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
+  let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false, porElRelevo = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
   // 0.9: un id por pregunta, el mismo en todas sus rondas y reintentos: el Worker cuenta una pregunta por id (antes se fiaba
   // de «ronda», que se podía falsear y hacía que un reintento de la primera ronda no contara o contara dos veces)
@@ -1183,6 +1191,14 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
       }
       // si lo que no acepta Claude es la búsqueda en internet, se repite sin ella (y se avisa en el registro)
       if (e.claude && e.estado === 400 && conWeb && /web.?search/i.test(`${e.msg} ${e.codigo}`)) { conWeb = false; diarioIA(`Claude no acepta la búsqueda en internet (${String(e.msg).slice(0, 80)}): sigue sin ella`); vuelta--; continue; }
+      // 0.8.3d: sin que haya llegado nada (también si no empezó a tiempo), se vuelve a mirar por dónde ir: si el Worker ha
+      // dejado de llegar (el bloqueo empezó con la ruta ya guardada), una vez más por el relevo
+      if (esCorteRed(e) && !e.claude && !e.datos && !(signal && signal.aborted)) {
+        dudarDelWorker();
+        if (urlRelevo() && !porElRelevo && VIA_WORKER !== 'relevo' && (await rutaWorker(true)) === 'relevo') { porElRelevo = true; avisoRed(L('No llega al servidor: lo intento por otro camino', "Can't reach the server: trying another way")); vuelta--; continue; }
+        // con Toisón llegando y sin Worker ni relevo, el aviso del bloqueo
+        if (await esBloqueoWorker()) e.tipo = 'bloqueo';
+      }
       // lo demás (sin permiso, sin créditos, tope del día, 5xx, no empieza a tiempo…): lo decide conversar
       throw e;
     }

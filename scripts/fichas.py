@@ -121,7 +121,13 @@ def aplicar_lectura(fichas, s, r, fuentes, ahora, nombre=None):
         fa = factor_de(v[0])
         if not fa or not f.get("t"):
             continue
-        e["tit"][clave_titulo(f["t"])] = [fa, signo_de(v[1] if len(v) > 1 else None), peso_de(v[2] if len(v) > 2 else 0), str(f.get("d") or ahora)[:10]]
+        marca = [fa, signo_de(v[1] if len(v) > 1 else None), peso_de(v[2] if len(v) > 2 else 0)]
+        e["tit"][clave_titulo(f["t"])] = marca + [str(f.get("d") or ahora)[:10]]
+        # 14 nov 2026 (auditoría): una nota repetida se lee una sola vez (informe.notas_de_empresa); los otros titulares
+        # que la traen heredan su marca, para que en la app no se queden sin ella
+        for o in f.get("_otros") or []:
+            if o.get("t"):
+                e["tit"][clave_titulo(o["t"])] = marca + [str(o.get("d") or ahora)[:10]]
     for k, v in (r.get("fa") or {}).items():
         fa = factor_de(k)
         if not fa or not isinstance(v, dict) or not str(v.get("txt") or "").strip():

@@ -21,6 +21,11 @@ async function conPerfil(page, extra = {}) {
   await page.evaluate(async (extra) => {
     S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: 'Lucía', edad: 31, situacion: 'trabajando', horizonte: 20, riesgo: 'medio', limite_cripto: 5, limite_empresa: 6, limite_oro: 10, ...extra };
     S.cartera.limite_acciones = 15;
+    // 14 nov 2026: el peso de la cripto sale del precio del día y estas pruebas lo daban por fijo (4,5 %, «cerca» de su límite
+    // de 5). Con el bitcoin en 62.000 € bajó del 4 % y «Cerca» pasó a «Dentro», también en main. La cantidad de bitcoin se
+    // pone aquí para que pese el 4,5 % con el precio que haya
+    const M = calcular(), b = M.filas.find((f) => f.inst.id === 'btc'), pos = S.cartera.posiciones.find((x) => x.instrumento === 'btc');
+    if (b && pos && b.valor > 0) pos.cantidad *= (0.045 * (M.total - b.valor) / 0.955) / b.valor;
     LS.set('inv-perfil-luego', { t: Date.now(), n: 3 });
     await guardarCartera('prueba');
   }, extra);

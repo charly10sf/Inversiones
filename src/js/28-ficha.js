@@ -192,7 +192,7 @@ function fichaExpertos(f) {
         fu.margen != null && ['Margen neto', pct(fu.margen, 1)],
         fu.roe != null && ['Rentabilidad sobre fondos propios', pct(fu.roe, 1)],
         fu.deuda_capital != null && ['Deuda / fondos propios', pct(fu.deuda_capital, 0)],
-        fu.beta != null && ['Beta', fmtNum(fu.beta, 2)],
+        fu.beta != null && [etiquetaBeta(p), fmtNum(fu.beta, 2)],
       ])}</div>
     </div>
     <details class="paso-mas"><summary>Qué significa cada dato</summary><dl class="glosa">

@@ -75,6 +75,17 @@ test('el saldo va con las cabeceras PSU solo si estás delante', async () => {
     expect(r.saldos['acc-ipv6']).toMatchObject({ importe: 1234.56 });
     expect(vistas.length).toBe(2);
 
+    // 0.8.3d: por el relevo de Google (bloqueo de Cloudflare en el fútbol) la IP es la del relevo: sin cabeceras PSU,
+    // aunque estés delante, y la app lo sabe (presente: false)
+    vistas.length = 0;
+    r = await worker.fetch(new Request('https://w.prueba/banco/saldos', {
+      method: 'POST', body: JSON.stringify({ cuentas: ['acc-0001'], presente: true }),
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Origin: 'https://charly10sf.github.io', 'CF-Connecting-IP': '34.1.2.3', 'User-Agent': 'Navegador/1.0', 'X-Toison-Relevo': '1' },
+    }), env, { waitUntil() {} }).then((x) => x.json());
+    expect(r.saldos['acc-0001']).toMatchObject({ importe: 1234.56 });
+    expect(r.presente).toBe(false);
+    expect(Object.keys(vistas[0].h).filter((k) => k.startsWith('psu-'))).toEqual([]);
+
     // revisión aparte de la 0.7d: un fallo de lectura no es «caducada» si la sesión sigue viva
     r = await pedir({ cuentas: ['acc-falla-1', 'acc-falla-2'], sesiones: { 'acc-falla-1': 'ses-viva', 'acc-falla-2': 'ses-muerta' } });
     expect(r.saldos['acc-falla-1'].error).toBe('fallo');

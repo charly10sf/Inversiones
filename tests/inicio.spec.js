@@ -21,9 +21,11 @@ async function inicio(page, bloques) {
 
 test('lo que más ha movido hoy lleva el logo de cada cosa', async ({ page, errores, viewport }) => {
   await inicio(page);
+  // con la bolsa cerrada no hay nada «de hoy» (0.8.6c): dos precios en directo, para que la prueba no dependa de la hora
+  await page.evaluate(() => { for (const f of S.M.filas.filter((x) => x.precio > 0).slice(0, 2)) S.live[f.inst.id] = { precio: f.precio * 1.02, var: 2, t: Date.now(), fuente: 'en directo' }; pintar(); });
   const chips = page.locator('.hero-movers .mv-c');
+  await expect(chips.first()).toBeVisible();
   const n = await chips.count();
-  test.skip(!n, 'hoy no se ha movido nada en los datos de prueba');
   await expect(page.locator('.hero-movers .mv-c .mv-logo')).toHaveCount(n);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width + 1);
 });
@@ -35,8 +37,23 @@ test('en el ordenador, el mapa va más bajo y con el informe al lado', async ({ 
   expect(await page.evaluate(() => bloquesCartera())).toEqual(['patrimonio', 'mapa', 'informe', 'posiciones', 'ia', 'reparto', 'agenda', 'plan']);
   const fila = page.locator('.car-fila.par-der', { has: page.locator('.mc-caja') });
   await expect(fila.locator('.informe')).toBeVisible();
-  // y en él, lo que más se ha movido hoy de lo tuyo y por qué (del informe de la prensa)
-  expect(await fila.locator('.ini-hoy li').count()).toBeGreaterThan(0);
+  // y en él, lo que más se ha movido hoy de lo tuyo y por qué (del informe de la prensa). Desde la 0.8.6c «hoy es hoy»:
+  // de madrugada y en fin de semana no hay nada con precio de hoy y el bloque no sale (14 nov: la prueba fallaba fuera
+  // del horario de bolsa). Aquí no se mira el reloj: se quita lo de hoy y se pone a mano.
+  const con = await page.evaluate(() => {
+    const P = (informeVisible() || {}).posiciones || {};
+    for (const p of Object.values(S.precios.instrumentos)) if (p.fecha >= hoyIso()) p.fecha = sumarDias(hoyIso(), -1);
+    S.live = {}; pintar();
+    return S.M.filas.filter((f) => P[f.inst.id] && P[f.inst.id].novedades && f.precio > 0).map((f) => [f.inst.id, f.precio]).slice(0, 2);
+  });
+  expect(con.length, 'el informe de los datos de prueba habla de alguna posición').toBeGreaterThan(0);
+  // sin nada de hoy (la bolsa cerrada): sin el bloque, y el informe sigue en su sitio
+  await expect(fila.locator('.informe')).toBeVisible();
+  await expect(fila.locator('.ini-hoy')).toHaveCount(0);
+  // con precio de hoy (en directo): sale, con su porcentaje de hoy
+  await page.evaluate((con) => { for (const [id, precio] of con) S.live[id] = { precio: precio * 1.02, var: 2, t: Date.now(), fuente: 'en directo' }; pintar(); }, con);
+  await expect(fila.locator('.ini-hoy li')).toHaveCount(con.length);
+  await expect(fila.locator('.ini-hoy li .ini-hoy-v').first()).toContainText('%');
   const alto = await page.locator('.mc-caja').evaluate((el) => el.getBoundingClientRect().height);
   expect(alto).toBeLessThanOrEqual(440);
   expect(alto).toBeGreaterThanOrEqual(300);

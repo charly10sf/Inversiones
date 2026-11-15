@@ -270,7 +270,7 @@ class Escaneo(Base):
         I.peticion_claude = lambda cuerpo, clave: CLA
         I.ia(p(), "leer_temas", lote=False)
         e = I.estado_ia(esc, True)
-        self.assertEqual(sorted(e), ["activo", "apagado", "coste_24h", "errores", "modelos", "ok", "uso"])
+        self.assertEqual(sorted(e), ["activo", "apagado", "coste_24h", "coste_dias", "errores", "modelos", "ok", "uso"])
         self.assertEqual([x["que"] for x in e["uso"]], ["leer_lote", "leer_temas"])
         self.assertAlmostEqual(e["uso"][0]["coste"], (32000 * 0.10 + 12000 * 0.50) / 1e6 / 2)
         self.assertAlmostEqual(e["coste_24h"], round(e["uso"][0]["coste"] + e["uso"][1]["coste"], 4))

@@ -49,6 +49,8 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
       // 0.7l: el avance de Toisón, igual: una vez al abrir (lo prueba tests/toison.spec.js)
       localStorage.setItem('inv-toison-avance', 'true');
       localStorage.setItem('inv-toison-tarjeta', 'true');
+      // 0.8.3d: sin el relevo de Cloud Run (no hay internet aquí); las pruebas del relevo lo ponen con RELEVO_PRUEBA
+      localStorage.setItem('inv-sin-relevo', 'true');
       for (const [k, v] of Object.entries(ajustes)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     } catch (e) {}
   }, { idioma, ajustes });

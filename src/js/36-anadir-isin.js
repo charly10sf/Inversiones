@@ -86,7 +86,7 @@ async function buscarIsinWorker(isin, pedir) {
   try {
     const h = {};
     if (pedir && FB.user) { try { h.Authorization = `Bearer ${await FB.user.getIdToken()}`; } catch (e) { /* sin sesión: solo se busca */ } }
-    const r = await fetch(`${urlWorker()}/isin?c=${encodeURIComponent(isin)}${pedir ? '&pedir=1' : ''}`, { headers: h, signal: ctl.signal });
+    const r = await fetchWorker(`/isin?c=${encodeURIComponent(isin)}${pedir ? '&pedir=1' : ''}`, { headers: h, signal: ctl.signal });
     const j = await r.json().catch(() => ({}));
     return r.ok || j.error === 'no-esta' ? j : { ok: false, error: j.error || `http ${r.status}` };
   } catch (e) { return { ok: false, error: 'red' }; } finally { clearTimeout(tt); }

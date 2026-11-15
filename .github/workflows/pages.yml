@@ -17,8 +17,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -70,6 +68,10 @@ jobs:
   publicar:
     needs: build
     runs-on: ubuntu-latest
+    # solo aquí: el build (npm ci) no puede pedir un token de identidad (relevo/LEEME.md, Workload Identity)
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.pages.outputs.page_url }}

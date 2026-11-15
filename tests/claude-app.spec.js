@@ -279,6 +279,8 @@ test('con el Worker sin alcanzar (bloqueado o caído) se dice claro sin esperar 
   await preparada(page);
   const g = await gemini(context);
   await context.route(WORKER, (r) => r.abort('failed'));
+  // 0.8.3d: sin internet tampoco (si llegara Toisón, sería el aviso del bloqueo del fútbol: tests/ia-sin-cloudflare.spec.js)
+  await context.route(/\/version\.json/, (r) => r.abort('failed'));
   const t0 = Date.now();
   await page.evaluate(() => abrirAsesor());
   await expect(page.locator('#asCuerpo')).toContainText('La IA no está disponible ahora mismo', { timeout: 20_000 });
@@ -326,6 +328,8 @@ test('una pausa por la red no frena tu pregunta; si se corta del todo, lo dice a
   await page.evaluate(() => { LS.del(LS_CLAUDE_PAUSA); AS.cargando = false; });
   await context.unroute(WORKER);
   await context.route(WORKER, (r) => (r.request().method() === 'OPTIONS' ? r.fulfill({ status: 204, headers: CORS }) : r.abort('failed')));
+  // 0.8.3d: con Toisón llegando sería el aviso del bloqueo (tests/ia-sin-cloudflare.spec.js); aquí, sin red del todo
+  await context.route(/\/version\.json/, (r) => r.abort('failed'));
   await page.evaluate(() => preguntarAsesor('¿Y si se corta?'));
   await expect(page.locator('#asCuerpo .as-error').last()).toContainText('Se ha cortado la conexión con la IA', { timeout: 30_000 });
 });
