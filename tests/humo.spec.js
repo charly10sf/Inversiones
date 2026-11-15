@@ -295,24 +295,6 @@ test.describe('la guía', () => {
   });
 });
 
-// 0.6: lo que va en trozos se baja al usarlo (y funciona igual)
-test.describe('trozos', () => {
-  test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
-
-  test('la hoja de GTA VI se baja al abrirla', async ({ pagina: page }) => {
-    await crearCuenta(page);
-    await quitarCapas(page);
-    await meterCartera(page);
-    test.skip(!(await page.evaluate(() => gtaActivo())), 'GTA VI ya ha salido');
-    expect(await page.evaluate(() => typeof htmlGTA)).toBe('undefined');
-    await tocar(page, '[data-gta]:visible');
-    await expect(page.locator('.gta-marco')).toBeVisible();
-    expect(await page.evaluate(() => typeof htmlGTA)).toBe('function');
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.gta-marco')).toHaveCount(0);
-  });
-});
-
 test.describe('trozos: el asesor', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
 
@@ -388,13 +370,13 @@ test.describe('trozos: si no se pueden bajar', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
 
   test('avisa de la versión nueva y lo que venía detrás sigue', async ({ pagina: page, context }) => {
+    // como si el trozo de antes ya no estuviera publicado (15 nov: el de las novedades; antes, el de GTA VI, que se quitó)
+    await context.route(/\/assets\/novedades-[0-9a-f]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
     await crearCuenta(page);
     await quitarCapas(page);
     await meterCartera(page);
-    // como si el trozo de antes ya no estuviera publicado
-    await context.route(/\/assets\/gta-[0-9a-f]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
-    const siguio = await page.evaluate(() => new Promise((ok) => { LS.del('inv-gta'); avisoGTA(() => ok(true)); setTimeout(() => ok(false), 8000); }));
-    expect(siguio, 'avisoGTA sigue con lo de después aunque no baje su trozo').toBe(true);
+    const siguio = await page.evaluate(() => new Promise((ok) => { mostrarNovedades('0.8.6c', () => ok(true)); setTimeout(() => ok(false), 8000); }));
+    expect(siguio, 'mostrarNovedades sigue con lo de después aunque no baje su trozo').toBe(true);
     await expect(page.locator('#avisoWeb')).toBeVisible();
     // 0.5d: el botón dice «Actualizar» (antes «Ponerla»)
     await expect(page.locator('#avisoWeb .btn')).toHaveText('Actualizar');

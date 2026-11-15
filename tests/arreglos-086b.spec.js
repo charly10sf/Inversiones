@@ -49,17 +49,6 @@ test('en la ficha se apunta: ni «Comprar» ni «Vender»', async ({ page, conte
   await expect(b.locator('[data-tipo="venta"]')).toHaveText('Apuntar venta');
 });
 
-test('la cuenta atrás de la cabecera cuenta los días como el Calendario', async ({ page, context }) => {
-  await dentro(page, context);
-  const r = await page.evaluate(() => {
-    const f = gtaActivo() && gtaFalta(); if (!f || !f.d) return null;
-    pintarGtaTop();
-    return { chip: (document.querySelector('.gta-top-d') || {}).textContent, dias: diasEntre(hoyIso(), iso(GTA.salida)) };
-  });
-  test.skip(!r, 'ya ha salido o falta menos de un día');
-  expect(r.chip).toBe(`${r.dias}d`);
-});
-
 test('en Más, la estrella no pisa el nombre', async ({ page, context }, info) => {
   test.skip(info.project.name === 'pc', 'Más es del móvil');
   await dentro(page, context);

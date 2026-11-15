@@ -63,19 +63,31 @@ document.addEventListener('pointermove', (e) => {
 }, { passive: true });
 
 /* 0.9 · el acabado: «piedra» (las vetas y las tarjetas de siempre) o «liso» (fondo plano y sin cajas; 35-liso.css). Lo pidió
-   Carlos el 12 nov para verlos lado a lado; se guarda en este dispositivo (inv-acabado) y vale para Mármol y para Marfil */
+   Carlos el 12 nov para verlos lado a lado; se guarda en este dispositivo (inv-acabado) y vale para Mármol y para Marfil.
+   Sin elegir (decidido el 13 nov, claude/decisiones-13nov-acabado-y-paso-a-paso.md): tarjetas en el móvil y liso en el
+   ordenador, con el corte de la K2 (1.180 px, desde donde sale la barra de 232 px). El primer pintado lo pone el script de
+   index.html, igual, para que no salte de uno a otro al abrir. «Según la pantalla» borra lo elegido y vuelve a esto. */
 const ACABADOS = ['piedra', 'liso'];
-function acabadoApp() { const a = LS.get('inv-acabado', 'piedra'); return ACABADOS.includes(a) ? a : 'piedra'; }
-function ponerAcabado(a) {
-  a = ACABADOS.includes(a) ? a : 'piedra';
-  LS.set('inv-acabado', a);
+const acabadoPorAncho = () => (innerWidth >= 1180 ? 'liso' : 'piedra');
+function acabadoElegido() { const a = LS.get('inv-acabado', null); return ACABADOS.includes(a) ? a : null; }
+function acabadoApp() { return acabadoElegido() || acabadoPorAncho(); }
+function marcarAcabado() {
+  const a = acabadoApp(), b = acabadoElegido() || 'auto';
   if (a === 'liso') document.documentElement.setAttribute('data-acabado', 'liso'); else document.documentElement.removeAttribute('data-acabado');
-  for (const b of $$('[data-acabado-b]')) b.setAttribute('aria-pressed', String(b.dataset.acabadoB === a));
+  for (const x of $$('[data-acabado-b]')) x.setAttribute('aria-pressed', String(x.dataset.acabadoB === b));
+  return a;
+}
+function ponerAcabado(a) {
+  if (ACABADOS.includes(a)) LS.set('inv-acabado', a); else LS.del('inv-acabado');
+  marcarAcabado();
   // las gráficas dibujadas con los colores del fondo se rehacen
   const ev = new Event('resize'); ev.k2 = true; dispatchEvent(ev);
 }
-const htmlSelectorAcabado = () => `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Acabado', 'Finish')}</h3>
-  <div class="idiomas seg-modo" role="group" aria-label="${L('Acabado', 'Finish')}"><button type="button" data-acabado-b="piedra" aria-pressed="${acabadoApp() === 'piedra'}">${L('Piedra', 'Stone')}</button><button type="button" data-acabado-b="liso" aria-pressed="${acabadoApp() === 'liso'}">${L('Liso', 'Plain')}</button></div>
-  <small>${L('Piedra: el fondo con vetas y cada bloque en su tarjeta. Liso: fondo plano y sin cajas. Se guarda en este dispositivo.', 'Stone: the veined background and each block in its card. Plain: flat background and no boxes. Saved on this device.')}</small></div>`;
+const htmlSelectorAcabado = () => { const b = acabadoElegido() || 'auto', bt = (v, t) => `<button type="button" data-acabado-b="${v}" aria-pressed="${b === v}">${t}</button>`;
+  return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Acabado', 'Finish')}</h3>
+  <div class="idiomas seg-modo" role="group" aria-label="${L('Acabado', 'Finish')}">${bt('auto', L('Según la pantalla', 'By screen'))}${bt('piedra', L('Tarjetas', 'Cards'))}${bt('liso', L('Liso', 'Plain'))}</div>
+  <small>${L('Tarjetas: el fondo con vetas y cada bloque en su caja. Liso: fondo plano y sin cajas. Según la pantalla: tarjetas en el móvil y liso en el ordenador. Se guarda en este dispositivo.', 'Cards: the veined background and each block in its box. Plain: flat background and no boxes. By screen: cards on the phone and plain on the computer. Saved on this device.')}</small></div>`; };
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-acabado-b]'); if (b) ponerAcabado(b.dataset.acabadoB); });
-if (acabadoApp() === 'liso') document.documentElement.setAttribute('data-acabado', 'liso');
+// sin elegir, al cruzar el corte (girar una tableta, estrechar la ventana) cambia con la pantalla
+addEventListener('resize', (e) => { if (!e.k2 && !acabadoElegido() && (document.documentElement.getAttribute('data-acabado') === 'liso') !== (acabadoPorAncho() === 'liso')) marcarAcabado(); }, { passive: true });
+marcarAcabado();

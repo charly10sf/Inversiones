@@ -1,8 +1,8 @@
 /* =====================================================================
    Calendario: lo que viene para tu cartera y cuántos días faltan. Resultados y dividendos de tus
    acciones (del radar, que la Action renueva cada 3 horas, o de la ficha de la Action), los resultados
-   de las grandes empresas que hay dentro de tus fondos, la Fed y el BCE, los días sin bolsa, Hacienda,
-   GTA VI y tus aportaciones. Las fechas fijas salen de los calendarios oficiales de la Fed, el BCE y la
+   de las grandes empresas que hay dentro de tus fondos, la Fed y el BCE, los días sin bolsa, Hacienda
+   y tus aportaciones. Las fechas fijas salen de los calendarios oficiales de la Fed, el BCE y la
    NYSE (revisados el 20 de octubre de 2026): hay que añadir las de 2028 cuando se publiquen.
    ===================================================================== */
 const AG_FED = ['2026-10-28', '2026-12-09', '2027-01-27', '2027-03-17', '2027-04-28', '2027-06-09', '2027-07-28', '2027-09-15', '2027-10-27', '2027-12-08'];
@@ -65,14 +65,14 @@ const FIESTAS_EN = { 'el lunes después de Todos los Santos': "the Monday after 
 // la bolsa de cada acción o ETF, por el final de su símbolo en Yahoo
 const bolsaDe = (i) => { const y = String((i && i.yahoo) || ''); if (!y || /^Fondo/.test(i.tipo || '') || i.clase === 'Cripto' || /-EUR$|=/.test(y)) return null; if (/\.MC$/i.test(y)) return 'mad'; if (/\.L$/i.test(y)) return 'lon'; if (/\.(DE|F)$/i.test(y)) return 'fra'; if (/\.(PA|AS|BR|LS)$/i.test(y)) return 'eur'; if (!y.includes('.')) return 'us'; return null; };
 // cada tipo: su icono y en qué filtro sale
-const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], media: ['media', 'eco'], fiesta: ['fiesta', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
+const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], media: ['media', 'eco'], fiesta: ['fiesta', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['agenda', 'otro'], ia: ['chispa', 'eco'] };
 const AG_FILTROS = [['todo', 'Todo', 'All'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy'], ['apo', 'Aportaciones', 'Contributions']];
 const AG_FESTIVOS_EN = { 'Nochebuena': 'Christmas Eve', 'Nochevieja': "New Year's Eve", 'San Esteban': 'Boxing Day', 'el festivo de mayo británico': 'the UK early May bank holiday', 'el festivo de primavera británico': 'the UK spring bank holiday', 'el festivo de verano británico': 'the UK summer bank holiday', 'Acción de Gracias': 'Thanksgiving', 'Navidad': 'Christmas', 'Año Nuevo': "New Year's Day", 'el día de Martin Luther King': 'Martin Luther King Jr. Day', 'el Día de los Presidentes': "Presidents' Day", 'Viernes Santo': 'Good Friday', 'Lunes de Pascua': 'Easter Monday', 'el Memorial Day': 'Memorial Day', 'Juneteenth': 'Juneteenth', 'el Día de la Independencia': 'Independence Day', 'el Día del Trabajo': 'Labor Day' };
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MESES_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-// en el calendario y en GTA VI las frases llevan nombres y cifras dentro: van escritas en los dos idiomas
+// en el calendario las frases llevan nombres y cifras dentro: van escritas en los dos idiomas
 // L.es: mientras está puesto, todo en español (0.7: lo que lee GrowIA va en español aunque la app esté en inglés)
 const L = (es, en) => (IDIOMA === 'en' && !L.es ? en : es);
 const mesL = (m) => L(MESES_LARGOS[m], MESES_EN[m]), diaSemL = (d) => L(DIAS_SEM[d], DIAS_EN[d].slice(0, 3));
@@ -304,12 +304,6 @@ function agendaLista(M, dias = 120) {
         `What is sold up to 31 December goes into your ${y} tax return, filed in spring ${y + 1}; anything later, into the ${y + 1} one. In the return, losses on some sales are subtracted from gains on others in the same year. If the same thing is bought within two months before or after selling at a loss (one year for funds and for anything listed outside the EU), that loss doesn't count yet.${M.realizado ? ` This year your sales come to ${eurS(M.realizado, 0)}.` : ''}`),
       acc: `<a class="btn peq" href="#fiscal">${L('Ir a Hacienda', 'Go to Taxes')}</a>` });
   }
-  // GTA VI (0.8.3: no en la versión de Google Play)
-  if (gtaActivo()) {
-  const ttwo = [...porInst.values()].some((g) => /^TTWO$/i.test(g.inst.yahoo || ''));
-  add({ id: 'gta6', d: '2026-11-19', tipo: 'otro', t: L('Sale GTA VI', 'GTA VI comes out'), s: ttwo ? L('Take-Two, que tienes, se juega mucho ese día', 'Take-Two, which you own, has a lot riding on it') : L('En PS5 y Xbox Series X y S', 'On PS5 and Xbox Series X|S'),
-    det: L(`Sale GTA VI en PS5 y Xbox Series X y S.${ttwo ? ' Es el juego del que más depende Take-Two: esos días su precio puede moverse bastante.' : ''}`, `GTA VI comes out on PS5 and Xbox Series X|S.${ttwo ? " It's the game Take-Two depends on most: its price may move a lot around then." : ''}`), acc: `<button type="button" class="btn peq" data-gta>${L('Abrir la cuenta atrás', 'Open the countdown')}</button>` });
-  }
   // tus aportaciones, juntas si caen el mismo día
   const porDia = new Map();
   for (const a of S.cartera.aportaciones || []) {
@@ -345,7 +339,7 @@ function eventos(M, dias = 45) {
   return agendaLista(M, dias).filter((e) => ['resultados', 'dividendo', 'aportacion'].includes(e.tipo));
 }
 const tituloAg = (e) => (e.ia ? rellenarIA(e.t, {}) : esc(e.t));
-const iconoAg = (e) => (e.tipo === 'otro' ? MANDO : ICONOS[AG_TIPOS[e.tipo][0]] || ICONOS.agenda);
+const iconoAg = (e) => ICONOS[AG_TIPOS[e.tipo][0]] || ICONOS.agenda;
 const importeAg = (e) => (e.importe != null && isFinite(e.importe) ? `<span class="ag-imp${e.tipo === 'cobro' ? ' up' : ''}">${e.tipo === 'cobro' ? '+' : ''}${e.aprox ? '≈ ' : ''}${eur(e.importe, e.importe < 10 ? 2 : 0)}</span>` : '');
 
 // con Toisón (maqueta, «Tu mes»): el día en un recuadro con aro de oro, y lo que falta, detrás del texto
@@ -390,7 +384,7 @@ const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacie
 const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) || !!e.mio : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
 const AG_COLOR = { res: '#F3ECDD', div: '#4CBF8E', eco: '#A2967F', apo: '#EDBB45', otro: '#8A8172' };
-const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], media: ['Media sesión', 'Half day'], fiesta: ['Festivo, con bolsa', 'Holiday, market open'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
+const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], media: ['Media sesión', 'Half day'], fiesta: ['Festivo, con bolsa', 'Holiday, market open'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['Otro', 'Other'], ia: ['Para vigilar', 'To watch'] };
 function impactoAg(e, M) {
   const eu = (x) => eur(x, x < 10 ? 2 : 0);
   if ((e.tipo === 'dividendo' || e.tipo === 'cobro' || e.tipo === 'aportacion') && e.importe != null && isFinite(e.importe)) return e.tipo === 'aportacion' ? (e.varias && e.nombresAp ? L(`${eu(e.importe)} a ${e.nombresAp}`, `${eu(e.importe)} into ${e.nombresAp}`) : L(`${eu(e.importe)} que aportas`, `${eu(e.importe)} you put in`)) : L(`${e.aprox ? '≈ ' : ''}${eu(e.importe)} para ti`, `${e.aprox ? '≈ ' : ''}${eu(e.importe)} for you`);

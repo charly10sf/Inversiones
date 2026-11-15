@@ -18,15 +18,12 @@
 <meta name="color-scheme" content="dark">
 <!-- el diseño de Toisón elegido (Mármol si no hay ninguno), puesto antes de pintar. El color de la barra lo pone
      después ponerTema (01-base.js) desde los tokens -->
-<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='borgona'){g='marfil';localStorage.setItem('inv-tema','"marfil"');}if(g==='marfil')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');try{if(localStorage.getItem('inv-dueno')&&localStorage.getItem('inv-dorado-ver')!=='0')document.documentElement.setAttribute('data-dorado','');}catch(e){}</script>
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='borgona'){g='marfil';localStorage.setItem('inv-tema','"marfil"');}if(g==='marfil')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');try{if(localStorage.getItem('inv-dueno')&&localStorage.getItem('inv-dorado-ver')!=='0')document.documentElement.setAttribute('data-dorado','');}catch(e){}try{var ac=JSON.parse(localStorage.getItem('inv-acabado'));if(ac==='liso'||(ac!=='piedra'&&innerWidth>=1180))document.documentElement.setAttribute('data-acabado','liso');}catch(e){}</script>
 <!-- las letras de Toisón, de la casa (sin Google Fonts) -->
 <style>
 @font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Ibarra Real Nova';src:url(fonts/ibarra.woff2) format('woff2');font-weight:400 700;font-display:swap}
 @font-face{font-family:'Ibarra Real Nova';src:url(fonts/ibarra-italic.woff2) format('woff2');font-weight:400 700;font-style:italic;font-display:swap}
-/* 0.8 (5b): el «VI» de la pastilla de GTA de la cabecera usa la recta inclinada por el navegador (en dos mayúsculas
-   no se distingue de la cursiva): así la cursiva, 29 KB, no se baja al abrir en Mármol y Marfil. Mismo archivo que la recta */
-@font-face{font-family:'Ibarra VI';src:url(fonts/ibarra.woff2) format('woff2');font-weight:400 700;font-display:swap}
 /* 0.8.3: la textura del Mármol G (el resto de la capa, en 00-temas.css); la ancha, solo desde 900 px */
 [data-tema="marmol"] #acabadoTema{background-image:url(marmol-g.webp)}
 @media (min-width:900px){[data-tema="marmol"] #acabadoTema{background-image:url(marmol-g-pc.webp)}}

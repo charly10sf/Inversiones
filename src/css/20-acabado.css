@@ -6,7 +6,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 * { scrollbar-width: thin; scrollbar-color: var(--borde) transparent; }
 /* en el móvil (y en la app) nada de barra de desplazamiento a la derecha: se desliza con el dedo, como una app */
 @media (hover: none) and (pointer: coarse) {
-  html, body, *, .gta { scrollbar-width: none !important; }
+  html, body, * { scrollbar-width: none !important; }
   ::-webkit-scrollbar { display: none; width: 0; height: 0; }
 }
 h1, h2, h3, .ag-tx b, .fx2-cab button { text-wrap: balance; }

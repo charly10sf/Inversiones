@@ -240,7 +240,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .btn.compra { color: var(--sube); }
 [data-tema] :is(.btn.venta, .btn.peligro) { color: var(--baja); }
 
-/* si la cabecera no cabe ni con todos los pasos de GrowFolio (encajarCabecera en 48-gta.js), queda solo el símbolo */
+/* si la cabecera no cabe ni con todos los pasos de GrowFolio (encajarCabecera en 48-encajar.js), queda solo el símbolo */
 [data-tema] .top.cab-8 .marca-ts b { display: none; }
 /* .marca también es la etiqueta de las noticias (04-expertos-mercados-ia.css): en la cabecera, sin su píldora */
 [data-tema] .top .marca { background: none; padding: 0; border: 0; box-shadow: none; }
@@ -322,19 +322,12 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .mc-logo-ef { background: var(--superficie-2); }
 
 /* =====================================================================
-   Cabecera: los botones como aros finos (maqueta). GTA VI, de momento en sobrio (sin neón): «VI» en Ibarra cursiva
-   de oro dentro de un aro; la remodelación entera de la cuenta atrás es del paso 4
+   Cabecera: los botones como aros finos (maqueta)
    ===================================================================== */
 [data-tema] .estado-b { border-color: var(--aro); background: none; }
 [data-tema] :is(.estado-b:hover, .estado-w.abierto .estado-b) { background: color-mix(in srgb, var(--texto) 5%, transparent); }
 [data-tema] .as-boton { border: 1px solid var(--hilo); background: var(--superficie); color: var(--oro-texto); box-shadow: none; }
 [data-tema] .as-boton:hover { background: color-mix(in srgb, var(--oro-texto) 12%, var(--superficie)); }
-[data-tema] .gta-top { border: 1px solid var(--hilo); background: none; color: var(--texto); box-shadow: none; }
-[data-tema] .gta-top:hover { border-color: var(--oro-texto); box-shadow: none; }
-[data-tema] .gta-top:focus-visible { outline-color: var(--oro-texto); }
-[data-tema] .gta-top::before { display: none; animation: none; }
-[data-tema] .gta-top-t { animation: none; font-family: 'Ibarra VI', var(--marca); font-style: italic; font-synthesis: style; font-weight: 600; font-size: 19px; color: var(--oro-texto); -webkit-text-stroke: 0; text-shadow: none; padding: 0 2px 1px; }
-[data-tema] .gta-top :is(svg, .gta-top-g) { color: var(--texto-2); }
 
 /* El nombre de GrowIA es una imagen de oro (growia-nombre.svg): sobre crema la «IA» casi blanca no se lee y sobre el
    metal se pierde. De una sola tinta donde haga falta (el manual admite la versión a una tinta) */
@@ -378,7 +371,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] body.nav-ts .top #bAjustes svg { width: 22px; height: 22px; }
 @media (min-width: 1180px) { [data-tema] body.nav-ts .top #bAjustes { display: none; } }   /* en el ordenador va en el menú de la izquierda */
 [data-tema] body.nav-ts .top .acciones { margin-left: auto; }
-[data-tema] body.nav-ts .top .gta-top-w ~ .acciones { margin-left: var(--e2); }
 [data-tema] .as-boton.as-ts { width: 40px; height: 40px; padding: 0; margin: 0; justify-content: center; border-radius: 50%; border: 0;
   background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo), 0 6px 14px -6px var(--hondo); }
 [data-tema] .as-boton.as-ts:hover { filter: brightness(1.06); background: var(--metal); }
@@ -498,8 +490,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .tabla-pos .fila .c-desde > span:is(.up, .down) { display: inline-block; padding: 1px 8px; border-radius: var(--r-p); background: color-mix(in srgb, currentColor 13%, transparent); font-weight: 650; }
 [data-tema] .tabla-pos .fila:not(.cab) { border-color: var(--sep); }
 [data-tema] .tabla-pos .fila .activo b { font-weight: 600; }
-/* los días que faltan para GTA VI, del oro del diseño (el naranja de neón no se leía sobre el crema de Marfil) */
-[data-tema] .gta-top-d { color: var(--oro-texto); text-shadow: none; font: 650 13px/1 var(--ui); }
 
 /* el acabado de fondo (acabadoTema en 01-base.js): una capa fija detrás de la app con el grano y, en Mármol, la textura con las vetas.
    #app va encima en su propia capa para que la de fondo no tape nada */
@@ -508,7 +498,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] #app { position: relative; z-index: 1; }
 [data-tema] #acabadoTema .grano { position: absolute; inset: 0; opacity: var(--grano); background-size: 96px 96px; }
 /* 0.8.3, Mármol G: en vez de las vetas dibujadas, una textura de mármol negro de verdad (scripts/textura_marmol.py). La
-   imagen la pone el <style> de index.html (desde ahí la dirección relativa sirve igual en el build, con el CSS en
+   imagen la pone el \3c style> de index.html (desde ahí la dirección relativa sirve igual en el build, con el CSS en
    assets/, que en npm run dev); la del ordenador solo se baja con pantalla ancha. Aquí, el fondo y el brillo de la
    piedra pulida encima */
 [data-tema="marmol"] #acabadoTema { background-color: var(--fondo); background-position: center top; background-size: cover; background-repeat: no-repeat; }
@@ -697,91 +687,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .ix-lema h2, [data-tema] .ix-cap h2, [data-tema] .ix-fin h2 { font-family: var(--marca); font-weight: 500; letter-spacing: 0; color: var(--oro-texto); }
 [data-tema] .ix-ts, [data-tema] .ix-cab .intro-marca .ix-ts { font: 500 15px/1 var(--marca); letter-spacing: .14em; color: var(--texto); }
 [data-tema] .ix-fin-logo .ix-simb { width: 72px; height: auto; margin: 0 auto; }
-
-/* La cuenta atrás de GTA VI (18-gta.css y trozos/gta.js), en premium: sin neón. Los colores de la escena salen de los
-   tokens: cielo del fondo del diseño, sol de metal a rayas, ciudad y palmeras en silueta, rejilla de hilo de oro,
-   cifras en Ibarra. Los dibujos siguen siendo propios (nada del juego ni de su logo) */
-[data-tema] .gta-marco {
-  --g-rosa: var(--oro-texto); --g-nar: var(--oro-texto); --g-sol: var(--oro-texto); --g-cian: var(--oro-texto);
-  --g-lila: var(--borde); --g-t: var(--texto); --g-t2: var(--texto-2); --g-neon: var(--marca); --g-script: var(--marca);
-  border-color: var(--hilo); box-shadow: 0 30px 90px var(--hondo);
-}
-[data-tema] .gta-fondo { background: color-mix(in srgb, var(--fondo-2) 82%, transparent); }
-[data-tema] .gta { background: var(--fondo); scrollbar-color: var(--borde) transparent; }
-[data-tema] .gta-marco *, [data-tema] .gta-marco *::before, [data-tema] .gta-marco *::after { text-shadow: none; }
-[data-tema] .gta-marco .gta-reloj span b, [data-tema] .gta-marco .gta-sec > .gta-rotulo { text-shadow: none; }
-[data-tema] .gta-marco .gta-sec > .gta-rotulo { color: var(--oro-texto); transform: none; font-size: clamp(20px, 5vw, 24px); }
 /* las tareas del Adder (cada una con su color en ADDER.tareas): con Toisón, los del reparto del diseño */
-[data-tema] .gta-pila i:nth-child(6n+1), [data-tema] .gta-pila-ley li:nth-child(6n+1) { --c: var(--reparto-1); }
-[data-tema] .gta-pila i:nth-child(6n+2), [data-tema] .gta-pila-ley li:nth-child(6n+2) { --c: var(--reparto-2); }
-[data-tema] .gta-pila i:nth-child(6n+3), [data-tema] .gta-pila-ley li:nth-child(6n+3) { --c: var(--reparto-3); }
-[data-tema] .gta-pila i:nth-child(6n+4), [data-tema] .gta-pila-ley li:nth-child(6n+4) { --c: var(--reparto-4); }
-[data-tema] .gta-pila i:nth-child(6n+5), [data-tema] .gta-pila-ley li:nth-child(6n+5) { --c: var(--reparto-5); }
-[data-tema] .gta-pila i:nth-child(6n), [data-tema] .gta-pila-ley li:nth-child(6n) { --c: var(--reparto-6); }
-[data-tema] .gta-pila-ley i { box-shadow: none; }
-[data-tema] :is(.gta-x, .gta-son, .gta-baja) { border: 1px solid var(--aro); background: color-mix(in srgb, var(--superficie) 86%, transparent); color: var(--texto); box-shadow: none; }
-[data-tema] .gta-son[aria-pressed="true"] { border-color: var(--hilo); box-shadow: inset 0 0 0 1px var(--hilo); }
 /* la escena */
-[data-tema] .gta-cielo { background: linear-gradient(180deg, var(--fondo-2) 0%, var(--fondo) 55%, var(--superficie) 100%); }
-[data-tema] .gta-estrellas { display: none; }
-[data-tema] .gta-paisaje { background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--oro-texto) 10%, var(--superficie)) 52%, color-mix(in srgb, var(--oro-texto) 24%, var(--superficie)) 69.9%, var(--fondo-2) 70%); }
-[data-tema] .gta-sol { background: var(--metal); filter: drop-shadow(0 0 40px color-mix(in srgb, var(--oro-texto) calc(var(--resplandor) * 60%), transparent)); }
-[data-tema] .gta-horizonte { background: linear-gradient(90deg, transparent, var(--oro-texto) 25%, var(--oro-texto) 75%, transparent); box-shadow: none; height: 1px; }
-[data-tema] .gta-suelo { background-color: var(--fondo-2); background-image: linear-gradient(90deg, var(--hilo) 1px, transparent 1px); }
-[data-tema] .gta-suelo::before { background-image: linear-gradient(0deg, var(--hilo) 1px, transparent 1px); }
-[data-tema] .gta-paisaje::after { background: var(--fondo-2); }
-[data-tema] .gta-ciudad path { fill: color-mix(in srgb, var(--fondo-2) 80%, var(--texto)); }
-[data-tema] .gta-ciudad path.v { fill: color-mix(in srgb, var(--oro-texto) 70%, transparent); }
-[data-tema] .gta-palma { fill: var(--fondo-2); }
-[data-tema="marfil"] .gta-ciudad path { fill: color-mix(in srgb, var(--texto) 78%, var(--fondo)); }
-[data-tema="marfil"] .gta-palma { fill: var(--texto); }
-/* letras: «cuenta atrás» en cursiva de oro, GTA VI en Ibarra de metal, el reloj en tarjetas */
-[data-tema] .gta-rotulo { font: italic 400 clamp(20px, 5vw, 26px)/1.2 var(--marca); letter-spacing: .02em; transform: none; color: var(--oro-texto); }
-[data-tema] .gta-pre { font-size: clamp(19px, 4.6vw, 24px); }
-[data-tema] .gta-tit { font: 500 clamp(64px, 18vw, 112px)/1 var(--marca); letter-spacing: .08em; margin: 4px 0 18px; color: var(--oro-texto); background: var(--metal); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: none; }
-[data-tema] .gta-tit::after { content: none; }
-[data-tema] .gta-reloj span { background: var(--superficie); border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t), inset 0 1px 0 color-mix(in srgb, var(--brillo) 30%, transparent); }
-[data-tema] .gta-reloj b, [data-tema] .gta-reloj span:first-child b { font: 500 clamp(32px, 9vw, 50px)/1 var(--ui); font-variant-numeric: tabular-nums; color: var(--texto); }
-[data-tema] .gta-marco .gta-reloj span:first-child b { color: var(--oro-texto); }
-[data-tema] .gta-reloj i { font: 600 10.5px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
-[data-tema] .gta-fecha { color: var(--texto-2); }
-[data-tema] .gta-barra { background: var(--superficie-2); }
-[data-tema] .gta-barra i, [data-tema] .gta-pista-f, [data-tema] .gta-pos .b i, [data-tema] .gta-quien .b i { background: var(--metal); box-shadow: none; }
-[data-tema] .gta-pista, [data-tema] :is(.gta-pos, .gta-quien) .b { background: var(--superficie-2); }
-[data-tema] .gta-pista-f::after { background: var(--texto); box-shadow: 0 0 0 4px var(--hilo); }
 /* el cuerpo: tarjetas del diseño, cifras en Ibarra y el camino con hilo de oro */
-[data-tema] .gta-cuerpo { background: var(--fondo); }
-[data-tema] :is(.gta-desde, .gta-v6, .gta-copias2, .gta-pos, .gta-quien, .gta-juego) { background: var(--superficie); border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t); }
-[data-tema] .gta-mini li { background: var(--superficie-2); border-color: var(--borde); }
-[data-tema] .gta-num { color: var(--oro-texto); font-family: var(--marca); font-weight: 500; }
-[data-tema] .gta-sec > .gta-rotulo { color: var(--oro-texto); }
-[data-tema] .gta-camino::before { background: var(--sep); }
-[data-tema] .gta-camino::after { background: var(--metal); box-shadow: none; width: 1px; }
-[data-tema] .gta-camino li::before { background: var(--fondo); border: 2px solid var(--oro-texto); }
-[data-tema] .gta-camino li.hecho::before { background: var(--oro-texto); box-shadow: none; }
-[data-tema] .gta-camino li.siguiente::before { background: var(--texto); border-color: var(--texto); }
-[data-tema] .gta-camino li.siguiente::after { background: var(--hilo); }
-[data-tema] .gta-camino b, [data-tema] .gta-mini b, [data-tema] :is(.gta-pos, .gta-quien) b { color: var(--texto); }
-[data-tema] .gta-camino em, [data-tema] .gta-pila-tu em { color: var(--oro-texto); box-shadow: none; }
-[data-tema] .gta-hito i { background: var(--fondo); }
-[data-tema] .gta-hito.f1::before { background: var(--hilo); }
-[data-tema] :is(.gta-anios span, .gta-pila-ley span, .gta-est, .gta-pila-ley b) { color: var(--texto-2); }
-[data-tema] .gta-pila i { box-shadow: none; }
-[data-tema] .gta-pila-tu { background: var(--texto); box-shadow: none; }
-[data-tema] .gta-quien .mas b { color: var(--sube); } [data-tema] .gta-quien .menos b { color: var(--baja); }
-[data-tema] .gta-quien .mas .b i { background: var(--sube); box-shadow: none; }
-[data-tema] .gta-quien .b::before { background: var(--sep); }
-[data-tema] .gta-pie { border-top-color: var(--sep); color: var(--texto-2); }
-[data-tema] :is(.gta-picto svg, .gta-coche .gta-cuerpo-coche) { filter: none; }
-[data-tema] .gta-picto svg { stroke: var(--oro-texto); }
 /* el coche (dibujo propio): carrocería de la superficie, líneas de oro */
-[data-tema] .gta-coche-svg stop { stop-color: var(--oro-texto); }
-[data-tema] .gta-coche-svg [stroke]:not([stroke="none"]) { stroke: var(--oro-texto); }
-[data-tema] .gta-coche-svg :is(path, circle)[fill^="#"], [data-tema] .gta-coche-svg path[fill^="rgba"] { fill: var(--superficie-2); }
 /* botones de la hoja (compartir la imagen…) */
-[data-tema] .gta-b { border: 1px solid var(--aro); background: var(--superficie); color: var(--texto); border-radius: var(--r-p); }
-[data-tema] .gta-b.pri { background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
-[data-tema] .gta-marco :focus-visible { outline-color: var(--oro-texto); }
 /* Novedades con dibujos (trozos/novedades.js): el número de la versión en Ibarra, como las cifras de marca */
 [data-tema] .ixn-ver { font-family: var(--marca); font-weight: 500; letter-spacing: .02em; }
 [data-tema] .ixn-eti { font: 600 11.5px/1.3 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); }
@@ -827,7 +737,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* =====================================================================
    Los títulos, uno por diseño (5c, Carlos: «antes los tres tenían un estilo distinto para los títulos»), como en la
    maqueta de Inicio aprobada: Mármol moderno, en Inter; Marfil de periódico, en Ibarra.
-   Los tokens --titulo* van en el bloque de cada diseño. La palabra TOISÓN, las iniciales, GTA y la presentación no
+   Los tokens --titulo* van en el bloque de cada diseño. La palabra TOISÓN, las iniciales y la presentación no
    cambian: llevan la letra de marca en todos.
    ===================================================================== */
 [data-tema] :is(.vista-cab h1, .ts-tit, .hero-hola, .tu-nom, .hoja-cab h2, .mapa-tit h2, .ov-vacio h2, .as-tit h2, .as-vacio h3, .as-config h3, .caja h1, .bq-caja h1) {

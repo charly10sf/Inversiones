@@ -1,7 +1,6 @@
 // 0.8 (rediseño, paso 4) · Lo que quedaba con el aspecto de GrowFolio, con un diseño de Toisón: el tutorial recorre la
 // barra nueva y lleva el símbolo; Ajustes, la entrada y Primeros pasos, el símbolo y TOISÓN (sin la tarjeta «Muy
-// pronto»); la presentación monta el símbolo y escribe TOISÓN; la cuenta atrás de GTA VI, sin neón y con la letra de la
-// casa. Y la regla de la CNMV en el Paso a paso y en las sugerencias de la IA: ni «Vende…» ni «¿Vendo…?».
+// pronto»); la presentación monta el símbolo y escribe TOISÓN. Y la regla de la CNMV en el Paso a paso y en las sugerencias de la IA: ni «Vende…» ni «¿Vendo…?».
 // (0.8: GrowFolio ya no existe; las pruebas de «con GrowFolio, como siempre» se quitaron.)
 import { test as base, expect } from '@playwright/test';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -20,7 +19,7 @@ const conTema = (tema) => base.extend({
 });
 const ir = async (page, h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(500); };
 
-conTema('marfil')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA con la marca nueva', async ({ page }, info) => {
+conTema('marfil')('con Toisón: tutorial, Ajustes, entrada y presentación con la marca nueva', async ({ page }, info) => {
   base.skip(info.project.name !== 'movil', 'una vez basta');
   // la entrada: el símbolo en su disco
   await page.goto('/#cuenta');
@@ -41,16 +40,6 @@ conTema('marfil')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA 
   await expect(page.locator('.hoja .ts-tarjeta')).toHaveCount(0);
   await expect(page.locator('#aIntro svg.simb-ts')).toHaveCount(1);
   await quitarCapas(page);
-  // GTA VI: Ibarra, sin brillos de neón
-  await page.evaluate(() => abrirGTA());
-  const tit = page.locator('.gta-tit');
-  await expect(tit).toBeVisible();
-  const est = await tit.evaluate((e) => { const c = getComputedStyle(e); return { f: c.fontFamily, s: c.textShadow, a: getComputedStyle(e, '::after').content }; });
-  expect(est.f).toContain('Ibarra');
-  expect(est.s).toBe('none');
-  expect(est.a).toBe('none');
-  expect(await page.locator('.gta-sec > .gta-rotulo').first().evaluate((e) => getComputedStyle(e).textShadow)).toBe('none');
-  await page.evaluate(() => document.querySelectorAll('.gta-fondo').forEach((x) => x.remove()));
   // la presentación (0.8, paso 5p): TOISÓN y el símbolo en la medalla del final
   await page.evaluate(() => pantallaIntro(() => {}));
   await expect(page.locator('.pr-palabra')).toHaveAttribute('aria-label', 'Toisón');

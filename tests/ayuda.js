@@ -44,13 +44,14 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
       if (location.protocol !== 'http:' || sessionStorage.getItem('__prep')) return;
       sessionStorage.setItem('__prep', '1');
       if (idioma === 'en') localStorage.setItem('inv-idioma', JSON.stringify('en'));
-      // el aviso a pantalla completa de GTA VI sale solo una vez y al rato (lo prueba su propia prueba)
-      localStorage.setItem('inv-gta', 'true');
-      // 0.7l: el avance de Toisón, igual: una vez al abrir (lo prueba tests/toison.spec.js)
+      // 0.7l: el avance de Toisón: una vez al abrir (lo prueba tests/toison.spec.js)
       localStorage.setItem('inv-toison-avance', 'true');
       localStorage.setItem('inv-toison-tarjeta', 'true');
       // 0.8.3d: sin el relevo de Cloud Run (no hay internet aquí); las pruebas del relevo lo ponen con RELEVO_PRUEBA
       localStorage.setItem('inv-sin-relevo', 'true');
+      // 15 nov: sin elegir, el ordenador abre en liso; las pruebas miden las tarjetas (la piedra) salvo que pidan otra cosa
+      // (el acabado por defecto lo prueba rediseno-09, que borra esto)
+      localStorage.setItem('inv-acabado', JSON.stringify('piedra'));
       for (const [k, v] of Object.entries(ajustes)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     } catch (e) {}
   }, { idioma, ajustes });

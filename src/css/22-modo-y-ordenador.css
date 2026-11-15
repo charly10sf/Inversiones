@@ -52,7 +52,6 @@ body:not(.modo-basico) .que-es { display: none; }
   body.mini-total .top-mini { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; line-height: 1.1; font-variant-numeric: tabular-nums; animation: miniEntra .25s ease-out; }
   body.mini-total .top-mini b { font: 600 15px/1.1 var(--ui); white-space: nowrap; }
   body.mini-total .top-mini small { font-size: 11px; white-space: nowrap; }
-  body.mini-total .top .gta-top-w { display: none; }
   body.mini-total .top .acciones { margin-left: 10px; }
 }
 @keyframes miniEntra { from { opacity: 0; transform: translateY(5px); } }

@@ -1,6 +1,7 @@
-/* =========================== 0.9 · Las pestañas nuevas del rediseño (trozo «avanzado») ===========================
+/* =========================== 0.9 · Las pestañas nuevas del rediseño (trozo «nuevas», tras «avanzado») ===========================
    De las 12 propuestas del 7 nov (claude/sesion-pestanas-competencia.md): la prueba de estrés con crisis reales, tu semana
-   y tus cobros, y el efecto divisa. Van en este trozo porque usan sus cálculos (PAB_CRISIS, pabCrisis, pavRiesgoBase…).
+   y tus cobros, y el efecto divisa. Desde el 15 nov van en su propio trozo, que se baja detrás del de «avanzado» (usan sus cálculos:
+   PAB_CRISIS, pabCrisis, pavRiesgoBase…); al cargarse se apuntan en PAV_DE_FUERA y ponen su CSS.
    El mismo dato, dos profundidades: en básico, una cifra y una frase; en avanzado, además, la tabla y cómo se calcula.
    Toisón informa y calcula: nada de «compra» ni «vende», y ninguna de estas cifras es una previsión. */
 
@@ -272,3 +273,7 @@ const NUEVAS_CSS = `
 .sm-imp { font: 600 15px/1 var(--ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
 @media (max-width: 560px) { .es-lista .pav-fila { grid-template-columns: minmax(90px, 1fr) 60px auto; } .es-tipo { display: none; } }
 `;
+// al cargarse: cada pestaña se apunta en avanzado (pintarPanelAv las busca ahí) y su CSS va detrás del de avanzado
+Object.assign(PAV_DE_FUERA.html, { estres: pavEstres, semana: pavSemana, divisa: pavDivisa });
+Object.assign(PAV_DE_FUERA.dibujar, { estres: dibujarNuevas, semana: dibujarNuevas, divisa: dibujarNuevas });
+if (!$('#nuevasCss')) { const s = document.createElement('style'); s.id = 'nuevasCss'; s.textContent = NUEVAS_CSS; document.head.appendChild(s); }

@@ -26,8 +26,8 @@ function arrastrarParaCerrar(h, cerrar) {
 }
 /* en la app de Android, un toque suave al cambiar de pestaña o elegir algo (si el móvil lo tiene activado) */
 function vibra() { try { const a = window.InversionesApp; if (a && a.toque) a.toque(); } catch (e) {} }
-document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip, .gta-top')) vibra(); }, true);
-/* «Atrás» (el del móvil, el gesto o el del navegador) cierra lo que esté encima: una hoja, la ficha, el asesor o el GTA,
+document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t')) vibra(); }, true);
+/* «Atrás» (el del móvil, el gesto o el del navegador) cierra lo que esté encima: una hoja, la ficha o el asesor,
    en vez de salir de la app. Cada capa abierta deja una entrada en el historial; si la cierras tú (la ×, el fondo,
    Escape), se quita su entrada sin cerrar nada más. */
 const ATRAS = { pila: [], ignorar: 0 };

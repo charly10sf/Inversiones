@@ -15,7 +15,7 @@ function bienvenida(intento = 0) {
   const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
   // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
-  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
+  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => resumenDelDia(() => mostrarPreguntaIA(fin))));
   // quien acaba de llegar: sus primeros pasos (y desde ahí, si quiere, el tutorial)
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return guiaPrimerosPasos(fin); }
   // la 0.2 llega con su propia pantalla de estreno, una vez

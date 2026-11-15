@@ -105,7 +105,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const pedidos = process.argv.slice(2);
   const grupos = pedidos.length ? { pedido: pedidos } : Object.fromEntries(Object.entries(partes.trozos || {}).map(([n, t]) => [n, archivosDe(t)]));
   for (const [nombre, archivos] of Object.entries(grupos)) {
-    const r = entradas(archivos, todos, A);
+    // 15 nov: lo que usan los trozos que van «tras» este no tiene que esperar (como en relevos, build/growfolio-vite.js)
+    const detras = new Set(Object.values(partes.trozos || {}).filter((o) => o.tras === nombre).map(archivosDe).flat());
+    const r = entradas(archivos, todos.filter((a) => !detras.has(a)), A);
     console.log(`\n== ${nombre}: ${archivos.join(', ')} (${Math.round(r.bytes / 1024)} KB)`);
     for (const e of r.entradas.sort((x, y) => x.desde.length - y.desde.length)) {
       console.log(`  ${e.aplazable ? 'ok' : 'NO'} ${e.alCargar ? '!! AL CARGAR ' : ''}${e.tipo.padEnd(8)} ${e.nombre.padEnd(26)} [${e.como.join(',')}] ← ${e.desde.join(', ')}`);

@@ -310,7 +310,7 @@ function pintarK2() {
   if (act && pags.previousElementSibling !== act) act.after(pags);
   pags.innerHTML = `<h2 class="k2-tit sr">${L(s.t, s.en)}</h2>${ps.length ? (ps.length > 1 ? `<nav class="k2-lista" aria-label="${L(`Páginas de ${s.t}`, `${s.en} pages`)}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>` : '')
     : `<p class="nota">${L('Está en el modo avanzado.', "It's in advanced mode.")}</p><button type="button" class="btn peq" data-modo="avanzado">${L('Pasar al avanzado', 'Switch to advanced')}</button>`}`;
-  colocarIAK2(); ubicarGta(); ponerTiradorK2();
+  colocarIAK2(); ponerTiradorK2();
 }
 /* 0.9 · la barra se pliega a un riel de iconos (el botón de abajo o la tecla «[»); se guarda en este dispositivo. Plegada,
    las páginas de la sección suben a pestañas encima del título (htmlK2Pest), como con la IA agrandada */
@@ -331,11 +331,6 @@ document.addEventListener('keydown', (e) => {
   const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
   plegarK2();
 });
-// la cuenta atrás de GTA VI va arriba con lo demás: en el ordenador, en la barra de la K2 (la cabecera de siempre se esconde)
-function ubicarGta() {
-  const g = $('#gtaTop'), k = $('.k2-der'), fila = $('.top .fila-top'); if (!g || !k || !fila) return;
-  if (iaAlLado()) { if (g.parentElement !== k) k.prepend(g); } else if (g.parentElement === k) fila.insertBefore(g, $('#estadoW'));
-}
 // las pestañas de la sección encima de la página (solo se ven con la IA agrandada)
 function htmlK2Pest() {
   const pa = paginaActual(), ps = paginasDe(seccionActual());
@@ -346,7 +341,7 @@ function colocarIAK2() {
   const d = $('#k2Ia'); if (!d || !iaAlLado()) return;
   document.body.style.setProperty('--k2-ia-top', Math.round(d.getBoundingClientRect().top) + 'px');
 }
-addEventListener('resize', (e) => requestAnimationFrame(() => { colocarIAK2(); ubicarGta(); if (!e.k2) aplicarAnchoK2(); }));
+addEventListener('resize', (e) => requestAnimationFrame(() => { colocarIAK2(); if (!e.k2) aplicarAnchoK2(); }));
 function agrandarIA(si) {
   const on = si == null ? !document.body.classList.contains('ia-grande') : si;
   document.body.classList.toggle('ia-grande', on);

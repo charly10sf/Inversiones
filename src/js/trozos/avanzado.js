@@ -195,7 +195,12 @@ const PAV_CSS = `
   .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-que, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-que { display: none; }
 }
 `;
-const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS + NUEVAS_CSS; document.head.appendChild(s); } };
+const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
+/* 15 nov · las pestañas que van en su propio trozo, detrás de este («tras» en src/partes.json): al bajarse, cada una apunta
+   aquí cómo se pinta y cómo se dibuja. Hoy, las tres nuevas del rediseño (Prueba de estrés, Tu semana y tus cobros, Efecto
+   divisa), en trozos/nuevas.js; las de 300 KB de avanzado ya no las arrastran ni ellas a él */
+const PAV_TROZO = { estres: 'nuevas', semana: 'nuevas', divisa: 'nuevas' };
+const PAV_DE_FUERA = { html: {}, dibujar: {} };
 
 /* Básico: «¿Qué es?» de cada bloque de Hoy, solo en básico. Va detrás del título del bloque (o al principio si no tiene) */
 const QUE_ES = {
@@ -232,9 +237,15 @@ const diasAtras = (n) => iso(new Date(Date.now() - n * 864e5));
 function pintarPanelAv() {
   const el = $('#panelAv'); if (!el) return;
   ponerCssAv();
-  const p = el.dataset.p, M = S.M || calcular();
+  const p = el.dataset.p;
+  // la pestaña está en su trozo y aún no ha llegado: se baja y se pinta entonces (mientras, la pestaña sigue «ocupada»)
+  if (PAV_TROZO[p] && !PAV_DE_FUERA.html[p]) {
+    cargarTrozo(PAV_TROZO[p]).then(() => { const e = $('#panelAv'); if (e && e.dataset.p === p && PAV_DE_FUERA.html[p]) pintarPanelAv(); }, (e) => trozoFallido(e));
+    return;
+  }
+  const M = S.M || calcular();
   // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
-  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { estres: pavEstres, semana: pavSemana, divisa: pavDivisa, rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || PAV_DE_FUERA.html[p] || { rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
@@ -676,7 +687,7 @@ function pavCostes(M) {
 
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
-  if (p === 'estres' || p === 'semana' || p === 'divisa') { dibujarNuevas(p, M); return; }
+  if (PAV_DE_FUERA.dibujar[p]) { PAV_DE_FUERA.dibujar[p](p, M); return; }
   if (p === 'frente') { dibujarFrente(M); return; }
   if (p === 'tuano') { dibujarTuAno(M); return; }
   if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }

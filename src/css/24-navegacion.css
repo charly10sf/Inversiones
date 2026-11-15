@@ -82,7 +82,7 @@
   body.nav-ts.ia-lado.ia-grande { --k2-col: var(--k2-col-g, 520px); }
   /* arriba ya no van la marca, las secciones ni el botón de la IA (están en la K2); si no queda nada, sin cabecera */
   [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
-  [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
+  [data-tema] body.nav-ts .top { display: none; }
   /* en el ordenador, las páginas de cada sección están en la segunda barra */
   body.nav-ts #vista :is(.pest-tira, .pest-av, .apartados, .grupo-tabs, .volver-mas) { display: none; }
 

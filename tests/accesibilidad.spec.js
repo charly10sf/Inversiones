@@ -1,7 +1,7 @@
 // 0.8 (paso 5c) · Accesibilidad en los tres diseños: contraste y ARIA con axe-core (WCAG 2.1 A y AA), el foco se ve al
 // moverse con el teclado y los botones pequeños se pueden tocar en 48 × 48 px sin quitarle el toque a otro.
 // Fuera a propósito, la regla «label-content-name-mismatch» (2.5.3, el nombre que se lee empieza distinto de lo que se
-// ve): quedan la cuenta atrás de GTA («VI 15d» se lee «GTA VI: faltan 15 días»), los días del calendario («V 6» se lee
+// ve): quedan los días del calendario («V 6» se lee
 // «viernes 6 de noviembre: …») y los botones del mapa con nombre corto; se leen mejor así. El área de 48 px va en
 // 00-temas.css («Accesibilidad»); el saludo con el nombre y «Esta semana · Ver el mes» se quedan fuera (su caja recorta o
 // es estática por otra regla y el área se saldría).

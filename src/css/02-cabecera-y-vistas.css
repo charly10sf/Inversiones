@@ -20,39 +20,14 @@ svg.ic-ia path { stroke: none !important; }
 .estado { display: inline-flex; align-items: center; gap: 8px; color: var(--texto-2); font-size: 13px; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .estado.cerr::before { background: var(--primario); opacity: 0.7; }
 .estado-w { position: relative; margin-left: auto; flex: 0 1 auto; min-width: 34px; }
-.gta-top-w { margin-left: auto; flex: none; display: flex; }
-.gta-top-w + .estado-w { margin-left: 2px; }
-.gta-top { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px 0 9px; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: box-shadow 0.2s ease, border-color 0.2s ease; }
-.gta-top:focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 2px; }
 /* «VI» en letra de rótulo de neón de los ochenta, como los de Vice City (Yellowtail; no es la del logo del juego) */
-.gta-top-t { line-height: 1; letter-spacing: 0.03em; paint-order: stroke fill; }
-/* que no esté quieto: el «VI» parpadea de vez en cuando como un neón de verdad y la pastilla respira.
-   0.7m: solo con opacidad, que el móvil mueve sin volver a pintar. Antes se animaban text-shadow y box-shadow y la
-   pastilla se repintaba en cada fotograma, en todas las pantallas: con la CPU de un móvil normal, el 95 % de lo que
-   gastaba la app estando quieta. Además, «gtaRespira» se llamaba igual que la del título de la hoja de GTA (18-gta.css)
-   y ganaba aquella: la pastilla no respiraba */
-.gta-top { position: relative; }
-@keyframes gtaNeon { 0%, 61%, 63.5%, 66%, 100% { opacity: 1; } 62% { opacity: 0.45; } 64.5% { opacity: 0.7; } }
-/* el brillo de la pastilla, en una capa aparte que se enciende y se apaga */
-.gta-top::before { content: ''; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid color-mix(in srgb, var(--oro-texto) 80%, transparent); box-shadow: 0 0 20px color-mix(in srgb, var(--oro-texto) 42%, transparent); opacity: 0; pointer-events: none; }
-@keyframes gtaPastilla { to { opacity: 1; } }
-.gta-top.pulsa::before, .gta-top:hover::before { animation: none; opacity: 0; }
-/* con algo encima (el estreno de Toisón, la hoja de GTA, una hoja, la guía), quieta: no se ve */
-body:has(> .estreno, > .hoja-fondo, > .tour) .gta-top-t, body:has(> .estreno, > .hoja-fondo, > .tour) .gta-top::before { animation-play-state: paused; }
-.gta-top-d { font-family: 'Passion One', var(--ui); font-size: 14px; font-variant-numeric: tabular-nums; }
-.gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
-/* en el móvil, solo el mando y los días */
-/* con poco sitio, solo «VI» y los días */
-@media (max-width: 600px) { .gta-top-g { display: none; } .gta-top { padding: 0 9px; gap: 5px; } }
 /* si la cabecera no cabe, encajarCabecera() va quitando cosas por este orden: aire entre pestañas, el texto de
-   «Avisar de un fallo» (se queda el bicho con su α), el de GTA (se queda el mando con los días), el de la luz de
+   «Avisar de un fallo» (se queda el bicho con su α), el de la luz de
    En directo (se queda la luz) y, por último, la etiqueta de la versión y algo de aire */
 .top.cab-1 .nav a { padding: 7px 8px; }
 .top.cab-2 .ib-fallo { width: 38px; padding: 0; border: 0; background: transparent; display: grid; }
 .top.cab-2 .ib-fallo::after { display: grid; }
 .top.cab-2 .fallo-t { display: none; }
-.top.cab-3 .gta-top-g { display: none; }
-.top.cab-3 .gta-top { padding: 0 10px; gap: 6px; }
 .top.cab-4 .estado .est-l { display: none; }
 .top.cab-4 .estado .est-c { display: flex; }
 .top.cab-4 .estado { overflow: visible; }
@@ -62,11 +37,9 @@ body:has(> .estreno, > .hoja-fondo, > .tour) .gta-top-t, body:has(> .estreno, > 
 .top.cab-4 .estado { gap: 7px; }
 .top.cab-5 .fila-top { gap: 10px; }
 .top.cab-5 .marca .ver-chip { display: none; }
-/* en los móviles más estrechos (320 px): la luz se queda con su palabra («abierta») y GTA, con el «VI» */
+/* en los móviles más estrechos (320 px): la luz se queda con su palabra («abierta») */
 .top.cab-6 .estado .est-c small { display: none; }
 .top.cab-6 .estado-b { padding: 0 10px 0 8px; }
-.top.cab-7 .gta-top-d { display: none; }
-.top.cab-7 .gta-top { padding: 0 9px; }
 .estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 12px 0 10px; border: 1px solid var(--borde); border-radius: 999px; cursor: pointer; }
 .estado .est-c { display: none; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; line-height: 1.05; }
 .estado .est-c small { display: block; font-size: 9.5px; font-weight: 500; color: var(--tenue); }

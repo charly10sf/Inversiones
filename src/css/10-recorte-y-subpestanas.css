@@ -331,8 +331,6 @@ button.mv-c { border: 0; cursor: pointer; font-family: inherit; line-height: inh
 button.mv-c:hover { filter: brightness(1.15); }
 button.mv-c:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; }
 .car-cifras .kpis { margin-top: 0; padding-top: 0; border-top: 0; }
-.car-gta { display: grid; gap: 8px; justify-items: start; }
-.car-gta .gta-chip { margin-left: 0; }
 .hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 14px; }
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--texto-2); }

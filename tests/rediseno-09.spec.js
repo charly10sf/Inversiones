@@ -79,12 +79,13 @@ test('prueba de estrés, en pantalla: se elige la crisis, «a tu medida» y los 
   await expect(panel.locator('.es-seg button')).toHaveText(['Burbuja puntocom', 'Crisis financiera', 'Covid', 'Tipos e inflación', 'A tu medida']);
   await expect(panel.locator('.es-seg button[aria-pressed="true"]')).toHaveText('Crisis financiera');
   await expect(panel.locator('.es-cifra .rotulo')).toContainText('Crisis financiera');
-  const c1 = euros(await panel.locator('.es-cifra .cifra-xl').innerText());
-  expect(c1).toBeLessThan(0);
-  // la cifra cuadra con «te quedaría» y va con «≈»
+  // la cifra cuadra con «te quedaría» y va con «≈». 15 nov: las tres cosas en la misma lectura (antes, en tres; si entre
+  // medias llegaban precios y la pestaña se repintaba, se comparaban cifras de dos momentos y fallaba de vez en cuando)
   await expect(panel.locator('.es-cifra .cifra-xl')).toContainText('≈');
-  const total = await page.evaluate(() => S.M.total), datos = await panel.locator('.es-cifra .cifra-datos b').allInnerTexts();
-  expect(Math.abs(euros(datos[1]) - (total + c1))).toBeLessThan(40);   // con margen: los precios en directo cambian entre una lectura y otra
+  const leido = await page.evaluate(() => ({ cifra: document.querySelector('#panelAv .es-cifra .cifra-xl').innerText, datos: [...document.querySelectorAll('#panelAv .es-cifra .cifra-datos b')].map((b) => b.innerText), total: S.M.total }));
+  const c1 = euros(leido.cifra);
+  expect(c1).toBeLessThan(0);
+  expect(Math.abs(euros(leido.datos[1]) - (leido.total + c1))).toBeLessThan(40);   // el redondeo de las cifras cortas
   await tocar(page, '[data-estres="2"]');
   await expect(panel.locator('.es-cifra .rotulo')).toContainText('Covid');
   await expect(panel.locator('.es-hechos span')).toHaveText(['5 semanas cayendo', 'Recuperada en 2020']);
@@ -246,4 +247,80 @@ test('el acabado liso: fondo plano, sin cajas, se guarda y se vuelve a la piedra
   expect(await page.evaluate(() => [document.documentElement.getAttribute('data-acabado'), LS.get('inv-acabado', null)])).toEqual([null, 'piedra']);
   // el mando está en Ajustes
   expect(await page.evaluate(() => /data-acabado-b="liso"/.test(htmlSelectorAcabado()))).toBe(true);
+});
+
+// 15 nov (decidido el 13): sin elegir, tarjetas en el móvil y liso en el ordenador (corte de la K2, 1.180 px); lo pone ya el
+// script de index.html, antes del primer pintado; «Según la pantalla» borra lo elegido y vuelve a eso
+test('el acabado por defecto va con el ancho: tarjetas en el móvil, liso en el ordenador, y se cambia en Ajustes', async ({ page }, info) => {
+  await abrir(page, 'avanzado', 'estres');
+  // sin elegir (ayuda.js abre las pruebas con la piedra elegida)
+  await page.evaluate(() => LS.del('inv-acabado'));
+  await page.reload(); await quitarCapas(page);
+  const pc = info.project.name === 'pc', porDefecto = pc ? 'liso' : null;
+  const estado = () => page.evaluate(() => [document.documentElement.getAttribute('data-acabado'), LS.get('inv-acabado', null)]);
+  expect(await estado()).toEqual([porDefecto, null]);
+  // el primer pintado ya lo trae (sin esperar al JS de la app)
+  expect(await page.evaluate(async () => { const h = await (await fetch(location.pathname)).text(); return /inv-acabado/.test(h) && /innerWidth>=1180/.test(h); })).toBe(true);
+  // el mando de Ajustes: tres botones, y «Según la pantalla» marcado
+  expect(await page.evaluate(() => { const d = document.createElement('div'); d.innerHTML = htmlSelectorAcabado(); return [...d.querySelectorAll('[data-acabado-b]')].map((b) => b.dataset.acabadoB + ':' + b.getAttribute('aria-pressed')); })).toEqual(['auto:true', 'piedra:false', 'liso:false']);
+  // lo elegido manda sobre el ancho y se queda al volver a abrir
+  const otro = pc ? 'piedra' : 'liso';
+  await page.evaluate((o) => ponerAcabado(o), otro);
+  await page.reload(); await quitarCapas(page);
+  await expect.poll(() => estado(), { timeout: 20_000 }).toEqual([otro === 'liso' ? 'liso' : null, otro]);
+  // y «Según la pantalla» lo devuelve al de este ancho
+  await page.evaluate(() => ponerAcabado('auto'));
+  expect(await estado()).toEqual([porDefecto, null]);
+  // sin elegir, cambia al cruzar el corte
+  await page.setViewportSize(pc ? { width: 1000, height: 800 } : { width: 1300, height: 800 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-acabado')), { timeout: 5_000 }).toBe(pc ? null : 'liso');
+});
+
+// 15 nov: la cuenta atrás de GTA VI se quitó entera (su sitio será el del Paso a paso del modo fundador; de momento, nada):
+// ni botón en la cabecera o en la barra de la K2, ni bloque en Hoy, ni fecha en el calendario, ni trozo, ni reglas de CSS
+test('sin GTA VI: ni botón, ni bloque, ni fecha, ni trozo, ni CSS', async ({ page }) => {
+  await abrir(page, 'avanzado', 'estres');
+  await page.evaluate(() => { location.hash = 'cartera'; });
+  await page.waitForTimeout(500);
+  const r = await page.evaluate(() => ({
+    dom: document.querySelectorAll('#gtaTop, [data-gta], .gta-top, .gta-chip, .car-gta').length,
+    funciones: ['gtaActivo', 'pintarGtaTop', 'chipGTA', 'abrirGTA', 'avisoGTA', 'ubicarGta'].filter((f) => new Function(`return typeof ${f}`)() !== 'undefined'),
+    trozo: typeof TROZOS !== 'undefined' && Object.keys(TROZOS).includes('gta'),
+    bloque: Object.keys(BLOQUES_CAR).includes('gta'),
+    agenda: agendaLista(S.M, 400).filter((e) => /gta/i.test(e.id + ' ' + e.t)).length,
+    css: [...document.styleSheets].flatMap((h) => { try { return [...h.cssRules]; } catch (e) { return []; } }).filter((x) => /gta/i.test(x.cssText)).length,
+    // lo que vivía en 48-gta.js y no era de GTA sigue
+    encajar: [typeof encajarCabecera, typeof encajarMovers, typeof encajarCifra],
+  }));
+  expect(r).toEqual({ dom: 0, funciones: [], trozo: false, bloque: false, agenda: 0, css: 0, encajar: ['function', 'function', 'function'] });
+  // un orden de Hoy guardado de antes, con el bloque de GTA, se abre sin él y sin errores
+  expect(await page.evaluate(() => { const antes = S.cartera.inicio; S.cartera.inicio = { ...(antes || {}), bloques: ['patrimonio', 'gta', 'posiciones', 'reparto'] }; const v = bloquesCartera(); S.cartera.inicio = antes; return v.includes('gta'); })).toBe(false);
+});
+
+// 15 nov: las tres pestañas nuevas van en su propio trozo («nuevas», tras «avanzado»): otra pestaña del avanzado no lo baja,
+// abrir una de las nuevas baja los dos (primero avanzado) y, si no llega, avisa y no se queda a medias
+test('las pestañas nuevas, en su trozo: se bajan solo al abrir una, detrás del avanzado', async ({ page, context }, info) => {
+  test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440');
+  const pedidos = [];
+  page.on('request', (r) => { const m = r.url().match(/\/assets\/(avanzado|nuevas)-[0-9a-f]+\.js$/); if (m) pedidos.push(m[1]); });
+  await abrir(page, 'avanzado', 'rentab');
+  expect(pedidos).toEqual(['avanzado']);
+  expect(await page.evaluate(() => [typeof estresCalc, Object.keys(PAV_DE_FUERA.html).length, !!document.getElementById('nuevasCss')])).toEqual(['undefined', 0, false]);
+  await page.evaluate(() => { location.hash = 'av-estres'; });
+  await expect(page.locator('#panelAv[data-p="estres"]:not([aria-busy]) .es-cifra')).toBeVisible({ timeout: 20_000 });
+  expect(pedidos).toEqual(['avanzado', 'nuevas']);
+  expect(await page.evaluate(() => [typeof estresCalc, Object.keys(PAV_DE_FUERA.html).sort(), !!document.getElementById('nuevasCss'), TRAS.nuevas])).toEqual(['function', ['divisa', 'estres', 'semana'], true, 'avanzado']);
+  // las otras dos ya no bajan nada más
+  await page.evaluate(() => { location.hash = 'av-divisa'; });
+  await expect(page.locator('#panelAv[data-p="divisa"]:not([aria-busy]) .pav-t').first()).toBeAttached({ timeout: 20_000 });
+  expect(pedidos).toEqual(['avanzado', 'nuevas']);
+});
+
+test('si el trozo de las pestañas nuevas no llega: avisa de la versión nueva y la pestaña no se rompe', async ({ page, context }, info) => {
+  test.skip(info.project.name !== 'movil', 'en el móvil');
+  await context.route(/\/assets\/nuevas-[0-9a-f]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
+  await abrir(page, 'avanzado', 'rentab');
+  await page.evaluate(() => { location.hash = 'av-estres'; });
+  await expect(page.locator('#avisoWeb')).toBeVisible({ timeout: 20_000 });
+  expect(await page.evaluate(() => [document.querySelector('#panelAv').dataset.p, typeof estresCalc, trozosEnCamino.nuevas])).toEqual(['estres', 'undefined', undefined]);
 });

@@ -38,22 +38,26 @@ export const juntarCSS = (archivos = partes().css) => leer('css', archivos);
 const huella = (t) => createHash('sha256').update(t).digest('hex').slice(0, 10);
 
 /** las funciones de relevo de cada trozo; se para si algo del trozo se usa de una forma que no puede esperar */
-// un trozo es una lista de archivos o { archivos, siNoEsta, retornoOk }: siNoEsta, funciones que sin el trozo bajado no hacen
+// un trozo es una lista de archivos o { archivos, siNoEsta, retornoOk, tras }: siNoEsta, funciones que sin el trozo bajado no hacen
 // nada (las de pintar o cerrar algo que solo existe si ya se abrió); retornoOk, funciones que alguien devuelve con «return f()»
-// y se ha comprobado a mano que quien llama no usa lo que devuelven (o lo espera)
+// y se ha comprobado a mano que quien llama no usa lo que devuelven (o lo espera); tras (15 nov), el trozo que se baja antes:
+// este puede usar lo de aquel como si estuviera en el núcleo (cargarTrozo baja primero aquel)
 export const archivosDe = (t) => (Array.isArray(t) ? t : t.archivos);
 export function relevos(p = partes()) {
   const trozos = p.trozos || {}, todos = [...p.js, ...Object.values(trozos).map(archivosDe).flat()];
   const A = analizar(todos), out = {}, malos = [];
   for (const [n, t] of Object.entries(trozos)) {
-    const r = entradas(archivosDe(t), todos, A), quietas = new Set(t.siNoEsta || []), retOk = new Set(t.retornoOk || []);
+    if (t.tras && !trozos[t.tras]) malos.push(`${n}: tras dice ${t.tras}, que no es un trozo`);
+    // lo que usan los trozos que van tras este no tiene que esperar: cuando corren, este ya está
+    const detras = new Set(Object.values(trozos).filter((o) => o.tras === n).map(archivosDe).flat());
+    const r = entradas(archivosDe(t), todos.filter((a) => !detras.has(a)), A), quietas = new Set(t.siNoEsta || []), retOk = new Set(t.retornoOk || []);
     for (const e of r.entradas) if (retOk.has(e.nombre) && e.tipo === 'function' && !e.alCargar && e.como.every((c) => c !== 'resultado' && c !== 'valor')) e.aplazable = true;
     for (const e of r.entradas) if (!e.aplazable) malos.push(`${n}: ${e.tipo} ${e.nombre} (${e.como.join(', ')}${e.alCargar ? ', al cargar' : ''}) desde ${e.desde.join(', ')}`);
     for (const q of quietas) if (!r.entradas.some((e) => e.nombre === q)) malos.push(`${n}: siNoEsta dice ${q}, que no es una entrada del trozo`);
     out[n] = r.entradas.map((e) => ({ f: e.nombre, quieta: quietas.has(e.nombre) })).sort((a, b) => a.f.localeCompare(b.f));
   }
   // un nombre declarado arriba en dos sitios sería un error de sintaxis al bajar el trozo (o pisaría el cargador)
-  const visto = new Map([['TROZOS', 'el cargador'], ['EN', 'el cargador'], ['trozosEnCamino', 'el cargador'], ['cargarTrozo', 'el cargador'], ['enTrozo', 'el cargador'], ['trozoFallido', 'el cargador']]);
+  const visto = new Map([['TROZOS', 'el cargador'], ['TRAS', 'el cargador'], ['EN', 'el cargador'], ['trozosEnCamino', 'el cargador'], ['cargarTrozo', 'el cargador'], ['enTrozo', 'el cargador'], ['trozoFallido', 'el cargador']]);
   for (const a of todos) for (const [nombre, tipo] of A.info[a].decl) {
     if (visto.has(nombre) && !(tipo === 'function' && visto.get(nombre).endsWith('function'))) malos.push(`${nombre} está declarado en ${a} y en ${visto.get(nombre)}`);
     visto.set(nombre, `${a} (${tipo === 'function' ? 'function' : tipo})`);
@@ -63,13 +67,20 @@ export function relevos(p = partes()) {
 }
 
 /** el código que va al principio del núcleo: dónde está cada trozo, cómo se baja y las funciones de relevo */
-function cargador(urls, rel, en) {
+function cargador(urls, rel, en, tras = {}) {
   const r = [`/* generado por el build (build/growfolio-vite.js): los trozos que se bajan la primera vez que se usan, y el diccionario de`,
     `   inglés partido igual (EN.nucleo al abrir en inglés; el de cada trozo, con él) */`,
     `const TROZOS = ${JSON.stringify(urls)};`,
     `const EN = ${JSON.stringify(en)};`,
     `const trozosEnCamino = {};`,
-    `function cargarTrozo(n) {`,
+    `// el trozo que tiene que estar antes que otro (tras, en src/partes.json)`,
+    `const TRAS = ${JSON.stringify(tras)};`,
+    `function cargarTrozo(n, sinTras) {`,
+    `  if (TRAS[n] && !sinTras && !trozosEnCamino[n]) {`,
+    `    const p = trozosEnCamino[n] = cargarTrozo(TRAS[n]).then(() => { delete trozosEnCamino[n]; return cargarTrozo(n, true); });`,
+    `    p.catch(() => { if (trozosEnCamino[n] === p) delete trozosEnCamino[n]; });`,
+    `    return p;`,
+    `  }`,
     `  return trozosEnCamino[n] || (trozosEnCamino[n] = Promise.all([new Promise((ok, no) => {`,
     `    const s = document.createElement('script'); s.src = TROZOS[n];`,
     `    s.onload = () => ok(); s.onerror = () => { s.remove(); no(new Error('Sin conexión: no se ha podido bajar ' + n)); };`,
@@ -117,7 +128,7 @@ const leerParte = (a) => { const t = texto(join(RAIZ, 'src', 'js', a)); return a
 export function juntarJS(urls, p = partes(), en = { nucleo: 'en.json', trozos: {} }) {
   const rel = relevos(p), tr = Object.keys(p.trozos || {});
   const u = urls || Object.fromEntries(tr.map((n) => [n, `/@gf/trozo/${n}.js`]));
-  return p.js.map((a) => leerParte(a) + (a === 'version.js' ? cargador(u, rel, en) : '')).join('');
+  return p.js.map((a) => leerParte(a) + (a === 'version.js' ? cargador(u, rel, en, Object.fromEntries(Object.entries(p.trozos || {}).filter(([, t]) => t.tras).map(([n, t]) => [n, t.tras]))) : '')).join('');
 }
 
 /* en.json partido. Una entrada va al trozo solo si es, entera, uno de los textos de su código (una cadena, o un trozo de

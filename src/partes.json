@@ -18,7 +18,6 @@
     "15-paso-y-objetivos.css",
     "16-presentacion.css",
     "17-mercados-compactos.css",
-    "18-gta.css",
     "19-idiomas-y-bloqueo.css",
     "20-acabado.css",
     "21-como-el-icono.css",
@@ -91,7 +90,7 @@
     "45-primeros-pasos.js",
     "46-lo-nuevo.js",
     "47-app-android.js",
-    "48-gta.js",
+    "48-encajar.js",
     "49-avisos-y-ajustes.js",
     "50-radar.js",
     "51-analisis-ia.js",
@@ -109,9 +108,6 @@
     "63-demo.js"
   ],
   "trozos": {
-    "gta": [
-      "trozos/gta.js"
-    ],
     "asesor": {
       "archivos": [
         "56-recorte.js",
@@ -163,9 +159,14 @@
       "trozos/frente.js",
       "trozos/tuano.js",
       "trozos/entiende.js",
-      "trozos/entiende-pantallas.js",
-        "trozos/nuevas.js"
+      "trozos/entiende-pantallas.js"
     ],
+    "nuevas": {
+      "archivos": [
+        "trozos/nuevas.js"
+      ],
+      "tras": "avanzado"
+    },
     "noticias": [
       "trozos/noticias.js"
     ]

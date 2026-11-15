@@ -121,7 +121,6 @@ function serieIntradia(M, rango) {
 const BLOQUES_CAR = {
   patrimonio: { n: 'Patrimonio y gráfica', d: 'Cuánto tienes, lo de hoy, lo ganado y cómo se ha movido', w: 'lleno', fijo: true },
   cifras: { n: 'Tus cifras', d: 'Por plataforma, lo invertido, los dividendos, en 10 años y las ventas del año', w: 'estrecho' },
-  gta: { n: 'GTA VI', d: 'La cuenta atrás y tu cartera en copias del juego', w: 'estrecho' },
   ia: { n: 'La IA y lo que toca', d: 'Su diagnóstico, sus notas y lo que toca hacer', w: 'grande' },
   posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, tu plan y tus movimientos', w: 'grande', fijo: true },
   reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
@@ -269,7 +268,6 @@ function htmlBloqueCar(k, M) {
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div></section>`;
     }
-    if (k === 'gta') return gtaActivo() ? `<section class="car-gta" aria-label="GTA VI">${chipGTA()}<p class="k">La cuenta atrás y tu cartera en copias del juego.</p></section>` : '';
     if (k === 'ia') return htmlToca(M);
     if (k === 'plan') return `<section class="car-plan" aria-labelledby="hPlanC"><div class="sec-cab"><h2 id="hPlanC">${L('Tu plan y tus movimientos', 'Your plan and your moves')}</h2></div>${htmlPlan(M).replace(/<section aria-labelledby="hPosE">[\s\S]*?<\/section>/, '').replace(/<section aria-labelledby="hEf">[\s\S]*?<\/section>/, '')}</section>`;
     if (k === 'posiciones') return `<div class="car-pos">
@@ -306,7 +304,7 @@ function htmlBloqueCar(k, M) {
   return '';
 }
 // 0.8: con Toisón, Hoy no lleva tus posiciones ni el reparto (van en Cartera)
-const fueraDeHoy = (k) => EN_CARTERA_TS.has(k) || (k === 'gta' && !gtaActivo());
+const fueraDeHoy = (k) => EN_CARTERA_TS.has(k);
 /* Cartera de Toisón, subpestaña Posiciones: lo que tienes (con el plan y los movimientos) y el reparto. El total va
    encima, en htmlSubvistas */
 function vistaPosiciones(M) {

@@ -396,7 +396,6 @@ function montar() {
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}<b>TOISÓN</b>${marcaDorado()}</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => (g.k === 'tu' ? `<a href="#tu" data-ir="tu" data-mas>${L('Más', 'More')}</a>` : `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`)).join('')}</nav>
-    ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <span class="top-mini" id="topMini" aria-hidden="true"></span>
     <div class="acciones">
@@ -699,7 +698,6 @@ function pintar() {
   pintarNavNuevo();
   pintarK2(); apuntarReciente(paginaActual());
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
-  pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
   for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = (S.oculto ? ICONOS.ojoNo : ICONOS.ojo) + (bo.dataset.txt != null ? (S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')) : ''); bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
