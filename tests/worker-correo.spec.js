@@ -352,17 +352,19 @@ test('apuntado: sin sesión, solo desde toison.es, sin texto del usuario y una v
 test('apuntado: tope por IP (las IPv6 por su /64) y es lo primero que se deja de mandar si el día se llena', async () => {
   await con(async (v) => {
     const env = nuevoEnv();
-    for (let i = 1; i <= 5; i++) expect((await pedir(env, { tipo: 'apuntado', correo: `p${i}@prueba.com` }, { origen: 'https://toison.es', ip: '2001:db8:1:2::' + i })).j.ok).toBe(true);
+    for (let i = 1; i <= 3; i++) expect((await pedir(env, { tipo: 'apuntado', correo: `p${i}@prueba.com` }, { origen: 'https://toison.es', ip: '2001:db8:1:2::' + i })).j.ok).toBe(true);
     expect((await pedir(env, { tipo: 'apuntado', correo: 'p6@prueba.com' }, { origen: 'https://toison.es', ip: '2001:db8:1:2:ffff::9' })).j).toEqual({ ok: false, motivo: 'cupo' });
-    expect(v.resend.length).toBe(5);
-    // con el día a 10, «apuntado» para en 7; los demás siguen hasta 10
+    expect(v.resend.length).toBe(3);
+    // por el relevo de Google, no (llegaría con la IP del relevo)
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'r@prueba.com' }, { origen: 'https://toison.es', ip: '3.3.3.3', cab: { 'X-Toison-Relevo': '1' } })).j).toEqual({ ok: false, motivo: 'origen' });
+    // con el día a 10, «apuntado» para en 4; los demás siguen hasta 10
     const env2 = nuevoEnv({ CORREO_POR_DIA: '10' });
     for (let i = 1; i <= 9; i++) await pedir(env2, { tipo: 'apuntado', correo: `q${i}@prueba.com` }, { origen: 'https://toison.es', ip: '5.5.' + i + '.1' });
-    expect(v.resend.length).toBe(5 + 7);
+    expect(v.resend.length).toBe(3 + 4);
     // los demás correos siguen cabiendo hasta el tope del día
     const r = await pedir(env2, { tipo: 'bienvenida' }, { uid: 'dd1', email: 'ana@prueba.com', verificado: true });
     expect(r.j).toEqual({ ok: true });
-    expect(v.resend.length).toBe(13);
+    expect(v.resend.length).toBe(8);
   });
 });
 

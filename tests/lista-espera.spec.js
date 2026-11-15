@@ -44,7 +44,7 @@ test.describe('el dueño', () => {
     await expect(l.nth(1)).toContainText('friend@gmail.com');
     await expect(l.nth(2)).toContainText('viejo@gmail.com');
     await expect(l.nth(2)).toContainText('Acceso dado');
-    await expect(page.locator('.hoja')).toContainText('3 en total, 2 esperando');
+    await expect(page.locator('.hoja-priv')).toContainText('3 en total, 2 esperando');
     // en el móvil, el correo y el botón caben
     const caja = await l.nth(1).boundingBox(), vp = page.viewportSize();
     expect(caja.x + caja.width).toBeLessThanOrEqual(vp.width);

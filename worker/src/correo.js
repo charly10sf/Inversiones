@@ -5,7 +5,7 @@
    · bienvenida — con sesión y el correo ya confirmado: una sola vez por cuenta.
    · apuntado   — SIN sesión, solo desde toison.es (0.8.3, 15 nov): «te hemos apuntado» al pedir acceso en la lista de espera.
                   Sin texto del usuario (solo su correo). Una vez por correo para siempre, tope por IP (IPv6 por su /64) y
-                  sale del cupo del día antes que nada: con el día al 70 %, ya no se manda. Contesta lo mismo pase lo que pase.
+                  sale del cupo del día antes que nada: con el día al 40 %, ya no se manda. No por el relevo de Google. Contesta lo mismo pase lo que pase.
    · acceso     — con sesión del dueño (BANCO_EMAILS, correo confirmado): «ya tienes acceso», con el botón a la app en
                   «Crear cuenta». Lo manda Carlos desde Ajustes › Lista de espera; la app marca la solicitud en Firestore.
    · clave      — SIN sesión, por correo: contraseña nueva. Tope por IP (las IPv6, por su /64) y por correo; pasados, «cupo»
@@ -38,11 +38,12 @@ const TOPE_CLAVE_CORREO = [[36e5, 3], [864e5, 6]];
 const TOPE_CLAVE_IP = [[36e5, 10], [864e5, 30]];
 const TOPE_CONFIRMAR_IP = [[36e5, 3], [864e5, 10]];
 const TOPE_CONFIRMAR_CORREO = [[864e5, 5]];
-const TOPE_APUNTADO_IP = [[36e5, 5], [864e5, 20]];
+const TOPE_APUNTADO_IP = [[36e5, 3], [864e5, 10]];
 const TOPE_ACCESO = [[60e3, 10], [864e5, 40]];
 const POR_DIA = 90, POR_DIA_MAX = 200;
-// «apuntado» es lo primero que se deja de mandar si el día se llena: solo cabe con el día por debajo del 70 %
-const PARTE_APUNTADO = 0.7;
+// «apuntado» es lo primero que se deja de mandar si el día se llena: solo cabe con el día por debajo del 40 % (revisión
+// aparte del 15 nov: aunque alguien lo gaste desde varias IP, a los demás correos les queda el 60 % del día)
+const PARTE_APUNTADO = 0.4;
 // «apuntado» solo desde la web (el formulario de toison.es); los demás, desde la web o la app
 const ORIGEN_WEB = 'https://toison.es';
 export const TIPOS = ['confirmar', 'clave', 'bienvenida', 'apuntado', 'acceso'];
@@ -175,7 +176,8 @@ export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, ori
   // ---- «te hemos apuntado»: sin sesión, solo desde el formulario de toison.es. Pasado el tope de la IP, «cupo»; lo demás
   // (ya se le mandó, el día va lleno, Resend falla) contesta igual que si hubiera salido: la web dice «apuntado» de todos modos
   if (tipo === 'apuntado') {
-    if (origen !== ORIGEN_WEB) return res({ ok: false, motivo: 'origen' }, 403);
+    // la web no pasa nunca por el relevo, y por él llegaría con la IP de Google (el tope por IP no valdría)
+    if (origen !== ORIGEN_WEB || req.headers.get('X-Toison-Relevo')) return res({ ok: false, motivo: 'origen' }, 403);
     const correo = String(d.correo || '').trim().toLowerCase();
     if (correo.length > 120 || !CORREO_RE.test(correo)) return res({ ok: false, motivo: 'correo' }, 400);
     const li = await limite(env, 'aip ' + (await huella(grupoIp(req.headers.get('CF-Connecting-IP') || 'sin-ip'))), TOPE_APUNTADO_IP);

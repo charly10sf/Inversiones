@@ -7,7 +7,8 @@
    ===================================================================== */
 async function leerListaEspera() {
   await fbCargar(); const f = FB.fs;
-  const r = await conTiempo(f.getDocs(f.collection(FB.db, 'acceso')), 10000);
+  // con tope: crear solicitudes está abierto, así que la lista no se lee entera (revisión aparte del 15 nov)
+  const r = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'acceso'), f.orderBy('cuando', 'desc'), f.limit(300))), 10000);
   return r.docs.map((d) => {
     const x = d.data() || {}, dc = x.dadoCuando && typeof x.dadoCuando.toDate === 'function' ? x.dadoCuando.toDate().toISOString() : null;
     return { id: d.id, correo: String(x.correo || '').toLowerCase(), cuando: String(x.cuando || ''), idioma: x.idioma === 'en' ? 'en' : 'es', dado: x.dado === true, dadoCuando: dc };
@@ -22,6 +23,9 @@ const txtFallaAcceso = (m) => ({
   'sin-config': L('Los correos propios no están configurados en el Worker.', 'Own emails are not set up in the Worker.'),
   pedido: L('El Worker aún no tiene este correo: falta publicar la versión nueva.', "The Worker doesn't have this email yet: the new version isn't published."),
   sesion: L('Tu sesión ha caducado. Vuelve a entrar.', 'Your session expired. Sign in again.'),
+  correo: L('El Worker no acepta esa dirección (caracteres raros): escríbele desde tu correo.', "The Worker won't accept that address (odd characters): write to them from your own email."),
+  origen: L('El Worker no acepta peticiones desde esta dirección de la app.', "The Worker doesn't accept requests from this app address."),
+  fallo: L('Resend no lo ha aceptado. Prueba en un rato.', "Resend didn't accept it. Try again later."),
 }[m] || L('No se ha podido mandar (¿sin conexión?).', "Couldn't send it (offline?)."));
 async function darAcceso(x) {
   const w = CFG.dev ? { ok: true } : await correoToison('acceso', { correo: x.correo, lang: x.idioma });
