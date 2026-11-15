@@ -457,14 +457,13 @@ function refrescarToca() {
 /* Lo primero de Cartera, debajo del patrimonio: lo que dice GrowIA (su diagnóstico de una frase y sus notas)
    y lo que toca hacer ahora, sacado del paso a paso, con su botón para marcarlo hecho sin salir de aquí */
 function htmlToca(M) {
-  let P; try { P = pasosRuta(M); } catch (e) { P = { mes: [], seis: [] }; }
+  // 0.9: «Tu mes» son los pasos de «Haz esto» del Paso a paso, con su confianza; lo de «Para decidir tú» no cuenta
+  let R; try { R = mesRuta(M); } catch (e) { R = { hacer: [], decidir: [] }; }
   const hoy = hoyIso(), hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
-  // solo las tareas, como en el Paso a paso (las fechas que vigilar no se «hacen»; antes salían «Ver los 17» frente a 14)
-  const todos = [...P.mes, ...P.seis].filter((x) => !x.auto && claseRuta(x) === 'tarea');
-  const pend = todos.filter((x) => !x.hecho);
+  const todos = R.hacer, pend = todos.filter((x) => !x.hecho);
   // lo que acabas de marcar se queda tachado hasta mañana, para que veas que se ha guardado
   const recien = todos.filter((x) => x.hecho && hechos[x.hechoK] === hoy);
-  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, innerWidth < 760 ? 2 : 3).concat(recien.slice(0, 1));
+  const v = pend.slice(0, innerWidth < 760 ? 2 : 3).concat(recien.slice(0, 1));
   const ia = iaActual();
   let cab = '', notas = '', tit = '';
   if (ia) {

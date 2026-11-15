@@ -42,7 +42,15 @@ function mesRuta(M) {
   if (typeof window.PASO_MES !== 'function') {
     if (!S.pasoBajando && typeof cargarTrozo === 'function') {
       S.pasoBajando = true;
-      cargarTrozo('paso').then(() => { cacheDe(M, '__ruta').delete('r'); if (S.M) cacheDe(S.M, '__ruta').delete('r'); if (S.cartera && $('#vista')) pintar(); }, () => { S.pasoBajando = false; });
+      // al llegar no se repinta todo (borraría lo que otros trozos acaban de poner): el botón, «Tu mes» o la página
+      cargarTrozo('paso').then(() => {
+        cacheDe(M, '__ruta').delete('r'); if (S.M) cacheDe(S.M, '__ruta').delete('r');
+        if (!S.cartera || !S.M) return;
+        pintarPasoTop();
+        const t = S.vista === 'cartera' && $('#vista .toca.iac');
+        if (t) { t.outerHTML = htmlToca(S.M); if ($('[data-que-es]')) ponerQueEs($('#vista')); }
+        if (S.vista === 'ruta' && $('#panelPaso')) pintarPasoMes();
+      }, () => { S.pasoBajando = false; });
     }
     return vacio;
   }
