@@ -1,0 +1,24 @@
+/* =====================================================================
+   0.9 · El movimiento elegido el 15 nov: la rueda de dígitos de la cifra y el paso de página «con profundidad».
+   (La moneda, el anillo y la gráfica que se transforma llevan su CSS dentro del trozo «3d».)
+   ===================================================================== */
+/* la rueda: el dígito de verdad está, sin pintarse, y encima rueda una tira del 0 al 9 */
+.hero-num .rd, .hero-num .rp { padding: 0; margin: 0; }
+.hero-num .rd { display: inline-block; position: relative; overflow: hidden; vertical-align: top; height: .95em; height: 1lh; -webkit-text-fill-color: transparent; }
+.hero-num .rd::before { content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9"; white-space: pre; position: absolute; left: 0; top: 0; -webkit-text-fill-color: currentColor; transform: translateY(calc(var(--d, 0) * -10%)); transition: transform calc(820ms + var(--i, 0) * 70ms) var(--curva-entrar) calc(var(--i, 0) * 50ms); will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .hero-num .rd::before { transition: none; } }
+
+/* de una página a otra, con profundidad: la que dejas se aleja y se apaga; la nueva llega desde delante y sus bloques
+   entran en escalera (pisa el fundido de lado de 34-sistema.css) */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(pagina), ::view-transition-new(pagina) { transform-origin: 50% 32vh; }
+  ::view-transition-old(pagina) { animation: vtSale var(--mov-medio) var(--curva-salir) both; }
+  ::view-transition-new(pagina) { animation: vtEntra var(--mov-largo) var(--curva-entrar) 70ms both; }
+  ::view-transition-group(pagina) { animation-duration: var(--mov-largo); }
+  @keyframes vtSale { to { opacity: 0; transform: scale(.958); } }
+  @keyframes vtEntra { from { opacity: 0; transform: scale(1.028); } }
+  html.vt #vista > .car > * { animation: tarjetaEntra var(--mov-largo) var(--curva-entrar) both; }
+  html.vt #vista > .car > :nth-child(2) { animation-delay: calc(var(--paso-escalera) * 1.5); }
+  html.vt #vista > .car > :nth-child(3) { animation-delay: calc(var(--paso-escalera) * 3); }
+  html.vt #vista > .car > :nth-child(n+4) { animation-delay: calc(var(--paso-escalera) * 4.5); }
+}

@@ -31,8 +31,8 @@
     for (let i = 0, n = g.getProgramParameter(p, g.ACTIVE_ATTRIBUTES); i < n; i++) { const x = g.getActiveAttrib(p, i); a[x.name] = g.getAttribLocation(p, x.name); }
     return { p, u, a };
   }
-  const medir = (lienzo, g, tope) => {
-    const d = min(tope || 2, window.devicePixelRatio || 1), w = Math.round(lienzo.clientWidth * d), h = Math.round(lienzo.clientHeight * d);
+  const medir = (lienzo, g, tope, minimo) => {
+    const d = min(tope || 2, max(minimo || 1, (window.devicePixelRatio || 1) * (lienzo.dataset.baja ? 0.5 : 1))), w = Math.round(lienzo.clientWidth * d), h = Math.round(lienzo.clientHeight * d);
     if (w && h && (lienzo.width !== w || lienzo.height !== h)) { lienzo.width = w; lienzo.height = h; }
     g.viewport(0, 0, lienzo.width, lienzo.height);
     return lienzo.width / max(1, lienzo.height);
@@ -42,13 +42,14 @@
     uniform vec3 uLuz;
     float entorno(vec3 r) {
       float cielo = smoothstep(-0.35, 0.85, r.y);
-      float caja = smoothstep(0.30, 0.78, r.y) * smoothstep(0.80, 0.08, abs(r.x - uLuz.x * 0.9));
-      float suelo = smoothstep(-0.25, -0.95, r.y) * 0.28;
-      float frente = smoothstep(0.55, 1.0, r.z) * 0.34;   // lo que tiene delante: la sala, no un vacío negro
-      return 0.10 + 0.44 * cielo + 1.15 * caja + suelo + frente;
+      float caja = smoothstep(0.34, 0.62, r.y) * smoothstep(0.62, 0.30, abs(r.x - uLuz.x * 0.9));
+      float tira = smoothstep(0.88, 0.955, dot(r, normalize(vec3(-0.80 - uLuz.x * 0.3, 0.18, 0.56)))) * 0.5;
+      float suelo = smoothstep(-0.25, -0.95, r.y) * 0.26;
+      float frente = smoothstep(0.55, 1.0, r.z) * 0.32;   // lo que tiene delante: la sala, no un vacío negro
+      return 0.08 + 0.40 * cielo + 1.25 * caja + tira + suelo + frente;
     }`;
   /* cuántos fotogramas por segundo salen de verdad (lo enseña la maqueta) */
-  const fps = { n: 0, t: 0, v: 0, marca(t) { if (this.t && t - this.t < 200) { this.v = this.v ? this.v * 0.9 + (1000 / (t - this.t)) * 0.1 : 1000 / (t - this.t); } this.t = t; } };
+  const fps = { n: 0, t: 0, v: 0, marca(t, lienzo) { if (this.t && t - this.t < 200) { this.v = this.v ? this.v * 0.9 + (1000 / (t - this.t)) * 0.1 : 1000 / (t - this.t); this.n++; if (lienzo && this.n > 40 && this.v < 42 && !lienzo.dataset.baja) lienzo.dataset.baja = '1'; } else this.n = 0; this.t = t; } };
   const quieto = () => { if (typeof window.T3D_QUIETO === 'function') return window.T3D_QUIETO(); try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 
   /* =====================================================================
@@ -101,7 +102,7 @@
   const FS_MONEDA = `
     precision mediump float;
     ${GLSL_LUZ}
-    uniform mat3 uNM; uniform sampler2D uSello; uniform vec3 uOro, uEsm, uO, uT; uniform float uBrillo, uRel;
+    uniform mat3 uNM; uniform sampler2D uSello; uniform vec3 uOro, uEsm, uO, uT; uniform vec4 uVidrio; uniform float uBrillo, uRel, uCristal;
     varying vec3 vPo, vNo, vV; varying float vM;
     void main() {
       vec3 no = vNo; vec4 t = vec4(0.0);
@@ -109,27 +110,42 @@
         float lado = vPo.z > 0.0 ? 1.0 : -1.0;
         vec2 uv = vec2(vPo.x * lado, vPo.y) / ${CARA.toFixed(2)} * 0.5 + 0.5;
         t = texture2D(uSello, uv);
-        float e = 1.0 / 200.0;
+        float e = 1.0 / 360.0;
         float hx = texture2D(uSello, uv + vec2(e, 0.0)).b - texture2D(uSello, uv - vec2(e, 0.0)).b;
         float hy = texture2D(uSello, uv + vec2(0.0, e)).b - texture2D(uSello, uv - vec2(0.0, e)).b;
         no = normalize(vec3(-hx * lado * uRel, -hy * uRel, lado));
+      } else if (abs(vNo.z) < 0.35) {
+        float a = atan(vPo.y, vPo.x);   // el canto, estriado como el de una moneda
+        no = normalize(no + vec3(-sin(a), cos(a), 0.0) * sin(a * 120.0) * 0.55);
       }
       vec3 N = normalize(uNM * no), V = normalize(-vV), L = normalize(uLuz), H = normalize(L + V);
       float ndl = max(dot(N, L), 0.0), ndh = max(dot(N, H), 0.0), fres = pow(1.0 - max(dot(N, V), 0.0), 4.0);
       float env = entorno(reflect(-V, N));
       vec3 luzc = vec3(1.0, 0.96, 0.88);
       vec3 col = uOro * (0.20 + 0.98 * env) + luzc * pow(ndh, 60.0) * 0.75;
+      float alfa = 1.0;
       if (vM > 0.5) {
+        float rr = length(vPo.xy) / ${CARA.toFixed(2)};
         vec3 esm = uEsm * (0.62 + 0.38 * ndl) + luzc * ((0.03 + 0.55 * fres) * env + pow(ndh, 140.0) * 0.6) * uBrillo;
+        if (uCristal > 0.5) {
+          // cristal: deja ver lo de detrás (el desenfoque lo pone el CSS), con su reflejo, su filo de luz y sombra hacia el borde
+          if (dot(N, V) < 0.0) discard;
+          float borde = smoothstep(0.55, 1.0, rr);
+          vec3 refl = luzc * ((0.05 + 0.85 * fres) * env * 0.55 + pow(ndh, 160.0) * 0.8 + borde * borde * max(N.y * 0.0 + (vPo.y * 0.5 + 0.5), 0.0) * 0.16);
+          alfa = clamp(uVidrio.a + borde * 0.22 + dot(refl, vec3(0.33)), 0.0, 1.0);
+          esm = uVidrio.rgb * (uVidrio.a + borde * 0.22) * (1.0 - borde * 0.5) + refl;
+        }
         vec3 co = uO * (0.55 + 0.45 * ndl) + luzc * pow(ndh, 36.0) * 0.22;
         vec3 ct = uT * (0.42 + 0.80 * env) + luzc * pow(ndh, 60.0) * 0.6;
-        col = mix(mix(esm, co, smoothstep(0.35, 0.65, t.r)), ct, smoothstep(0.35, 0.65, t.g));
+        float filete = smoothstep(0.012, 0.004, abs(rr - 0.925));   // un filete fino de oro por dentro del canto
+        float mo = smoothstep(0.35, 0.65, t.r), mt = max(smoothstep(0.35, 0.65, t.g), filete);
+        col = mix(mix(esm, co, mo), ct, mt); alfa = mix(mix(alfa, 1.0, mo), 1.0, mt);
       }
-      gl_FragColor = vec4(col, 1.0);
+      gl_FragColor = vec4(col, alfa);
     }`;
   const TEMAS_MONEDA = {
-    marmol: { oro: [0.89, 0.70, 0.36], esm: [0.045, 0.042, 0.036], o: [0.97, 0.96, 0.94], t: [0.89, 0.70, 0.36], brillo: 1.0 },
-    marfil: { oro: [0.80, 0.61, 0.28], esm: [1.0, 0.96, 0.87], o: [0.30, 0.06, 0.11], t: [0.68, 0.49, 0.17], brillo: 0.35 },
+    marmol: { oro: [0.89, 0.70, 0.36], esm: [0.045, 0.042, 0.036], o: [0.97, 0.96, 0.94], t: [0.89, 0.70, 0.36], brillo: 1.0, vidrio: [0.0, 0.0, 0.0, 0.30] },
+    marfil: { oro: [0.80, 0.61, 0.28], esm: [1.0, 0.96, 0.87], o: [0.30, 0.06, 0.11], t: [0.68, 0.49, 0.17], brillo: 0.35, vidrio: [1.0, 0.97, 0.90, 0.66] },
   };
   function crearMoneda(lienzo, op) {
     const g = contexto(lienzo); if (!g) return null;
@@ -138,18 +154,18 @@
     const H = 0.085, F = 0.058, B = 0.04;
     // perfil [r, z, material del tramo que llega aquí (1 = cara, 0 = oro), esquina suave]
     const perfil = [[0, F, 1, 0], [CARA, F, 1, 0], [CARA + 0.022, H, 0, 0], [0.962, H, 0, 0], [0.988, H - B * 0.3, 0, 1], [1.0, H - B, 0, 1], [1.0, -(H - B), 0, 1], [0.988, -(H - B * 0.3), 0, 1], [0.962, -H, 0, 1], [CARA + 0.022, -H, 0, 0], [CARA, -F, 0, 0], [0, -F, 1, 0]];
-    const malla = torno(perfil, 72);
+    const malla = torno(perfil, 96);
     const vb = g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER, vb); g.bufferData(g.ARRAY_BUFFER, malla.v, g.STATIC_DRAW);
     const ib = g.createBuffer(); g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, ib); g.bufferData(g.ELEMENT_ARRAY_BUFFER, malla.i, g.STATIC_DRAW);
     const tex = g.createTexture(); g.bindTexture(g.TEXTURE_2D, tex); g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, true);
-    g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, texturaSello(op.sello, 256));
+    g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, texturaSello(op.sello, 512));
     g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR); g.generateMipmap(g.TEXTURE_2D);
-    g.enable(g.DEPTH_TEST); g.clearColor(0, 0, 0, 0);
-    const E = { giro: 0, vGiro: 0, ix: 0, iy: 0, tix: 0, tiy: 0, lx: -0.35, ly: 0.62, tlx: -0.35, tly: 0.62, vivo: false, tema: op.tema || 'marmol', raf: 0, t0: 0, visible: true, pintado: false, roto: false };
+    g.enable(g.DEPTH_TEST); g.clearColor(0, 0, 0, 0); g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
+    const E = { cristal: !!op.cristal, giro: 0, vGiro: 0, ix: 0, iy: 0, tix: 0, tiy: 0, lx: -0.35, ly: 0.62, tlx: -0.35, tly: 0.62, vivo: false, tema: op.tema || 'marmol', raf: 0, t0: 0, visible: true, pintado: false, roto: false };
     const FOV = 0.36, DIST = 1.5 * (1 / tan(FOV / 2));   // la moneda ocupa dos tercios del lienzo: sitio para girar sin cortarse
     function pinta(t) {
       E.raf = 0; if (E.roto) return;
-      const dt = min(0.05, E.t0 ? (t - E.t0) / 1000 : 0.016); E.t0 = t; fps.marca(t);
+      const dt = min(0.05, E.t0 ? (t - E.t0) / 1000 : 0.016); E.t0 = t; fps.marca(t, lienzo);
       // muelles: el giro (una vuelta y se asienta), la inclinación y la luz
       const obj = Math.round(E.giroObj / TAU) * TAU; E.giroObj = obj;
       E.vGiro += ((E.giroObj - E.giro) * 24 - E.vGiro * 7.6) * dt; E.giro += E.vGiro * dt;
@@ -157,7 +173,7 @@
       let bx = E.tix, by = E.tiy, blx = E.tlx, bly = E.tly;
       if (E.vivo && !quieto()) { const s = t / 1000; by += sin(s * 0.55) * 0.20; bx += sin(s * 0.41 + 1) * 0.07; blx += sin(s * 0.33) * 0.45; }
       E.ix += (bx - E.ix) * k; E.iy += (by - E.iy) * k; E.lx += (blx - E.lx) * k; E.ly += (bly - E.ly) * k;
-      const asp = medir(lienzo, g, 3);
+      const asp = medir(lienzo, g, 4, 3);
       const mv = mul(tras(0, 0, -DIST), mul(rotX(E.ix), rotY(E.iy + E.giro)));
       const c = TEMAS_MONEDA[E.tema] || TEMAS_MONEDA.marmol;
       g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
@@ -169,7 +185,9 @@
       g.uniformMatrix4fv(pr.u.uMV, false, mv); g.uniformMatrix4fv(pr.u.uPr, false, persp(FOV, asp, 0.1, 30)); g.uniformMatrix3fv(pr.u.uNM, false, m3(mv));
       g.uniform3fv(pr.u.uLuz, norm3([E.lx, E.ly, 0.72]));
       g.uniform3fv(pr.u.uOro, c.oro); g.uniform3fv(pr.u.uEsm, c.esm); g.uniform3fv(pr.u.uO, c.o); g.uniform3fv(pr.u.uT, c.t);
-      g.uniform1f(pr.u.uBrillo, c.brillo); g.uniform1f(pr.u.uRel, 2.2); g.uniform1i(pr.u.uSello, 0);
+      g.uniform1f(pr.u.uBrillo, c.brillo); g.uniform1f(pr.u.uRel, 2.6); g.uniform1i(pr.u.uSello, 0);
+      g.uniform1f(pr.u.uCristal, E.cristal ? 1 : 0); g.uniform4fv(pr.u.uVidrio, c.vidrio);
+      if (op.alGirar) op.alGirar(abs(cos(E.iy + E.giro)));
       g.drawElements(g.TRIANGLES, malla.i.length, g.UNSIGNED_SHORT, 0);
       if (!E.pintado) { E.pintado = true; if (op.alPintar) op.alPintar(); }
       const moviendo = abs(E.giroObj - E.giro) > 0.002 || abs(E.vGiro) > 0.02 || abs(bx - E.ix) + abs(by - E.iy) + abs(blx - E.lx) + abs(bly - E.ly) > 0.004;
@@ -186,6 +204,7 @@
       inclinar(x, y) { E.tiy = max(-1, min(1, x)) * 0.30; E.tix = max(-1, min(1, y)) * 0.22; E.tlx = -0.35 + x * 0.75; E.tly = 0.62 - y * 0.35; if (quieto()) { E.tix = E.tiy = 0; } pide(); },
       soltar() { E.tix = E.tiy = 0; E.tlx = -0.35; E.tly = 0.62; pide(); },
       tema(t) { E.tema = t; pide(); },
+      cristal(si) { E.cristal = !!si; pide(); },
       vivo(si) { E.vivo = !!si; pide(); },
       pintar: pide,
       destruir() { E.roto = true; cancelAnimationFrame(E.raf); const x = g.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); },
@@ -196,20 +215,20 @@
      EL ANILLO: cada trozo es un arco con grosor y bisel. Los ángulos, la altura y lo que sube el elegido van en
      uniformes: cambiar de reparto o elegir un trozo no rehace la malla, solo mueve números.
      ===================================================================== */
-  const NSEG = 8, RI = 0.69, RO = 1.0, HH = 0.068, BIS = 0.034, PASOS = 80;
+  const NSEG = 8, RI = 0.69, RO = 1.0, HH = 0.07, BIS = 0.042, PASOS = 80, ARCO = 4;
   function mallaAnillo() {
-    const S = [[RO, -HH + BIS], [RO, HH - BIS], [RO - BIS, HH], [RI + BIS, HH], [RI, HH - BIS], [RI, -HH + BIS], [RI + BIS, -HH], [RO - BIS, -HH]];
-    const v = [], idx = [];
+    // el corte del anillo: un rectángulo con las cuatro esquinas redondeadas; cada punto lleva su normal (suave en la curva)
+    const S = [], cen = [[RO - BIS, -HH + BIS, -PI / 2], [RO - BIS, HH - BIS, 0], [RI + BIS, HH - BIS, PI / 2], [RI + BIS, -HH + BIS, PI]];
+    for (const [cr, cz, a0] of cen) for (let k = 0; k <= ARCO; k++) { const a = a0 + k / ARCO * PI / 2; S.push([cr + cos(a) * BIS, cz + sin(a) * BIS, cos(a), sin(a)]); }
+    const n = S.length, v = [], idx = [];
     for (let s = 0; s < NSEG; s++) {
-      for (let c = 0; c < 8; c++) {
-        const a = S[c], b = S[(c + 1) % 8], dr = b[0] - a[0], dz = b[1] - a[1], l = hypot(dr, dz), nr = dz / l, nz = -dr / l, base = v.length / 7;
-        for (let k = 0; k <= PASOS; k++) { const t = k / PASOS; v.push(t, a[0], a[1], s, nr, nz, 0, t, b[0], b[1], s, nr, nz, 0); }
-        for (let k = 0; k < PASOS; k++) { const p = base + k * 2; idx.push(p, p + 1, p + 2, p + 1, p + 3, p + 2); }
-      }
+      const base = v.length / 7;
+      for (let k = 0; k <= PASOS; k++) for (let c = 0; c < n; c++) v.push(k / PASOS, S[c][0], S[c][1], s, S[c][2], S[c][3], 0);
+      for (let k = 0; k < PASOS; k++) for (let c = 0; c < n; c++) { const a = base + k * n + c, b = base + k * n + (c + 1) % n; idx.push(a, b, a + n, b, b + n, a + n); }
       for (const [t, lado] of [[0, -1], [1, 1]]) {   // las dos tapas del trozo
-        const base = v.length / 7;
-        for (let c = 0; c < 8; c++) v.push(t, S[c][0], S[c][1], s, 0, 0, lado);
-        for (let c = 1; c < 7; c++) idx.push(base, base + c, base + c + 1);
+        const b2 = v.length / 7;
+        for (let c = 0; c < n; c++) v.push(t, S[c][0], S[c][1], s, 0, 0, lado);
+        for (let c = 1; c < n - 1; c++) idx.push(b2, b2 + c, b2 + c + 1);
       }
     }
     return { v: new Float32Array(v), i: new Uint16Array(idx) };
@@ -225,7 +244,7 @@
       float r = aP.y + s.z * 0.22;
       vec4 p = uMV * vec4(r * c, r * sn, z, 1.0);
       vec3 n = abs(aN.z) > 0.5 ? vec3(sn, -c, 0.0) * aN.z : vec3(aN.x * c, aN.x * sn, aN.y);
-      vN = uNM * n; vV = p.xyz; vC = uCol[i]; vArr = aN.y;
+      vN = uNM * n; vV = p.xyz; vC = uCol[i]; vArr = 1.0 - 0.30 * max(0.0, -aN.x) * (1.0 - abs(aN.z));
       gl_Position = uPr * p;
       if (abs(s.x - s.y) < 0.0005 || s.w < 0.002) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);   // un trozo vacío no se pinta
     }`;
@@ -240,8 +259,10 @@
       float dif = 0.5 + 0.5 * dot(N, L); dif *= dif;
       float env = entorno(reflect(-V, N));
       vec3 luzc = vec3(1.0, 0.97, 0.90), c = vC.rgb;
-      vec3 sat = c * (0.30 + 0.60 * dif + 0.07 * env) + luzc * (pow(ndh, 52.0) * 0.20 + fres * env * 0.08);
-      vec3 met = c * (0.22 + 0.36 * env + 0.24 * dif) + luzc * (pow(ndh, 80.0) * 0.55 + fres * env * 0.12);
+      // cerámica lacada: el color mate debajo y, encima, un barniz que refleja el estudio (más en los cantos)
+      float barniz = 0.045 + 0.955 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+      vec3 sat = c * (0.30 + 0.60 * dif + 0.05 * env) * vArr + luzc * (env * barniz * 0.55 + pow(ndh, 180.0) * 0.55 + pow(ndh, 24.0) * 0.05);
+      vec3 met = c * (0.22 + 0.36 * env + 0.24 * dif) * vArr + luzc * (pow(ndh, 120.0) * 0.6 + fres * env * 0.14);
       vec3 col = mix(sat, met, uMetal) * vC.a;
       gl_FragColor = vec4(col, 1.0);
     }`;
@@ -268,7 +289,7 @@
     }
     function pinta(t) {
       E.raf = 0; if (E.roto) return;
-      const dt = min(0.05, E.t0 ? (t - E.t0) / 1000 : 0.016); E.t0 = t; fps.marca(t);
+      const dt = min(0.05, E.t0 ? (t - E.t0) / 1000 : 0.016); E.t0 = t; fps.marca(t, lienzo);
       if (!E.tEntra) E.tEntra = t; if (!E.tCambio) E.tCambio = t - 1000;
       const p = quieto() ? 1 : min(1, (t - E.tEntra) / 1150), barrido = suave(p);
       const fr = E.fr = actual(t);
@@ -286,7 +307,7 @@
         seg[i * 4 + 2] = E.sube[i]; seg[i * 4 + 3] = ancho > 0 ? conRebote((p * 1.5 - i * 0.07) / 0.62) : 0;
         col[i * 4] = fr[i].c[0]; col[i * 4 + 1] = fr[i].c[1]; col[i * 4 + 2] = fr[i].c[2]; col[i * 4 + 3] = E.luz[i];
       }
-      E.asp = medir(lienzo, g, 2);
+      E.asp = medir(lienzo, g, 3, 2);
       const mv = mul(tras(0, 0.04, -DIST), mul(rotX(-INCL), rotZ(E.giro)));
       g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
       g.useProgram(pr.p);

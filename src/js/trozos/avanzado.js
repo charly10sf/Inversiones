@@ -194,6 +194,26 @@ const PAV_CSS = `
   .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-grande, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-grande { font-size: 23px; }
   .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-que, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-que { display: none; }
 }
+
+/* 0.9 · «De un vistazo»: el anillo del reparto. Esto es el plano (SVG); el de volumen lo pone encima el trozo «3d» */
+.an3-dim { margin-bottom: 4px; }
+.an3-cuerpo { display: grid; grid-template-columns: minmax(280px, 430px) minmax(0, 560px); gap: 20px 56px; align-items: center; justify-content: center; padding: 6px 0 2px; }
+.an3-fig { position: relative; width: 100%; max-width: 430px; aspect-ratio: 1.3; margin: 0 auto; }
+.an3-plano { position: absolute; inset: 0; margin: auto; height: 94%; aspect-ratio: 1; transition: opacity .3s; overflow: visible; }
+.an3-plano path { cursor: pointer; transition: stroke-width var(--mov-medio) var(--curva-entrar), opacity var(--mov-medio); }
+.an3-centro { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 3px; text-align: center; pointer-events: none; }
+.an3-centro small { font: 550 11.5px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--texto-2); max-width: 150px; }
+.an3-centro b { font: 650 27px/1.1 var(--titulo, var(--ui)); letter-spacing: -.02em; color: var(--texto); font-variant-numeric: tabular-nums; }
+.an3-centro span { font: 500 13px/1.2 var(--ui); color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.an3-ley { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.an3-ley button { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; width: 100%; min-height: 48px; padding: 6px 12px; border: 0; border-radius: 10px; background: none; color: var(--texto); font: 500 14.5px/1.2 var(--ui); text-align: left; cursor: pointer; transition: background-color var(--mov-corto); }
+.an3-ley button:hover, .an3-ley button[aria-pressed="true"] { background: color-mix(in srgb, var(--texto) 7%, transparent); }
+.an3-ley button:focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 1px; }
+.an3-ley i { width: 10px; height: 10px; border-radius: 3px; }
+.an3-ley span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an3-ley b { font-weight: 650; font-variant-numeric: tabular-nums; }
+.an3-ley em { font-style: normal; color: var(--texto-2); min-width: 78px; text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 899px) { .an3-cuerpo { grid-template-columns: minmax(0, 1fr); gap: 8px; } .an3-fig { max-width: 340px; } .an3-ley em { min-width: 66px; } .an3-dim { width: 100%; } }
 `;
 const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
 /* 15 nov · las pestañas que van en su propio trozo, detrás de este («tras» en src/partes.json): al bajarse, cada una apunta
@@ -256,6 +276,7 @@ function pintarPanelAv() {
   // (un repintado entero por un precio nuevo deja la pestaña «ocupada» otra vez: por eso se mira también si es la misma)
   const primera = el.hasAttribute('aria-busy') && S.pavEntrada !== p; S.pavEntrada = p;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
+  if (p === 'reparto') an3Pinta(primera);
   if (primera) { el.classList.add('entra'); setTimeout(() => el.classList.remove('entra'), 1100); }
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
   requestAnimationFrame(() => dibujarPanelAv(p, M));
@@ -607,6 +628,53 @@ function pavHacienda(M) {
 }
 
 /* ---------- Reparto y X-Ray ---------- */
+/* 0.9 · «De un vistazo» (15 nov): el anillo del reparto, por clase, región, sector, tipo o bróker. Aquí va el plano, en SVG:
+   es lo que se ve mientras llega el trozo «3d», con el ahorro de datos o si el 3D falla. El de volumen lo pone encima ese
+   trozo leyendo window.AN3 (las filas, la elegida y elegir()). Con los importes ocultos, el centro no enseña cifras. */
+const AN3_DIMS = [['clase', 'Clase', 'Class', 'Clase de activo', 'Asset class'], ['region', 'Región', 'Region', 'Región', 'Region'], ['sector', 'Sector', 'Sector', 'Sector (renta variable)', 'Sector (equities)'], ['producto', 'Tipo', 'Type', 'Tipo de producto', 'Product type'], ['plataforma', 'Bróker', 'Broker', 'Bróker', 'Broker']];
+const an3Dim = () => { if (S.an3Dim == null) S.an3Dim = LS.get('inv-an3-dim', 'clase'); return AN3_DIMS.some((d) => d[0] === S.an3Dim) ? S.an3Dim : 'clase'; };
+function an3Filas(M, dim) {
+  const r = reparto(M, dim, dim === 'sector' ? 'rv' : undefined).filas; if (!r.length) return [];
+  const top = r.slice(0, 6), resto = r.slice(6);
+  return (resto.length ? [...top.slice(0, 5), { k: L('Otros', 'Other'), pct: sum(resto, (x) => x.pct) + top[5].pct }] : top).map((x) => ({ k: String(x.k), pct: x.pct }));
+}
+function htmlAnillo(M) {
+  if (!an3Filas(M, 'clase').length) return '';
+  const dim = an3Dim();
+  return pavT('c12 an3', L('De un vistazo', 'At a glance'), `<div class="seg2 an3-dim" role="group" aria-label="${L('Repartido por', 'Split by')}">${AN3_DIMS.map((d) => `<button type="button" data-an3-dim="${d[0]}" aria-pressed="${d[0] === dim}">${L(d[1], d[2])}</button>`).join('')}</div>
+    <div class="an3-cuerpo"><div class="an3-fig"><svg class="an3-plano" viewBox="-120 -120 240 240" aria-hidden="true"></svg><div class="an3-centro" aria-live="polite"></div></div><ul class="an3-ley"></ul></div>`);
+}
+function an3Plano(k) {
+  const s = $('.an3-plano'), A = window.AN3; if (!s || !A) return;
+  const fr = A.filas.map((x) => Math.max(0.012, x.pct / 100)), sf = sum(fr) || 1, P = (a, r) => `${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`;
+  let ac = 0, h = '';
+  fr.forEach((f, i) => { f /= sf; const hueco = Math.min(0.02, f * Math.PI * 0.4), a0 = -Math.PI / 2 + ac * 2 * Math.PI * k + hueco * k, a1 = -Math.PI / 2 + (ac + f) * 2 * Math.PI * k - hueco * k; ac += f; if (a1 > a0) h += `<path d="M${P(a0, 86)}A86 86 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${P(a1, 86)}" fill="none" stroke="${PAV_COL[i % 6]}" stroke-width="${A.sel === i ? 40 : 32}" opacity="${A.sel < 0 || A.sel === i ? 1 : 0.35}" data-an3-seg="${i}"/>`; });
+  s.innerHTML = h;
+}
+function an3Textos() {
+  const c = $('.an3-centro'), ley = $('.an3-ley'), A = window.AN3; if (!c || !A || !S.M) return;
+  const d = AN3_DIMS.find((x) => x[0] === A.dim), conEur = !S.oculto && A.dim !== 'sector', de = (p) => eur((S.M.total * p) / 100, 0), f = A.filas[A.sel];
+  // con los importes ocultos, en el anillo no hay cifras: solo de qué es cada trozo
+  c.innerHTML = f ? `<small>${esc(f.k)}</small>${S.oculto ? '' : `<b>${pct(f.pct, 1)}</b>`}${conEur ? `<span>${de(f.pct)}</span>` : ''}`
+    : `<small>${S.oculto || A.dim === 'sector' ? L(d[3], d[4]) : L('Patrimonio', 'Net worth')}</small>${conEur ? `<b>${eur(S.M.total, 0)}</b>` : ''}`;
+  ley.innerHTML = A.filas.map((x, i) => `<li><button type="button" data-an3-seg="${i}" aria-pressed="${A.sel === i}"><i style="background:${PAV_COL[i % 6]}"></i><span>${esc(x.k)}</span><b>${pct(x.pct, 1)}</b>${conEur ? `<em>${de(x.pct)}</em>` : ''}</button></li>`).join('');
+}
+let an3Raf = 0;
+function an3Pinta(entra) {
+  if (!$('.an3-fig') || !S.M) return;
+  const dim = an3Dim(), A = window.AN3 = window.AN3 || { sel: -1 };
+  if (A.dim !== dim || entra) A.sel = -1;
+  Object.assign(A, { dim, filas: an3Filas(S.M, dim), sinMover: false, elegir(i, fijo) { A.sel = fijo ? i : A.sel === i ? -1 : i; an3Plano(1); an3Textos(); if (!fijo && window.T3D) window.T3D.anillo(); } });
+  an3Textos(); cancelAnimationFrame(an3Raf);
+  if (entra && conMovimiento() && !window.T3D) { const t0 = performance.now(), paso = (t) => { const k = Math.min(1, (t - t0) / 900); an3Plano(1 - Math.pow(1 - k, 3)); if (k < 1 && $('.an3-plano')) an3Raf = requestAnimationFrame(paso); }; an3Plano(0); an3Raf = requestAnimationFrame(paso); } else an3Plano(1);
+  // el de volumen: si el trozo ya está, lo pone; si no, se pide ya (el anillo está a la vista)
+  if (window.T3D) window.T3D.anillo(); else if (typeof pedir3D === 'function') pedir3D(true);
+}
+document.addEventListener('click', (e) => {
+  const t = e.target.closest && e.target.closest('[data-an3-dim], [data-an3-seg]'); if (!t || !window.AN3) return;
+  if (t.dataset.an3Dim) { S.an3Dim = t.dataset.an3Dim; LS.set('inv-an3-dim', S.an3Dim); for (const b of $$('[data-an3-dim]')) b.setAttribute('aria-pressed', String(b === t)); an3Pinta(false); }
+  else window.AN3.elegir(+t.dataset.an3Seg);
+});
 function pavReparto(M) {
   const g = (titulo, dim, base) => {
     const r = reparto(M, dim, base).filas; if (!r.length) return '';
@@ -619,6 +687,7 @@ function pavReparto(M) {
   const xray = emp.length ? pavTabla([L('Empresa', 'Company'), L('Cómo la tienes', 'How you hold it'), L('Valor', 'Value'), L('Del total', 'Of total')], emp.map((x) => [`<b>${esc(x.n)}</b>`, x.directa ? L('Directa', 'Direct') : L('Dentro de tus fondos', 'Inside your funds'), eur(x.v, 0), pct(M.total ? (x.v / M.total) * 100 : 0, 1)])) : '';
   const sol = htmlSolapes(M);
   return [
+    htmlAnillo(M),
     g(L('Por clase de activo', 'By asset class'), 'clase'),
     g(L('Por región', 'By region'), 'region'),
     g(L('Por sector (renta variable)', 'By sector (equities)'), 'sector', 'rv'),

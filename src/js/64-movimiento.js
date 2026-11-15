@@ -31,11 +31,12 @@ let movHeroVisto = '';
 function animarHero() {
   const h = $('#heroNum'); if (!h) { movHeroVisto = ''; return; }
   const clave = `${S.vista}|${S.oculto ? 1 : 0}`;
-  if (movHeroVisto === clave || S.oculto) return;
+  if (S.oculto) return;
+  const primera = movHeroVisto !== clave;   // la página se repinta entera con cada dato que llega: la rueda se vuelve a montar, sin rodar
   movHeroVisto = clave;
   const e = $('[data-b="totalE"]', h), n = e ? parseFloat(e.dataset.n) : NaN;
   if (!e || !isFinite(n) || !/\d/.test(e.textContent)) return;
-  if (conMovimiento()) contarHasta(e, Math.trunc(n * 0.94), n, e.textContent);   // el contarHasta de 10-pintado.js, el mismo de los precios en directo
+  if (conMovimiento()) ruedaCifra(e, e.textContent, primera);   // 0.9 (15 nov): la rueda de dígitos (65-3d.js); antes contaba desde un poco menos
 }
 /* las cifras de una pestaña (.pav-kpi b, .cifra-xl) no cuentan: son muchas y marea. Solo la protagonista (.cifra-cuenta) */
 function animarCifras(raiz) {

@@ -13,6 +13,7 @@ import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 // de 830 porque unos 340 KB son los datos del día (radar, histórico, precios), que cambian de tamaño
 // 0.9 (Carlos, 3 nov, 21:58: «sube a 1000 KB en previsión de más»), para el rehecho de Hoy y Análisis y el acabado
 const PRESUPUESTO = { bytes: 1000 * 1024, listoMs: 2000 };
+const TOPE_3D = 250 * 1024;   // 0.9 (Carlos, 15 nov): el 3D va en su trozo, con tope propio, y se baja después de pintar Hoy
 const MOVIL = { cpu: 4, red: { offline: false, latency: 150, downloadThroughput: (9e6 / 8), uploadThroughput: (1.5e6 / 8) } };
 
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'se mide en el móvil'));
@@ -57,7 +58,18 @@ test('abrir con la cuenta: bytes por la red y tiempo hasta estar lista', async (
   console.log(informe);
   mkdirSync('test-results', { recursive: true });
   writeFileSync('test-results/rendimiento.txt', informe);
-  await info.attach('rendimiento', { body: informe, contentType: 'text/plain' });
+  // 0.9 (15 nov): el trozo del 3D se baja DESPUÉS de pintar Hoy, fuera de lo que cuenta al abrir, y tiene su tope (250 KB)
+  expect(propias.filter((r) => /assets\/3d-/.test(r.url)).length, 'el trozo del 3D no se baja al abrir').toBe(0);
+  await page.evaluate(() => { LS.set('inv-3d-prueba', true); pedir3D(true); });
+  await page.waitForFunction(() => !!window.T3D, null, { timeout: 30_000 });
+  await page.waitForTimeout(400);
+  const tresD = [...pet.values()].filter((r) => r.bytes != null && /assets\/3d-/.test(r.url)).reduce((t, r) => t + r.bytes, 0);
+  const informe3d = `${informe}  el trozo del 3D, aparte y después: ${(tresD / 1024).toFixed(1)} KB (tope: ${TOPE_3D / 1024} KB)\n`;
+  console.log(informe3d.split('\n').slice(-2)[0]);
+  writeFileSync('test-results/rendimiento.txt', informe3d);
+  await info.attach('rendimiento', { body: informe3d, contentType: 'text/plain' });
+  expect(tresD, 'el trozo del 3D se ha bajado al pedirlo').toBeGreaterThan(0);
+  expect(tresD, `el trozo del 3D, menos de ${TOPE_3D / 1024} KB`).toBeLessThan(TOPE_3D);
   expect(errores).toEqual([]);
   expect(listo, 'el arranque marca gf-listo').not.toBeNull();
   if (process.env.GF_PRESUPUESTO !== 'no') {

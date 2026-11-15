@@ -363,8 +363,10 @@ function parchear() {
     }
     if (el.textContent !== b.txt) {
       const viejo = parseFloat(el.dataset.n);
-      el.textContent = b.txt;
-      if (el.dataset.b === 'totalE' && !S.oculto && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) >= 1) contarHasta(el, viejo, b.n, b.txt);
+      // 0.9: la cifra del patrimonio, si ya va en rueda, gira solo los dígitos que cambian; si no, cuenta como siempre
+      const enRueda = el.dataset.b === 'totalE' && !S.oculto && !!el.firstElementChild && conMovimiento();
+      if (enRueda) ruedaCifra(el, b.txt); else el.textContent = b.txt;
+      if (el.dataset.b === 'totalE' && !enRueda && !S.oculto && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) >= 1) contarHasta(el, viejo, b.n, b.txt);
       if (el.dataset.b === 'totalE') setTimeout(encajarCifra, 1300);
       if (!S.oculto && DESTELLA.test(el.dataset.b) && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) > 1e-9) {
         // la cifra grande de Inicio cambia de color entera (euros y céntimos); el resto, con su fondo de siempre
@@ -717,6 +719,7 @@ function pintar() {
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   animarHero();
+  poner3D();   // 0.9: la moneda y el anillo con volumen (el trozo «3d» se baja después de pintar)
   if (S.vista !== 'av') S.pavEntrada = '';   // 0.9: al volver a una pestaña de Análisis, sus tarjetas entran otra vez
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();

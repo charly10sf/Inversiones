@@ -307,7 +307,7 @@
     const plano = MOVIL ? $('.navbar a.nav-centro svg.nav-med') : $('.riel-nav .k2-marca > i');
     if (!plano) return;
     M.ancla = plano; let padre = plano.parentNode; while (padre !== document.body && getComputedStyle(padre).position === 'static') padre = padre.parentNode;
-    if (!M.caja) { M.caja = document.createElement('mq-moneda'); M.caja.className = 'mq-mon'; M.caja.style.cssText = 'position:absolute;display:block'; M.caja.setAttribute('aria-hidden', 'true'); M.caja.innerHTML = '<i class="mq-mon-brillo"></i><canvas></canvas>'; padre.appendChild(M.caja); }
+    if (!M.caja) { M.caja = document.createElement('mq-moneda'); M.caja.className = 'mq-mon'; M.caja.style.cssText = 'position:absolute;display:block'; M.caja.setAttribute('aria-hidden', 'true'); M.caja.innerHTML = '<i class="mq-mon-vidrio"></i><i class="mq-mon-brillo"></i><canvas></canvas>'; padre.appendChild(M.caja); }
     const r = plano.getBoundingClientRect(), rp = padre.getBoundingClientRect();
     Object.assign(M.caja.style, { left: (r.left - rp.left - padre.clientLeft + padre.scrollLeft) + 'px', top: (r.top - rp.top - padre.clientTop + padre.scrollTop) + 'px', width: r.width + 'px', height: r.height + 'px' });
     { const rr = M.caja.getBoundingClientRect(); if (Math.abs(rr.left - r.left) + Math.abs(rr.top - r.top) > 1) { M.caja.style.left = (parseFloat(M.caja.style.left) + r.left - rr.left) + 'px'; M.caja.style.top = (parseFloat(M.caja.style.top) + r.top - rr.top) + 'px'; } }
@@ -316,7 +316,7 @@
     if (!con3d) { if (M.tres) { M.tres.destruir(); M.tres = null; const cv = $('canvas', M.caja), n = cv.cloneNode(false); cv.replaceWith(n); } M.caja.classList.remove('con3d'); plano.classList.remove('mq-oculta'); return; }
     if (!M.tres) {
       const svg = MOVIL ? plano : $('svg', plano), vb = svg.viewBox.baseVal;
-      M.tres = window.T3D.moneda($('canvas', M.caja), { tema: E.tema, sello: { o: $('.s-o', svg).getAttribute('d'), t: $('.s-t', svg).getAttribute('d'), vb: [vb.x, vb.y, vb.width, vb.height] }, alPintar() { M.caja.classList.add('con3d'); plano.classList.add('mq-oculta'); }, alFallar() { M.caja.classList.remove('con3d'); plano.classList.remove('mq-oculta'); } });
+      M.tres = window.T3D.moneda($('canvas', M.caja), { tema: E.tema, cristal: true, alGirar(c) { M.caja.style.setProperty('--mq-gx', c.toFixed(3)); }, sello: { o: $('.s-o', svg).getAttribute('d'), t: $('.s-t', svg).getAttribute('d'), vb: [vb.x, vb.y, vb.width, vb.height] }, alPintar() { M.caja.classList.add('con3d'); plano.classList.add('mq-oculta'); }, alFallar() { M.caja.classList.remove('con3d'); plano.classList.remove('mq-oculta'); } });
       if (!M.tres) return;
     }
     M.tres.tema(E.tema); M.tres.vivo(E.moneda === 'viva');

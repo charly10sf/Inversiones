@@ -38,7 +38,8 @@
     "35-liso.css",
     "36-paso.css",
     "37-hoy.css",
-    "38-hibrido.css"
+    "38-hibrido.css",
+    "39-movimiento.css"
   ],
   "js": [
     "01-base.js",
@@ -109,6 +110,7 @@
     "61-idiomas.js",
     "62a-mudanza.js",
     "64-movimiento.js",
+    "65-3d.js",
     "62-arranque.js",
     "63-demo.js"
   ],
@@ -183,6 +185,9 @@
     ],
     "hoy": [
       "trozos/hoy.js"
+    ],
+    "3d": [
+      "trozos/3d.js"
     ]
   }
 }
