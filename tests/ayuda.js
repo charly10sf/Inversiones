@@ -22,6 +22,9 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
   context.__errores = errores;
   // lo de fuera que no se sirve aquí, cortado (Yahoo, Bitvavo, Gemini, el Worker, YouTube…)
   await context.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, (r) => r.abort());
+  // los WebSocket de los precios en directo (Yahoo, Bitvavo) no pasan por context.route: se cortan aparte. Con red, un precio
+  // de verdad que llegaba a media prueba cambiaba las cifras (revisión del 15 nov: hoy-dentro-09 fallaba así, por un céntimo)
+  await context.routeWebSocket(/^wss?:\/\/(?!localhost|127\.0\.0\.1)/, (ws) => ws.close());
   await context.route('https://www.gstatic.com/firebasejs/**', (r) => {
     const f = r.request().url().split('/').pop().split('?')[0];
     const ruta = join(AQUI, 'stub', f);

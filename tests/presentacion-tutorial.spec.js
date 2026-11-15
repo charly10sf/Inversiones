@@ -81,14 +81,14 @@ conTema('marmol')('el tutorial: por capítulos, lo que se pide cuenta y lo demá
   await expect(page.locator('.tour-caja h3')).toHaveText('Ya conoces Toisón');
   await expect(page.locator('.tour-caja [data-emp="perfil"]')).toHaveText('Empezar por el primero');
   await page.evaluate(() => cerrarTour());
-  // la guía de lo nuevo de la 0.8.1: siete pasos, y «Nuevo» en Análisis, donde están las pestañas
-  expect(await page.evaluate(() => pasosGuia().map((p) => p.t))).toEqual(['Análisis: tu cartera por dentro', 'Todo, en pestañas', 'Cómo la ves, en Tú', 'Toca una cifra y te la explica', 'La IA, en cada tarjeta', 'Hoy, más limpio', 'Ajustes, a la vista']);
-  expect(await page.evaluate(() => { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); LS.set('inv-guia', ''); return grupoNuevo(); })).toBe('posiciones');
+  // la guía de lo nuevo de la 0.9: ocho pasos (el último, el del Paso a paso, solo lo ve el dueño, y en las pruebas la cuenta lo es), y «Nuevo» en Hoy, donde están las gráficas
+  expect(await page.evaluate(() => pasosGuia().map((p) => p.t))).toEqual(['Hoy, con cuatro gráficas', 'Lo de hoy, en una frase', 'Prueba de estrés', 'Tu semana y tus cobros', 'Efecto divisa', 'El reparto, de un vistazo', 'Tres acabados', 'El Paso a paso, nuevo']);
+  expect(await page.evaluate(() => { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); LS.set('inv-guia', ''); return grupoNuevo(); })).toBe('cartera');
   await page.evaluate(() => guiaNuevo());
-  await expect(page.locator('.tour-caja h3')).toHaveText('Análisis: tu cartera por dentro');
-  await expect(page.locator('.tour-k')).toHaveText('Lo nuevo de la 0.8.1');
-  await page.evaluate(() => irPasoTour(2));
-  await expect(page.locator('.tour-caja h3')).toHaveText('Cómo la ves, en Tú');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Hoy, con cuatro gráficas');
+  await expect(page.locator('.tour-k')).toHaveText('Lo nuevo de la 0.9');
+  await page.evaluate(() => irPasoTour(6));
+  await expect(page.locator('.tour-caja h3')).toHaveText('Tres acabados');
 });
 
 // 0.8.3 · El Mármol G en la presentación y en los iconos: detrás, la piedra de la app (la imagen con huella del build,

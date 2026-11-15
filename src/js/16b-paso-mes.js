@@ -12,7 +12,8 @@
 
 // el Paso a paso solo existe en el modo fundador, con el modo de la cuenta ya leído (en un dispositivo nuevo, hasta leerla,
 // no se enseña), y no se puede encender desde fuera: ?dev y #github valen solo en este ordenador (localhost)
-const enEsteOrdenador = () => /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+// (function, no const: la usa también accesoInicial, 42-modos.js, que puede correr antes de llegar a esta línea)
+function enEsteOrdenador() { return /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname); }
 function pasoVisible() {
   if (esPublico()) return false;
   if (!PERFIL_CUENTA || CFG.dev) return enEsteOrdenador();
@@ -32,6 +33,9 @@ function opcionDe(o) {
   const m = id.match(/^(limcripto|colchon|efectivo|compra|idea|perdida|res|div|aportd|reinv|caida|tesis|oport|cripto|costes):/);
   return m ? { limcripto: 'limite', colchon: 'efectivo', compra: 'idea', perdida: 'fiscal', res: 'fechas', div: 'fechas', aportd: 'aport' }[m[1]] || m[1] : null;
 }
+// «sin apuntar» es no haber escrito nada en Hacienda › Datos fiscales: un 0 escrito cuenta como apuntado (revisión del 15 nov:
+// con «!otras && !rcm», quien no tiene otras ventas ni dividendos no podía quitar nunca el aviso, el rango ni el paso)
+function fiscalSinApuntar(anio) { try { const d = datosFiscales(anio); return !(d.otras != null || d.rcm != null); } catch (e) { return true; } }
 const CONF_N = { alta: 3, media: 2, baja: 1 };
 const sinRed = () => navigator.onLine === false;
 /* el mes del Paso a paso, ya repartido: lo que haces, lo que decides tú, lo apartado, las fechas y lo que va solo */

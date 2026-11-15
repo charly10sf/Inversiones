@@ -24,7 +24,7 @@ for (const dueno of [false, true]) {
       await quitarCapas(page);
       await meterCartera(page);
       await page.waitForFunction(() => LS.get('inv-version') === VERSION, null, { timeout: 30_000 });
-      expect(await page.evaluate(() => VERSION)).toBe('0.8.6e');
+      expect(await page.evaluate(() => VERSION)).toBe('0.9');
       // de la 0.8a a la 0.8.1: las novedades contadas bajando, con sus arreglos (los del dueño, solo para él)
       await page.evaluate(() => { LS.set('inv-version', '0.8a'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); LS.set('inv-perfil-luego', { t: Date.now(), n: 1 }); LS.set('inv-resumen-off', true); });
       await page.reload();
@@ -32,8 +32,8 @@ for (const dueno of [false, true]) {
       const ixn = page.locator('.ixn');
       for (let i = 0; i < 40 && !(await ixn.count()); i++) { await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour').forEach((x) => x.remove())); await page.waitForTimeout(1500); }
       await expect(ixn).toBeVisible();
-      // los de la 0.8.1 (6 el dueño, 3 los demás), los de la 0.8.1a (6 y 5), los de la 0.8.1b (2 para todos), los de la 0.8.1c (2 y 1) y los de la 0.8.1d (2 y 1), y los de la 0.8.2 (4 el dueño, 2 los demás) la 0.8.2a (2 y 2), la 0.8.2c (7 y 6), la 0.8.2d (8 y 4), la 0.8.2e (1 y 1) la 0.8.3 (2 y 1), la 0.8.3b (5 y 3), la 0.8.3c (5 y 4), la 0.8.3d (2 y 2) la 0.8.6 (3 y 3), la 0.8.6a (7 y 6) la 0.8.6c (5 y 5), la 0.8.6d (2 y 2) y la 0.8.6e (2 el dueño, 0 los demás)
-      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 80 : 60);
+      // los de la 0.8.1 (6 el dueño, 3 los demás), los de la 0.8.1a (6 y 5), los de la 0.8.1b (2 para todos), los de la 0.8.1c (2 y 1) y los de la 0.8.1d (2 y 1), y los de la 0.8.2 (4 el dueño, 2 los demás) la 0.8.2a (2 y 2), la 0.8.2c (7 y 6), la 0.8.2d (8 y 4), la 0.8.2e (1 y 1) la 0.8.3 (2 y 1), la 0.8.3b (5 y 3), la 0.8.3c (5 y 4), la 0.8.3d (2 y 2) la 0.8.6 (3 y 3), la 0.8.6a (7 y 6) la 0.8.6c (5 y 5), la 0.8.6d (2 y 2) la 0.8.6e (2 el dueño, 0 los demás) y la 0.9 (3 el dueño, 2 los demás)
+      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 83 : 62);
       if (dueno) await expect(ixn).toContainText('Topes de gasto'); else await expect(ixn).not.toContainText('Topes de gasto');
       expect(await page.evaluate(() => LS.get('inv-dueno', 0))).toBe(dueno ? 1 : 0);
       await page.evaluate(() => document.querySelectorAll('.ixn, .intro').forEach((x) => x.remove()));
@@ -47,8 +47,8 @@ for (const dueno of [false, true]) {
       await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
 
       const r = await page.evaluate(async () => {
-        const n08a = NOVEDADES.find((n) => n.v === '0.8a'), n08 = NOVEDADES.find((n) => n.v === '0.8.1');
-        // la guía «Nuevo»: una cosa de la 0.8 que fuera solo para el dueño
+        const n08a = NOVEDADES.find((n) => n.v === '0.8a'), n08 = NOVEDADES.find((n) => n.v === '0.9');
+        // la guía «Nuevo» (la de la gorda en la que estás, la 0.9): una cosa suya que fuera solo para el dueño
         const pasos = pasosGuia().length;
         n08.cosas[0].solo = 'dueno';
         const pasosSolo = pasosGuia().length;
@@ -69,7 +69,7 @@ for (const dueno of [false, true]) {
         return { pasos, pasosSolo, visible, enLista, enRegistro, detalle };
       });
       expect(r.pasos).toBeGreaterThan(0);
-      expect(r.pasosSolo).toBe(dueno ? r.pasos : r.pasos - 2);   // la primera novedad de la 0.8.1 tiene dos pasos
+      expect(r.pasosSolo).toBe(dueno ? r.pasos : r.pasos - 1);   // la primera novedad de la 0.9 tiene un paso
       expect(r.visible).toBe(dueno);
       expect(r.enLista.includes('0.8a')).toBe(dueno);
       expect(r.enRegistro.includes('0.8a')).toBe(dueno);

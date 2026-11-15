@@ -48,7 +48,9 @@ function pasosRuta0(M) {
   const hoy = hoyIso(), anio = new Date().getFullYear();
   // 0.9: lo que sale de una opción apagada en «Qué mira cada mes» no se añade
   const add = (plazo, o) => { const k = opcionDe(o); if (k && !opRuta(k)) return; P[plazo].push({ fuente: 'web', ...o }); };
-  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+  // con «Recortar lo que pasa de tu límite» apagada, la venta de recorte no sale, y tampoco lo que cuelga de ella (a dónde
+  // va lo que cobras) ni su ganancia en las cuentas de fin de año (revisión del 15 nov: se quedaban los pasos huérfanos)
+  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean).filter((pl) => pl.nivel !== 'reducir' || opRuta('limite'));
   // 1. ventas que propone la web
   for (const pl of planes) {
     const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
@@ -96,7 +98,7 @@ function pasosRuta0(M) {
   }
   // 4. datos que le faltan a la web
   const fa = fiscalAnio(anio);
-  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada paso sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de Toisón (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
+  if (fiscalSinApuntar(anio)) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada paso sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de Toisón (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
   const est = M.filas.filter((f) => f.estimada);
   if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: L(`${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, `${esc(yLista(est.map((f) => f.inst.corto)))} are estimated: with the exact figures the value, the gain and the taxes match to the cent.`), como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
   // 5. aportaciones automáticas
@@ -243,14 +245,14 @@ function htmlComoVas(M) {
     : L('Vas bien. Este mes no hace falta tocar nada: tus aportaciones siguen trabajando. Esperar también es una decisión, y a menudo la mejor.', 'On track. Nothing to touch this month: your contributions keep working. Waiting is a decision too, and often the best one.');
   return `<div class="ruta-estado ${est}"><span class="re-ic">${est === 'bien' ? ICONOS.ok : ICONOS.alerta}</span><div><b>${est === 'bien' ? L('Vas bien', 'On track') : L('Ojo', 'Heads up')}</b><p>${esc(frase)}</p>${urg || pend ? `<a class="re-obj ${urg ? 'fuera' : ''}" href="#ruta">${L('Ir al Paso a paso', 'Go to Steps')}</a>` : ''}</div></div>`;
 }
-/* 0.5, modo público: en el sitio del Paso a paso, «Tu plan». Completo llega en la 0.9 (tus reglas escritas por ti y lo
+/* 0.5, modo público: en el sitio del Paso a paso, «Tu plan». Completo llegará más adelante (iba en la 0.9, que al final fue el rediseño) (tus reglas escritas por ti y lo
    que suponen este mes); mientras, lo que ya sirve: tus aportaciones y tus límites, sin decirte qué comprar o vender */
 function vistaTuPlan(M) {
   const ap = aportacionesActivas(), total = sum(ap, ({ a }) => +a.importe || 0);
   const nombreI = (id) => esc((S.inst[id] && (S.inst[id].corto || S.inst[id].nombre)) || id);
   return `<div class="vista-cab"><h1>${L('Tu plan', 'Your plan')}</h1><p>${L('Tus reglas para invertir y lo que suponen cada mes.', 'Your investing rules and what they mean each month.')}</p></div>
     <section class="tp-llega" aria-labelledby="hTpLlega"><span class="re-ico" aria-hidden="true">${ICONOS.ruta}</span><div>
-      <h2 id="hTpLlega">${L('Llega en la 0.9', 'Coming in 0.9')}</h2>
+      <h2 id="hTpLlega">${L('Llegará más adelante', 'Coming later')}</h2>
       <p>${L('Escribes tus reglas (cuánto aportar cada mes, cada cuánto repartir, cuánto como máximo en cada cosa) y Toisón te dice lo que suponen este mes y lo que pagarías a Hacienda. Las reglas las pones tú: Toisón no te dice qué comprar ni qué vender.', 'You write your rules (how much to put in each month, how often to rebalance, the most you want in each thing) and Toisón tells you what they mean this month and what you would pay in tax. You set the rules: Toisón does not tell you what to buy or sell.')}</p>
       <p class="k">${L('Mientras tanto, aquí tienes lo que ya funciona: tus aportaciones y tus límites.', 'Meanwhile, here is what already works: your contributions and your limits.')}</p></div></section>
     <div class="dos tp-dos"><section aria-labelledby="hTpAp">

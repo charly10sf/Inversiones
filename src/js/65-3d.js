@@ -12,7 +12,8 @@ const tresDSi = () => {
 let tresDPedido = 0, tresDLuego = 0;   // 0, sin pedir; 1, apuntado para luego; 2, bajando
 function pedir3D(ya) {
   if (window.T3D || tresDPedido === 2 || (tresDPedido === 1 && !ya) || !tresDSi()) return;
-  const baja = () => { if (tresDPedido === 2 || window.T3D) return; tresDPedido = 2; cargarTrozo('3d').catch(() => { tresDPedido = 0; }); };   // si no baja, se queda lo plano y no se dice nada
+  const baja = () => { if (tresDPedido === 2 || window.T3D) return; if (!tresDSi()) { tresDPedido = 0; return; }   // «Plano» elegido mientras esperaba
+    tresDPedido = 2; cargarTrozo('3d').catch(() => { tresDPedido = 0; }); };   // si no baja, se queda lo plano y no se dice nada
   if (ya) { clearTimeout(tresDLuego); baja(); return; }
   tresDPedido = 1;
   tresDLuego = setTimeout(() => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(baja, { timeout: 3000 }), 2600);

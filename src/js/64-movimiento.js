@@ -88,7 +88,18 @@ function ponerAcabado(a) {
 const htmlSelectorAcabado = () => { const b = acabadoElegido() || 'auto', bt = (v, t) => `<button type="button" data-acabado-b="${v}" aria-pressed="${b === v}">${t}</button>`;
   return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Acabado', 'Finish')}</h3>
   <div class="idiomas seg-modo" role="group" aria-label="${L('Acabado', 'Finish')}">${bt('auto', L('Según la pantalla', 'By screen'))}${bt('piedra', L('Tarjetas', 'Cards'))}${bt('hibrido', L('Híbrido', 'Hybrid'))}${bt('liso', L('Liso', 'Plain'))}</div>
-  <small>${L('Tarjetas: el fondo con vetas y cada bloque en su caja. Híbrido: fondo plano y cada bloque en su caja. Liso: fondo plano y sin cajas. Según la pantalla: tarjetas en el móvil e híbrido en el ordenador. Se guarda en este dispositivo.', 'Cards: the veined background and each block in its box. Hybrid: flat background and each block in its box. Plain: flat background and no boxes. By screen: cards on the phone and hybrid on the computer. Saved on this device.')}</small></div>`; };
+  <small>${L('Tarjetas: el fondo con vetas y cada bloque en su caja. Híbrido: fondo plano y cada bloque en su caja. Liso: fondo plano y sin cajas. Según la pantalla: tarjetas en el móvil e híbrido en el ordenador. Se guarda en este dispositivo.', 'Cards: the veined background and each block in its box. Hybrid: flat background and each block in its box. Plain: flat background and no boxes. By screen: cards on the phone and hybrid on the computer. Saved on this device.')}</small>
+  <div class="idiomas seg-modo aj-volumen" role="group" aria-label="${L('Relieve, en 3D', '3D depth')}">${[[1, L('Con volumen', 'With depth')], [0, L('Plano', 'Flat')]].map(([v, t]) => `<button type="button" data-volumen-b="${v}" aria-pressed="${!LS.get('inv-sin-3d', false) === !!v}">${t}</button>`).join('')}</div>
+  <small>${L('Con volumen: la moneda de Hoy y el anillo del reparto, en 3D. Plano: los dibujos de siempre, por si en este dispositivo va lento o gasta batería.', 'With depth: the Today coin and the allocation ring in 3D. Flat: the usual drawings, in case it runs slowly or drains the battery on this device.')}</small></div>`; };
+// 0.9 (revisión del 15 nov): el 3D se puede quitar en este dispositivo, en Tú, debajo del acabado (inv-sin-3d, que ya miraba tresDSi, 65-3d.js). Si ya
+// está puesto, se queda hasta volver a abrir Toisón (el trozo no sabe quitarse) y se dice
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('[data-volumen-b]'); if (!b) return;
+  const con = b.dataset.volumenB === '1';
+  if (con) LS.del('inv-sin-3d'); else LS.set('inv-sin-3d', true);
+  for (const x of $$('[data-volumen-b]')) x.setAttribute('aria-pressed', String((x.dataset.volumenB === '1') === con));
+  if (con) { if (typeof pedir3D === 'function') pedir3D(true); } else if (window.T3D) toast(L('Plano desde la próxima vez que abras Toisón.', 'Flat from the next time you open Toisón.'));
+});
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-acabado-b]'); if (b) ponerAcabado(b.dataset.acabadoB); });
 // sin elegir, al cruzar el corte (girar una tableta, estrechar la ventana) cambia con la pantalla
 addEventListener('resize', (e) => { if (!e.k2 && !acabadoElegido() && (document.documentElement.getAttribute('data-acabado') || 'piedra') !== acabadoPorAncho()) marcarAcabado(); }, { passive: true });

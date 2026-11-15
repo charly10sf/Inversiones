@@ -12,8 +12,10 @@
    ===================================================================== */
 const VENIA_DE_ANTES = (() => { try { return /^0\.[0-4](\D|$)/.test(String(LS.get('inv-version', '') || '')); } catch (e) { return false; } })();
 function accesoInicial() {
-  if (CFG.dev) return /[?&]publico\b/.test(location.search) ? 'publico' : 'privado';
-  if (!PERFIL_CUENTA) return 'privado';
+  // 0.9 (revisión del 15 nov): sin cuenta (?dev, #github) el fundador solo vale en este ordenador. Antes, una cuenta estándar
+  // que añadía ?dev a la dirección de toison.es abría su cartera en fundador, porque con ?dev no se lee el modo de la cuenta
+  if (CFG.dev) return /[?&]publico\b/.test(location.search) || !enEsteOrdenador() ? 'publico' : 'privado';
+  if (!PERFIL_CUENTA) return enEsteOrdenador() ? 'privado' : 'publico';
   const a = LS.get('inv-acceso');
   if (a && (a.a === 'privado' || a.a === 'publico') && (!a.uid || !FB.user || a.uid === FB.user.uid)) return a.a;
   const ini = VENIA_DE_ANTES ? 'privado' : 'publico';

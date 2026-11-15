@@ -7,6 +7,25 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  /* 0.9 (15 nov): el rediseño. El plan decía «Toisón, para cualquiera» (27 dic; claude/versiones/0.9.md): Carlos decidió el
+     15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
+     El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
+  { v: '0.9', f: '2026-11-15', h: '18:30', t: 'Toisón, rediseñado', cosas: [
+    { d: 'hoy4', ir: { v: 'cartera', sel: '.hoy-pest' }, t: 'Hoy, con cuatro gráficas', x: 'Encima de la gráfica eliges qué ver: Valor, la de siempre; Rendimiento, tu porcentaje al lado del MSCI World; Caída, cuánto has estado por debajo de tu máximo; y Cobros, los dividendos de cada mes y los que vienen.', g: 'Valor, Rendimiento, Caída o Cobros: toca una.' },
+    { d: 'hoydia', ir: { v: 'cartera', sel: '.hoy-dia' }, t: 'Lo de hoy, en una frase', x: 'Debajo de la gráfica: si hoy subes o bajas y qué es lo que más tira, cómo fue el último día de bolsa, lo que viene y lo que más mueve tu cartera.', g: 'Lo de hoy, resumido aquí.' },
+    { d: 'estres', ir: { v: 'av-estres' }, t: 'Prueba de estrés', x: 'En Riesgo: cuánto habría caído lo que tienes hoy en la burbuja puntocom, la crisis financiera, el covid y 2022, o en una caída a tu medida. Es lo que pasó entonces, aproximado; no una previsión.' },
+    { d: 'semana', ir: { v: 'av-semana' }, t: 'Tu semana y tus cobros', x: 'En Hoy: lo que pasa en siete días en lo tuyo y los dividendos previstos de los próximos 60, en bruto y en neto. Son estimaciones: cada empresa decide lo que paga.' },
+    { d: 'divisa', ir: { v: 'av-divisa' }, t: 'Efecto divisa', x: 'En Rendimiento: cuánto de lo que tienes depende del dólar y de otras monedas, y lo que te han sumado o restado en un año. Aproximado.' },
+    { d: 'anillo', ir: { v: 'av-reparto' }, t: 'El reparto, de un vistazo', x: 'En Reparto, arriba, un anillo con lo que tienes por clase, región, sector, tipo o bróker. Toca un trozo para verlo.' },
+    { d: 'menu', t: 'En el ordenador, un menú nuevo', x: 'Una sola barra a la izquierda, con el nombre de cada sección y sus páginas debajo. Se pliega con el botón de abajo o con la tecla «[», y la IA se abre en una columna al lado.' },
+    { d: 'acabados', ir: { v: 'tu', sel: '[data-acabado-b="auto"]' }, t: 'Tres acabados', x: 'En Tú eliges cómo se ve: Tarjetas (el de siempre, con las vetas), Híbrido (fondo liso y cada bloque en su tarjeta) o Liso (sin cajas). Sin elegir, tarjetas en el móvil e híbrido en el ordenador.', g: 'Tarjetas, Híbrido o Liso.' },
+    { d: 'moneda', t: 'Con volumen y con movimiento', x: 'La moneda de Hoy y el anillo del reparto tienen volumen, la cifra del patrimonio rueda dígito a dígito, la gráfica se transforma al cambiar de periodo y las páginas entran con profundidad. Si en tu móvil va lento, en Tú, debajo de Acabado, elige «Plano».' },
+    { d: 'pasos', solo: 'dueno', ir: { v: 'ruta' }, t: 'El Paso a paso, nuevo', x: 'Solo en modo fundador. Arriba, un botón con lo que queda este mes. En su página, el mes en un bloque y cada paso plegado, con su dibujo, lo que supone en la renta y su confianza (alta, media o baja, según de dónde salen los datos). Lo de confianza baja va aparte, en «Para decidir tú». En «Qué mira cada mes», doce opciones que se encienden y se apagan.' },
+  ], arreglos: [
+    'GTA VI se ha quitado: la pastilla de arriba y su hoja.',
+    '«Tu plan» ya no dice que llega en la 0.9: llegará más adelante.',
+    { t: 'El modo fundador ya no se enciende añadiendo ?dev a la dirección fuera de tu ordenador.', solo: 'dueno' },
+  ] },
   { v: '0.8.6e', f: '2026-11-15', h: '03:15', t: 'La lista de espera, con correo', arreglos: [
     { t: 'En Ajustes, «Lista de espera»: quien ha pedido acceso en toison.es, con la fecha y si ya le diste acceso. «Dar acceso» le manda el correo «Ya tienes acceso», en su idioma, con un botón que abre Toisón en «Crear cuenta».', solo: 'dueno' },
     { t: 'Quien pide acceso en toison.es recibe ahora un correo de Toisón diciendo que está en la lista.', solo: 'dueno' },
@@ -735,6 +754,26 @@ const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class
 const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.9: un dibujo propio para cada novedad del rediseño
+  // Hoy, con cuatro gráficas: las cuatro pestañas (una elegida) y la línea debajo
+  hoy4: '<rect class="fA" x="6" y="9" width="24" height="10" rx="5"/><rect class="fa" x="34" y="9" width="24" height="10" rx="5"/><rect class="fa" x="62" y="9" width="24" height="10" rx="5"/><rect class="fa" x="90" y="9" width="24" height="10" rx="5"/><path class="a" d="M8 62C22 58 30 44 44 46S62 58 76 40 100 30 112 26"/><circle class="fA" cx="112" cy="26" r="3"/><path class="m" d="M8 71h104"/>',
+  // lo del día: la tarjeta con el día, la frase y lo que sube
+  hoydia: '<rect class="fp" x="8" y="10" width="104" height="60" rx="10"/><rect class="fa" x="16" y="18" width="22" height="22" rx="6"/><text class="ta" x="20.5" y="33.5" style="font-size:11px" data-no-trad>15</text><path class="l" d="M46 24h46"/><path class="m" d="M46 34h32"/><path class="m" d="M16 52h56M16 61h40"/><path class="u" d="M86 62l8-10 6 5 8-9"/>',
+  // la prueba de estrés: cuatro crisis, cada una con lo que caería
+  estres: '<path class="m" d="M8 14h104" stroke-dasharray="3 4"/><rect class="fdn" x="14" y="14" width="16" height="44" rx="3"/><rect class="fdn" x="38" y="14" width="16" height="54" rx="3"/><rect class="fdn" x="62" y="14" width="16" height="32" rx="3"/><rect class="fdn" x="86" y="14" width="16" height="20" rx="3"/><path class="d" d="M14 58h16M38 68h16M62 46h16M86 34h16"/>',
+  // tu semana y tus cobros: los siete días (hoy, marcado) y dos cobros
+  semana: [0, 1, 2, 3, 4, 5, 6].map((i) => `<rect class="${i === 2 ? 'fA' : 'fa'}" x="${8 + i * 15}" y="12" width="12" height="16" rx="4"/>`).join('')
+    + '<circle class="fa" cx="15" cy="45" r="6"/><path class="l" d="M27 45h36"/><path class="u" d="M92 45h16M100 37v16"/><circle class="fa" cx="15" cy="64" r="6"/><path class="m" d="M27 64h28"/><path class="u" d="M92 64h16M100 56v16"/>',
+  // el efecto divisa: el dólar y el euro, y lo que va de uno a otro
+  divisa: '<circle class="fa" cx="36" cy="40" r="20"/><circle class="a" cx="36" cy="40" r="20"/><text class="ta" x="30.5" y="46" style="font-size:17px" data-no-trad>$</text><circle class="fp" cx="84" cy="40" r="20"/><circle class="l" cx="84" cy="40" r="20"/><text x="78.5" y="46" style="font-size:17px" data-no-trad>€</text><path class="a" d="M50 18c7-6 13-6 20 0M66 18h5v-5"/><path class="m" d="M70 62c-7 6-13 6-20 0M54 62h-5v5"/>',
+  // el reparto, de un vistazo: el anillo y su lista
+  anillo: '<g transform="rotate(-90 38 40)" stroke-linecap="butt"><circle class="a" cx="38" cy="40" r="23" stroke-width="10" stroke-dasharray="92 52.5"/><circle class="l" cx="38" cy="40" r="23" stroke-width="10" stroke-dasharray="27 117.5" stroke-dashoffset="-95"/><circle class="u" cx="38" cy="40" r="23" stroke-width="10" stroke-dasharray="19.5 125" stroke-dashoffset="-125"/></g><circle class="fA" cx="78" cy="26" r="3"/><path class="l" d="M86 26h24"/><circle class="fp" cx="78" cy="40" r="3"/><path class="m" d="M86 40h18"/><circle class="fa" cx="78" cy="54" r="3"/><path class="m" d="M86 54h21"/>',
+  // el menú del ordenador: la barra con nombres a la izquierda y la página al lado
+  menu: '<rect class="fp" x="6" y="8" width="108" height="64" rx="9"/><rect class="fa" x="6" y="8" width="36" height="64" rx="9"/><rect class="fA" x="10" y="24" width="3" height="9" rx="1.5"/><path class="a" d="M18 28.5h16"/><path class="l" d="M18 17h12M18 40h14M18 51h17M18 62h10"/><path class="l" d="M52 20h30"/><path class="m" d="M52 30h50"/><rect class="fa" x="52" y="40" width="24" height="22" rx="5"/><rect class="fa" x="82" y="40" width="24" height="22" rx="5"/>',
+  // los tres acabados: con vetas, híbrido (fondo liso y tarjetas) y liso (sin cajas)
+  acabados: '<rect class="fp" x="6" y="12" width="32" height="56" rx="6"/><path class="m" d="M8 32c8-6 12 4 28-4M8 58c10-4 14 6 28 0"/><rect class="fa" x="11" y="19" width="22" height="14" rx="4"/><rect class="fa" x="11" y="42" width="22" height="14" rx="4"/><rect class="fp" x="44" y="12" width="32" height="56" rx="6"/><rect class="fA" x="49" y="19" width="22" height="14" rx="4"/><rect class="fa" x="49" y="42" width="22" height="14" rx="4"/><rect class="l" x="82" y="12" width="32" height="56" rx="6"/><path class="l" d="M88 23h20M88 30h13"/><path class="m" d="M88 40h20"/><path class="l" d="M88 49h20M88 56h12"/>',
+  // la moneda de Hoy, con canto
+  moneda: '<circle class="fa" cx="52" cy="40" r="26"/><circle class="a" cx="52" cy="40" r="26"/><path class="a" d="M60 15.2C76 17 88 27 88 40S76 63 60 64.8"/><path class="l" d="M69 21.5h5M74 30h5M76 40h5M74 50h5M69 58.5h5"/><circle class="a" cx="52" cy="40" r="11"/><path class="a" d="M52 23v34"/><path class="u" d="M104 14v10M99 19h10"/>',
   // 0.8.6: un dibujo propio para cada novedad (Carlos, 10 nov: «hacen falta bastantes nuevos logos, no reciclar siempre los mismos»)
   // la Lista de seguimiento: tres filas con su logo, su gráfica del mes y el tono de su noticia (▲ buena, ▼ mala, ● neutra)
   lista: '<path class="m" d="M6 29h108M6 51h108"/>'

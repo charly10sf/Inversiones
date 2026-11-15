@@ -261,6 +261,9 @@ function editarFiscal(anio = new Date().getFullYear()) {
       if (Number.isNaN(n)) { $('#errFis', h.el).textContent = 'Algún importe no es un número.'; return; }
       if (n != null) o[k] = n;
     }
+    // 0.9 (revisión del 15 nov): guardar con las ventas o los dividendos en blanco es decir que son 0 (el campo enseña un 0):
+    // así cuentan como apuntados y el Paso a paso deja de dar el impuesto en rango. Las cifras no cambian (en blanco ya era 0)
+    for (const k of ['otras', 'rcm']) if (o[k] == null) o[k] = 0;
     S.cartera.fiscal = { ...(S.cartera.fiscal || {}), [anio]: o };
     await guardarYPintar('Datos fiscales', h);
   };

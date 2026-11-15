@@ -34,7 +34,7 @@ function pasosOpciones(M, add, c) {
     const t = tramoAhorro(), de = da ? da.de.filter((x) => x.d >= sumarDias(hoy, -31)) : [], neto = sum(de, (x) => x.bruto) * (1 - t);
     if (neto >= 20) add('mes', { id: `reinv:${mesK}`, d: prox[0].d, cuando: `con la del ${fechaCorta(prox[0].d)}`, t: `Suma a tu aportación los ${eur(neto, 0)} cobrados`,
       pq: `${esc(yLista([...new Set(de.map((x) => x.n))]))} te ${de.length === 1 ? 'ha' : 'han'} pagado unos ${eur(neto, 0)} netos este mes. En efectivo no rinden: súmalos a la aportación.`,
-      como: `Haz una aportación puntual de ${eur(neto, 0)} al mismo fondo, el día que entre la periódica.`, imp: 'Nada: ya tributaron al cobrarlos (la retención).', ref: { tipo: 'reinv', de, neto } });
+      como: `Haz una aportación puntual de ${eur(neto, 0)} al mismo fondo, el día que entre la periódica.`, imp: 'Nada por reinvertirlos: los dividendos van en la renta los reinviertas o no, y la retención que ya te hicieron cuenta como pago a cuenta.', ref: { tipo: 'reinv', de, neto } });
   }
   // Aportación extra en las caídas: tu fondo principal, más abajo de su máximo que el umbral, con efectivo libre
   const nu = M.filas.filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0];
@@ -105,12 +105,22 @@ function estadoPrecio(fecha, fondo) {
 const ppEsFondo = (i) => /^Fondo/.test((i && i.tipo) || '');
 const datoPrecio = (f) => [`Precio de ${f.inst.corto}`, precioFmt(f.precio), `${ppEsFondo(f.inst) ? 'valor liquidativo' : 'cierre'} del ${diaCorto(f.p && f.p.fecha)}`, estadoPrecio(f.p && f.p.fecha, ppEsFondo(f.inst)), 'precio'];
 const radarViejo = () => { const g = S.precios && S.precios.radar_generado; return !g || Date.now() - new Date(g).getTime() > 48 * 3600e3; };
-const fiscalSinApuntar = (anio) => { try { const fa = fiscalAnio(anio); return !fa.otras && !fa.rcm; } catch (e) { return true; } };
+// fiscalSinApuntar está en el núcleo (16b-paso-mes.js): la usan también el paso «Apunta tus datos fiscales» y la IA
 // lo de Hacienda de una ganancia: si faltan tus datos fiscales, un rango (si ya pasaras de 6.000 € de ganancias, sube el tipo)
-function impuestoRango(g, anio) {
-  const lo = Math.max(0, impuestoDeVenta(g, anio).impuesto);
+function impuestoRango(g, anio, inst) {
+  const lo = Math.max(0, impuestoDeVenta(g, anio, inst).impuesto);
   if (!fiscalSinApuntar(anio) || g <= 0) return { lo, hi: lo };
-  const hi = Math.max(lo, fiscalAnio(anio, 6000 + g).cuota - fiscalAnio(anio, 6000).cuota);
+  // lo de un ETC va con los rendimientos del capital, no con las ganancias (esRCMVenta)
+  const r = esRCMVenta(inst), hi = Math.max(lo, fiscalAnio(anio, 6000 + (r ? 0 : g), r ? g : 0).cuota - fiscalAnio(anio, 6000).cuota);
+  return { lo, hi: hi - lo >= 1 ? hi : lo };
+}
+// varias ventas a la vez: el impuesto de todas juntas (la escala sube por tramos: sumar el de cada una por separado se queda
+// corto cuando entre todas cruzan un tramo). xs: [{ g, inst }]
+function impuestoRangoJuntas(xs, anio) {
+  const lo = Math.max(0, impuestoDeVentas(xs, anio).impuesto);
+  if (!fiscalSinApuntar(anio)) return { lo, hi: lo };
+  const r = sum(xs.filter((x) => esRCMVenta(x.inst)), (x) => x.g), g = sum(xs, (x) => x.g) - r;
+  const hi = Math.max(lo, fiscalAnio(anio, 6000 + g, r).cuota - fiscalAnio(anio, 6000).cuota);
   return { lo, hi: hi - lo >= 1 ? hi : lo };
 }
 const CONF_DE = ['', 'baja', 'media', 'alta'];
@@ -123,7 +133,7 @@ function confDe(datos, contradice) {
   return CONF_DE[n];
 }
 const ppCuadra = (a, b, tol = 0.011) => Math.abs(a - b) <= tol;
-// una comprobación que no ppCuadra aparta el paso entero
+// una comprobación que no cuadra aparta el paso entero
 function ppComprobar(lista) {
   const mal = lista.find(([, ok]) => !ok);
   if (mal) { const e = new Error(mal[0]); e.compr = mal[0]; throw e; }
@@ -131,7 +141,7 @@ function ppComprobar(lista) {
 }
 const ppB = (n, de, a, marca, max, tono, v, m) => ({ n, de, a, marca, max, tono, v, m });
 
-// la ficha de un paso: sus datos, sus cuentas, su confianza y su dibujo. Si una cuenta no ppCuadra, lanza
+// la ficha de un paso: sus datos, sus cuentas, su confianza y su dibujo. Si una cuenta no cuadra, lanza
 function fichaPaso(x, M) {
   const r = x.ref || {}, anio = new Date().getFullYear(), hoy = hoyIso(), sinF = fiscalSinApuntar(anio);
   const fiscalDato = () => (sinF ? [`Tus otras ventas de ${anio}`, 'sin apuntar', 'Hacienda · Datos fiscales · el impuesto sale como un rango', 'falta', 'fiscal'] : [`Escala del ahorro de ${anio}`, `${pctTramo(tramoAhorro())} % en tu tramo`, 'tus datos fiscales, apuntados', 'ok', 'fiscal']);
@@ -139,7 +149,7 @@ function fichaPaso(x, M) {
   const o = { datos: null, compr: [], conf: null, porq: '', cambia: '', hist: 'Sin historial todavía: el registro de aciertos guarda cada mes lo que dijo.', vis: null, hc: null };
   if (/^venta:/.test(x.id) && r.pl) {
     const pl = r.pl, f = pl.f, a = (f.p && f.p.analistas) || {}, k = f.inst.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'oro' : 'empresa';
-    const pg0 = pesoLim(f, M) || f.peso, ud = pl.accion ? 'acción' : 'participación', medio = pl.fiscal.coste / pl.uds, rg = impuestoRango(pl.ganancia, anio);
+    const pg0 = pesoLim(f, M) || f.peso, ud = pl.accion ? 'acción' : 'participación', medio = pl.fiscal.coste / pl.uds, rg = impuestoRango(pl.ganancia, anio, f.inst);
     o.datos = [datoPrecio(f), ['Tu coste', `${precioFmt(medio)} por ${ud}`, 'lo metiste tú', 'ok', 'tuyo']];
     if (a.objetivo) o.datos.push(['Precio objetivo medio', precioFmt(a.objetivo), `${a.num || 'varios'} analistas · Yahoo`, (a.num || 0) >= 3 ? 'ok' : 'flojo', 'analistas']);
     if (pl.nivel === 'reducir' || pg0 > limiteDe(k)) o.datos.push([`Tu límite por ${k === 'empresa' ? 'empresa' : k}`, `${fmtNum(limiteDe(k), 0)} % de la cartera`, 'Objetivos · lo pusiste tú', 'ok', 'tuyo']);
@@ -150,7 +160,7 @@ function fichaPaso(x, M) {
       [`${fmtNum(pl.uds, pl.accion ? 0 : 4)} × ${precioFmt(f.precio)} = ${eur(pl.importe, 2)}`, ppCuadra(pl.uds * f.precio, pl.importe)],
       [`ganancia: ${eur(pl.neto, 2)} − ${eur(pl.fiscal.coste, 2)} = ${eurS(pl.ganancia, 2)}`, ppCuadra(pl.neto - pl.fiscal.coste, pl.ganancia)],
       ...(pl.ganancia > 0 ? [[`impuesto: ${eur(pl.impuesto, 2)} con tu escala del ahorro`, ppCuadra(Math.max(0, impuestoDeVenta(pl.ganancia, anio, f.inst).impuesto), pl.impuesto, 0.02)]] : []),
-      [`no vendes más de las ${fmtNum(f.uds, pl.accion ? 0 : 4)} que tienes`, pl.uds <= f.uds + 1e-9],
+      [`no vendes más de las ${fmtNum(f.uds, pl.accion ? (esEntero(f.uds) ? 0 : 2) : 4)} que tienes`, pl.uds <= f.uds + 1e-9],
       ...(pl.accion ? [['acciones enteras', esEntero(pl.uds)]] : []),
       [dias <= 1 ? 'el precio es del último día de bolsa' : `el precio es de hace ${dias} días hábiles`, dias <= 5 || sinRed()],
     ]);
@@ -163,7 +173,7 @@ function fichaPaso(x, M) {
     o.hc = pl.ganancia > 0 ? [rg.hi > rg.lo ? `${fmtNum(rg.lo, 0)} a ${eur(rg.hi, 0)} a Hacienda` : `${eur(pl.impuesto, 0)} a Hacienda`, ''] : pl.ganancia < 0 ? ['Pérdida: pagas menos', 'bien'] : ['Sin impuestos', 'ok'];
     o.rango = rg.hi > rg.lo ? rg : null;
     o.cambia = pl.nivel === 'reducir' || lim != null ? `Deja de salir si su peso baja del ${fmtNum(limiteDe(k), 0)} %${a.objetivo ? ' o si los analistas suben el objetivo más de un 15 % por encima del precio' : ''}.` : 'Deja de salir si cambia la señal de la posición (el precio, tu salida o lo que dicen los analistas).';
-    o.flujo = { sale: [`Vendes ${f.inst.corto}`, pl.importe], hac: pl.ganancia > 0 ? pl.impuesto : 0, mover: pl.mover };
+    o.flujo = { sale: [`Vendes ${f.inst.corto}`, pl.importe], hac: pl.ganancia > 0 ? pl.impuesto : 0, mover: pl.mover, g: pl.ganancia, inst: f.inst };
     o.inst = { s: f.inst.id, p: f.precio };
   } else if (r.tipo === 'aport') {
     const fl = M.filas.filter((f) => f.inst.id === r.lejos.id || f.inst.id === r.de.id);
@@ -203,10 +213,20 @@ function fichaPaso(x, M) {
     o.inst = { s: t.s, p: t.p, radar: true };
   } else if (/^perdida:/.test(x.id) && r.f) {
     const f = r.f, cuota = fiscalAnio(anio, r.ganPrevG, r.ganPrevR).cuota;
-    const compras = (S.cartera.movimientos || []).filter((m) => m.tipo === 'compra' && m.instrumento === f.inst.id && m.fecha >= sumarMeses(hoy, -2));
+    // la regla de recompra es la de cada cosa (reglaRecompra: dos meses lo que cotiza en la UE y los ETC, un año los fondos y
+    // lo de fuera, ninguna la cripto; antes, dos meses para todo). Este paso vende la posición entera, así que sus propias
+    // compras no aplazan nada (se aplaza solo lo recomprado que sigue en tu cartera: perdidaAplazada, 22-impuestos.js). Lo
+    // que sí la aplaza: tener lo mismo en otra posición comprada en ese plazo (otro bróker), o recomprar después. Lo que
+    // tiene una aportación periódica activa ni llega aquí: restoEnPerdidas no lo propone (revisión del 15 nov)
+    const rr = reglaRecompra(f.inst) || {}, mesesR = rr.meses || 0, desdeR = mesesR ? sumarMeses(hoy, -mesesR) : null;
+    const otras = !mesesR ? [] : (S.cartera.posiciones || []).filter((p) => p.instrumento === f.inst.id && p.id !== f.pos.id).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } }).filter((l) => l.f >= desdeR).sort((a, b) => (a.f < b.f ? 1 : -1));
+    const plazoR = mesesR === 12 ? 'un año' : 'dos meses';
+    const datoRecompra = !mesesR ? ['Regla de recompra', 'en cripto no se aplica la de los dos meses', 'consultas de Hacienda · hay quien defiende la de un año', 'ok', 'tuyo']
+      : otras.length ? [`Regla de recompra: ${plazoR}`, `tienes ${esc(f.inst.corto)} también en otra posición, comprada el ${fechaCorta(otras[0].f)}: esa parte de la pérdida se aplaza`, 'tus posiciones', 'flojo', 'tuyo']
+        : [`Regla de recompra: ${plazoR}`, `vendes todo lo que tienes de ${esc(f.inst.corto)}: cuenta entera si no vuelves a comprarlo en ${plazoR}`, 'tus posiciones', 'ok', 'tuyo'];
     o.datos = [datoPrecio(f), ['Tu coste', `${eur(f.coste, 2)} · ${fmtNum(f.uds, f.inst.tipo === 'Acción' ? 2 : 4)} ${f.inst.tipo === 'Acción' ? 'acciones' : 'unidades'}`, 'lo metiste tú', 'ok', 'tuyo'],
       ['Lo que ya llevas este año', r.ganPrevG > 0 ? `${eur(r.ganPrevG, 0)} de ganancia prevista` : 'sin ventas previstas', 'tus ventas y el Paso a paso', 'ok', 'tuyo'], fiscalDato(),
-      ['Regla de los 2 meses', compras.length ? `compraste ${esc(f.inst.corto)} el ${fechaCorta(compras[0].fecha)}` : `no compraste ${esc(f.inst.corto)} en los últimos 2 meses`, 'tus movimientos', compras.length ? 'flojo' : 'ok', 'tuyo']];
+      datoRecompra];
     o.compr = ppComprobar([[`ahorro: ${eur(r.ahorro, 2)} menos en la renta de ${anio}`, r.ahorro > 0 && r.ahorro <= -r.x.g + 0.01], ['la pérdida es de lo que tienes ahora', r.x.g < 0], ...fechaOk]);
     o.conf = confDe(o.datos);
     o.porq = 'Son cuentas con tu coste, el precio y la escala del ahorro. Que te convenga seguir sin ella lo decides tú.';
@@ -273,12 +293,16 @@ function mesRuta0(M) {
   // con las salidas, el paso de meterlo en el fondo sobra (es una de ellas)
   if (libres) { const k = `nucleo:${libres.ref.pl.f.pos.id}:`; R.hacer = R.hacer.filter((x) => !x.id.startsWith(k)); }
   // lo que se mueve este mes: de dónde sale y a dónde va
+  const ventas = []; let sueltas = 0;
   for (const x of [...R.hacer, ...R.decidir]) {
     const fl = x.flujo; if (!fl || (x.grupo === 'decidir' && !x.libre)) continue;
     if (fl.sale) R.flujo.sale.push(fl.sale);
-    if (fl.hac) { R.hac += fl.hac; R.hacHi += x.rango ? x.rango.hi : fl.hac; }
+    if (fl.g != null) { ventas.push({ g: fl.g, inst: fl.inst }); sueltas += fl.hac || 0; }
     for (const q of fl.va || []) R.flujo.va.push(q);
   }
+  // Hacienda del mes: el impuesto de las ventas del mes juntas (con una pérdida entre ellas, lo que de verdad pagas)
+  // cada paso da su impuesto como si fuera la única venta: cuando juntas no suman lo mismo, el mes lo dice (hacJuntas)
+  if (ventas.length) { const rj = impuestoRangoJuntas(ventas, new Date().getFullYear()); R.hac = rj.lo; R.hacHi = rj.hi; R.hacJuntas = ventas.length > 1 && Math.abs(rj.lo - sueltas) >= 1; }
   if (R.hac > 0.5) R.flujo.va.unshift(['hac', 'Hacienda', R.hac]);
   // los avisos de arriba: sin conexión, la IA y el radar sin repasar, un dato viejo, un dato tuyo que falta
   const todos = [...R.hacer, ...R.decidir], datos = todos.flatMap((x) => x.datos || []);
@@ -325,7 +349,7 @@ function ppBase(x) {
       <ul class="pp-datos">${x.datos.map(([q, v, f, e]) => `<li data-e="${e}"><span class="pp-d-e" title="${PP_EST[e][0]}">${PP_EST[e][1]}</span><span class="pp-d-t"><b>${q}</b><em>${v}</em><small>${f}${e !== 'ok' ? ` · <strong>${PP_EST[e][0]}</strong>` : ''}</small></span></li>`).join('')}</ul>
       <h4>Comprobado antes de enseñártelo <span>${x.compr.length} de ${x.compr.length}</span></h4>
       <ul class="pp-compr">${x.compr.map((c) => `<li>${PP_ICO.ok}<span>${c}</span></li>`).join('')}</ul>
-      <p class="pp-nota"><b>Cuándo cambia.</b> ${x.cambia}</p>
+      ${x.cambia ? `<p class="pp-nota"><b>Cuándo cambia.</b> ${x.cambia}</p>` : ''}
       <p class="pp-nota"><b>Cómo le ha ido a pasos así.</b> ${x.hist}</p>
     </div></div>`;
 }
@@ -402,7 +426,7 @@ function ppMes(R, M) {
       <ul class="pp-fl-ley">${va.map(([k, t, v]) => `<li data-k="${k}"><i></i>${esc(t)} <b>${k === 'hac' && rango ? `${fmtNum(rango.lo, 0)} a ${eur(rango.hi, 0)}` : eur(v, 0)}</b></li>`).join('')}</ul></div>`
     : `<p class="pp-fl-nada">${R.solos.length ? `Solo entra lo que va solo: ${esc(ppTxt(R.solos[0].t).replace(/^./, (c) => c.toLowerCase()))}.` : 'Este mes no se mueve nada.'}</p>`;
   const perd = R.decidir.find((x) => /^perdida:/.test(x.id));
-  const hac = R.hac > 0.5 ? [rango ? `+${fmtNum(rango.lo, 0)} a ${eur(rango.hi, 0)}` : `+${eur(R.hac, 0)}`, `renta de ${anio}${perd ? ` · ${eur(perd.ref.ahorro, 0)} menos si vendes ${esc(perd.ref.f.inst.corto)}` : ''}`] : ['0 €', 'nada que declarar'];
+  const hac = R.hacHi > 0.5 ? [rango ? `+${fmtNum(rango.lo, 0)} a ${eur(rango.hi, 0)}` : `+${eur(R.hac, 0)}`, `renta de ${anio}${R.hacJuntas ? ' · las ventas del mes, juntas (cada paso da la suya por separado)' : ''}${perd ? ` · ${eur(perd.ref.ahorro, 0)} menos si vendes ${esc(perd.ref.f.inst.corto)}` : ''}`] : ['0 €', 'nada que declarar'];
   const av = R.avisos;
   const dat = av.includes('sinred') ? ['Sin actualizar', `del ${diaCorto(S.precios && S.precios.generado)}`] : R.apartados.length ? [`${R.apartados.length === 1 ? '1 paso apartado' : `${R.apartados.length} pasos apartados`}`, 'no pasó sus cuentas'] : av.includes('faltadato') ? ['Falta 1 dato', `tus ventas de ${anio}`] : av.includes('viejo') ? ['1 dato viejo', 'con retraso'] : av.includes('iacaida') ? ['Sin la IA de hoy', `repaso del ${diaCorto(S.precios && S.precios.radar_generado)}`] : ['Al día', `${R.datosN} datos`];
   const ok = !av.length && !R.apartados.length;
@@ -448,7 +472,7 @@ function ppLado(R) {
 }
 function ppHtmlMes(R, M) {
   const nH = R.hacer.length, hechos = R.hacer.filter((x) => x.hecho).length, primero = R.hacer.find((x) => !x.hecho);
-  const fallo = R.apartados.map(({ x, por }) => `<li class="pp-fallo"><span class="pp-av-i">${PP_ICO.falta}</span><div><b>Un paso no se enseña: no ha pasado sus comprobaciones</b><p>${esc(ppTxt(x.t))}. Lo demás no depende de él.</p><details class="paso-mas"><summary>Qué falló</summary><div class="t-como">La comprobación «${esc(por)}» no ppCuadra. Un paso con una cuenta que no ppCuadra no sale con cifras: se aparta entero.</div></details></div></li>`).join('');
+  const fallo = R.apartados.map(({ x, por }) => `<li class="pp-fallo"><span class="pp-av-i">${PP_ICO.falta}</span><div><b>Un paso no se enseña: no ha pasado sus comprobaciones</b><p>${esc(ppTxt(x.t))}. Lo demás no depende de él.</p><details class="paso-mas"><summary>Qué falló</summary><div class="t-como">La comprobación «${esc(por)}» no cuadra. Un paso con una cuenta que no cuadra no sale con cifras: se aparta entero.</div></details></div></li>`).join('');
   const sig = R.P.seis.concat(R.P.anio).filter((x) => x.d && !x.auto && !x.espera).sort((a, b) => (a.d < b.d ? -1 : 1))[0];
   const hacer = nH || fallo ? `<h3 class="rh">Haz esto<span class="k">${hechos} de ${nH} ${nH === 1 ? 'hecho' : 'hechos'}</span></h3><ol class="tareas">${R.hacer.map((x, i) => ppPaso(x, i + 1, x === primero)).join('')}${fallo}</ol>`
     : `<div class="pp-vacio">${PP_ICO.ok}<b>Nada que hacer este mes</b><p>${R.espera ? `${esc(ppTxt(R.espera.t))}. ` : ''}Cuando haya algo con fecha o fuera de tus límites, sale aquí y en el botón de arriba.${sig ? ` Lo siguiente: ${esc(ppTxt(sig.t).replace(/^./, (c) => c.toLowerCase()))}, ${esc(sig.cuando || fechaCorta(sig.d))}.` : ''}</p></div>`;
@@ -481,7 +505,7 @@ const PP_OPC = [
   ['oport', 'Nuevo', 'Oportunidad tras una caída por una noticia', 'Una empresa que cae más de un 15 % por debajo de su media por un hecho concreto y a la que los analistas siguen a favor. Siempre como opción.', 'la caída, su causa con dos fuentes y los analistas', 'baja o media'],
   ['cripto', 'Nuevo', 'Cripto dentro de su banda', 'Si la cripto pasa de tu máximo, recortar (va con «Recortar lo que pasa de tu límite»); si baja de tu mínimo, completar con la aportación.', 'el precio de Bitvavo y la banda que pongas', 'alta'],
   ['Con fecha'],
-  ['fiscal', 'Mejorado', 'Pagar menos en la renta', 'Pérdidas que compensan ganancias antes del 31 dic, con la regla de los 2 meses.', 'tus ventas del año y tus datos fiscales', 'alta si están tus datos fiscales'],
+  ['fiscal', 'Mejorado', 'Pagar menos en la renta', 'Pérdidas que compensan ganancias antes del 31 dic, con la regla de recompra de cada cosa (dos meses o un año).', 'tus ventas del año y tus datos fiscales', 'alta si están tus datos fiscales'],
   ['costes', 'Nuevo', 'El mismo índice, más barato', 'Si hay un fondo con el mismo índice y menos comisión, dice cuánto ahorras al año. El traspaso entre fondos no tributa.', 'las comisiones del catálogo', 'alta'],
   ['fechas', 'Ya está', 'Resultados y dividendos de lo tuyo', 'Las fechas que mueven tus acciones, con lo que cobras neto.', 'el calendario de cada empresa', 'alta'],
 ];

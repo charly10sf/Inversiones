@@ -34,7 +34,7 @@ test('qué es cada versión y qué se enseña al abrirla', async ({ page }) => {
   expect(r.intermedias).toEqual([true, true, true, true]);
   expect(r.letras).toEqual([false, false, false]);
   expect(r.gordaDe).toEqual(['0.8.1', '0.8.1', '0.8.1', '0.9', '0.9', '0.9', '0.9', '1.1']);
-  expect(r.guia).toBe('0.8.1');   // en la 0.8.1a, la guía sigue siendo la de la 0.8.1
+  expect(r.guia).toBe('0.9');   // la guía es la de la gorda en la que estás (en la 0.9a o la 0.9.1 seguirá siendo la de la 0.9)
   expect(r.raras).toEqual([true, true, true, true, '0.10', 'gorda', 'corta', 'gorda']);
   expect(r.caminos).toEqual(['gorda', null, 'letra', 'corta', 'gorda', 'corta', 'gorda', 'gorda', 'corta', 'corta', 'letra', 'corta', 'gorda']);
 });
@@ -47,7 +47,7 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
   await meterCartera(page);
   await page.evaluate(async () => {
     await cargarTrozo('novedades');
-    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d', '0.8.2e', '0.8.3', '0.8.3a', '0.8.3b', '0.8.3c', '0.8.3d', '0.8.6']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
+    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d', '0.8.2e', '0.8.3', '0.8.3a', '0.8.3b', '0.8.3c', '0.8.3d', '0.8.6', '0.9']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift(
       { v: '0.8.3', t: 'Otra intermedia', f: '2026-11-29', cosas: [{ t: 'Cosa de la 0.8.3', x: 'Texto.' }] },
@@ -125,7 +125,7 @@ test('«Guíame por lo nuevo» es solo de las gordas; las intermedias guardan su
   await meterCartera(page);
   const r = await page.evaluate(async () => {
     await cargarTrozo('novedades');
-    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d', '0.8.2e', '0.8.3', '0.8.3a', '0.8.3b', '0.8.3c', '0.8.3d', '0.8.6']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
+    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d', '0.8.2e', '0.8.3', '0.8.3a', '0.8.3b', '0.8.3c', '0.8.3d', '0.8.6', '0.9']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift({ v: '0.8.2', t: 'Intermedia', f: '2026-11-15', cosas: [{ t: 'Con sitio', x: 'Se puede ir.', ir }] });
     document.querySelectorAll('.hoja-fondo, .tour, .ixn, .aviso-arr').forEach((x) => x.remove());

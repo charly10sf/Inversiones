@@ -1,6 +1,94 @@
 {
  "versiones": [
   {
+   "v": "0.9",
+   "f": "2026-11-15",
+   "h": "18:30",
+   "t": "Toisón, rediseñado",
+   "commits": [
+    {
+     "cuando": "2026-11-11 22:41",
+     "asunto": "Rediseño 0.9, fase 1: la competencia mirada por el diseño y el script de capturas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 23:00",
+     "asunto": "Rediseño 0.9, fase 2: sistema de diseño 2.0 y la cáscara nueva del ordenador",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 23:29",
+     "asunto": "Rediseño 0.9: tres pestañas nuevas (prueba de estrés, tu semana y tus cobros, efecto divisa) y sus pruebas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 23:52",
+     "asunto": "Rediseño 0.9: la luz que sigue al ratón en las tarjetas y las variantes del script de capturas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-12 00:06",
+     "asunto": "Rediseño 0.9: lo que vio la revisión aparte",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-12 00:20",
+     "asunto": "Rediseño 0.9: el acabado «liso», la versión alternativa de todo Toisón",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-12 00:46",
+     "asunto": "Rediseño 0.9: las tarjetas no vuelven a entrar con un repintado; la prueba del básico, con la pestaña nueva",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 02:59",
+     "asunto": "0.9: acabado según el ancho, fuera GTA VI y las pestañas nuevas en su trozo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 12:55",
+     "asunto": "0.9: el Paso a paso del modo fundador, como la maqueta del 15 nov",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 13:19",
+     "asunto": "0.9: «Tu mes» con los pasos del mes (se había quedado a medias) y, al bajar el trozo, sin repintar todo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 14:26",
+     "asunto": "0.9: Hoy por dentro, como la maqueta del 15 nov (B2 y B3)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 14:37",
+     "asunto": "0.9: el acabado híbrido en el ordenador y más tarjetas en el móvil (maqueta del 15 nov, B4)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 14:44",
+     "asunto": "Pruebas del 0.9: sin la hoja de «Primeros pasos» encima (en la Action salía sobre «Qué mira cada mes»)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 15:36",
+     "asunto": "Maqueta del 3D y del movimiento (15 nov): fuentes de la página para elegir",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 16:18",
+     "asunto": "0.9 · El 3D y el movimiento: la moneda de Hoy y el anillo del reparto con volumen, la rueda de la cifra, la gráfica que se transforma y el paso con profundidad",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-15 18:30",
+     "asunto": "0.9 · La revisión aparte: Hacienda en el Paso a paso (los datos fiscales con un 0, varias ventas juntas, los ETC, la regla de recompra de cada cosa), los pasos huérfanos, el modo fundador con ?dev solo en este ordenador, la rueda sin leerse en voz alta, el 3D que se quita en Tú, «Tu plan» sin «Llega en la 0.9» y las novedades",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.6b",
    "f": "2026-11-12",
    "h": "00:15",

@@ -142,13 +142,14 @@ test.describe('novedades de la 0.8.3a', () => {
     omitir(info);
     const pc = info.project.name === 'pc';
     await lista(page);
-    const r = await page.evaluate(() => ({
+    // desde la 0.9 (gorda), las novedades de antes de ella van en el trozo «novedades»: se baja antes de preguntar por la 0.8.3a
+    const r = await page.evaluate(async () => { await cargarTrozo('novedades'); return {
       v: VERSION, primera: NOVEDADES[0].v,
       camino: caminoNovedades('0.8.3', '0.8.3a'), desde082: caminoNovedades('0.8.2e', '0.8.3a'),
       // las de letra de antes de la 0.8.2 con cosas siguen como siempre
       vieja: caminoNovedades('0.4', '0.4b'),
-    }));
-    expect(r).toEqual({ v: '0.8.6e', primera: '0.8.6e', camino: 'corta', desde082: 'corta', vieja: 'letra' });
+    }; });
+    expect(r).toEqual({ v: '0.9', primera: '0.9', camino: 'corta', desde082: 'corta', vieja: 'letra' });
     await page.evaluate(async () => { await cargarTrozo('novedades'); document.querySelectorAll('.hoja-fondo, .tour, .aviso-arr').forEach((x) => x.remove()); hojaIntermedia('0.8.3', () => { window.__cerrada = true; }, '0.8.3a'); });
     const h = page.locator('.hoja-corta');
     await expect(h).toBeVisible();
