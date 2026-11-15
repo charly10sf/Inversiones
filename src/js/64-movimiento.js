@@ -11,6 +11,61 @@ const movEnPrueba = () => !!navigator.webdriver && !LS.get('inv-mov-prueba', fal
 const conMovimiento = () => !movQuieto() && !movEnPrueba();
 const conTransicion = () => conMovimiento() && typeof document.startViewTransition === 'function' && !document.querySelector('.hoja-fondo, #fichaFondo, .tour');
 
+/* 0.9a · el paso de página en el móvil (Carlos, 15 nov: «la barra de abajo liquid que se quita al cambiar»). Sin la View
+   Transitions API: con ella el navegador enseña fotos mientras dura el cambio, y la barra de cristal iba en la foto de la
+   raíz (se veía plana, sin el cristal de verdad), con la pantalla congelada mientras se pintaba la página nueva dentro de
+   la transición. Aquí la barra sigue viva: el botón tocado se marca en el mismo fotograma, la página vieja se apaga un poco
+   (en el compositor, aunque pintar tarde), la nueva se pinta un fotograma después y entra con opacidad y un desplazamiento
+   corto (solo compositor) en --mov-pagina, sin espera. Mientras entra, ni escalera de tarjetas ni rueda: van después
+   (trasPagina), para que no coincidan en el mismo fotograma. Medido en tests/fluidez.spec.js (npm run fluidez). */
+const pasoMovil = () => conMovimiento() && typeof Element.prototype.animate === 'function' && !document.querySelector('.hoja-fondo, #fichaFondo, .tour') && matchMedia('(max-width: 960px)').matches;
+let pasoFin = 0, pasoPend = null, pasoAni = null, pasoMs = null;
+const pasandoPagina = () => !!pasoPend || performance.now() < pasoFin;
+/* lo que se mueve después de que entre la página (o ya, si no está entrando ninguna) */
+function trasPagina(f) { if (!pasandoPagina()) return f(); setTimeout(() => trasPagina(f), Math.max(16, pasoFin - performance.now() + 16)); }
+function msToken(n, d) { const v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(), x = parseFloat(v); return isFinite(x) ? (/ms$/.test(v) ? x : /s$/.test(v) ? x * 1000 : x) : d; }
+function pasarPagina(cambiar, dx, k) {
+  for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === k ? 'page' : 'false');
+  // la duración se lee una vez (leerla en cada toque obliga a recalcular los estilos justo antes de pintar)
+  if (pasoMs == null) pasoMs = msToken('--mov-pagina', 200);
+  const dur = pasoMs, vi = $('#vista');
+  if (pasoPend) { cancelAnimationFrame(pasoPend.raf); clearTimeout(pasoPend.t); }
+  else if (vi) { if (pasoAni) pasoAni.cancel(); pasoAni = vi.animate([{ opacity: 1 }, { opacity: 0.5 }], { duration: Math.round(dur * 0.6), easing: 'cubic-bezier(.4, 0, 1, 1)', fill: 'forwards' }); }
+  const p = pasoPend = { raf: 0, t: 0 };
+  // un fotograma para que se vea el toque (el botón marcado y la página apagándose) antes de pintar, que es lo que tarda
+  p.raf = requestAnimationFrame(() => { p.t = setTimeout(() => {
+    if (pasoPend !== p) return;
+    pasoFin = performance.now() + dur + 400;   // mientras se pinta, lo de después espera
+    try { cambiar(); } finally {
+      pasoPend = null; pasoFin = performance.now() + dur;
+      const v2 = $('#vista');
+      if (pasoAni) { pasoAni.cancel(); pasoAni = null; }
+      if (v2) {
+        const a = v2.animate([{ opacity: 0.4, transform: dx ? `translate3d(${Math.round(dx)}px, 0, 0)` : 'translate3d(0, 8px, 0)' }, { opacity: 1, transform: 'none' }], { duration: dur, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+        pasoAni = a; a.onfinish = a.oncancel = () => { if (pasoAni === a) pasoAni = null; };
+      }
+    }
+  }, 0); });
+}
+
+/* 0.9a · cerrar una hoja o la ficha: se quitan ya (lo que mira si están abiertas ve que no) y en su sitio queda un momento
+   una copia muda que baja un poco y se apaga en el compositor (antes desaparecían de golpe). Sin movimiento, nada */
+function despedirCapa(f) {
+  if (!f || !f.isConnected || !conMovimiento() || typeof f.animate !== 'function') return;
+  const panel = f.firstElementChild; if (!panel) return;
+  const cs = getComputedStyle(f), pt = getComputedStyle(panel).transform, sy = panel.scrollTop;
+  const c = f.cloneNode(true); c.className = 'capa-sale'; c.removeAttribute('id'); c.setAttribute('aria-hidden', 'true'); c.inert = true;
+  for (const x of c.querySelectorAll('[id]')) x.removeAttribute('id');
+  for (const k of ['position', 'top', 'right', 'bottom', 'left', 'zIndex', 'display', 'flexDirection', 'justifyContent', 'alignItems', 'backgroundColor', 'backgroundImage', 'padding']) c.style[k] = cs[k];
+  c.style.pointerEvents = 'none';
+  document.body.appendChild(c);
+  const p2 = c.firstElementChild; if (sy) p2.scrollTop = sy;
+  const dur = Math.round(msToken('--mov-corto', 180) * 0.9), cur = pt && pt !== 'none' ? pt + ' ' : '';
+  p2.animate([{ transform: `${cur}translate3d(0, 28px, 0)`, opacity: 0 }], { duration: dur, easing: 'cubic-bezier(.4, 0, 1, 1)', fill: 'forwards' });
+  const a = c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: dur, easing: 'linear', fill: 'forwards' });
+  const quita = () => c.remove(); a.onfinish = a.oncancel = quita; setTimeout(quita, dur + 400);
+}
+
 /* una cifra que cuenta hasta su valor: el[data-n] lleva el número y fmt lo escribe. Si mientras tanto llega un precio
    nuevo y alguien cambia el texto, se deja lo nuevo y se para */
 function cifraCuenta(el, hasta, fmt, ms = 700, desde = null) {

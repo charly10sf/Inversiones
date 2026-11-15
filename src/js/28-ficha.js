@@ -17,7 +17,7 @@ function abrirFicha(posId, tab) {
   const b = $('#fichaFondo [data-accion="cerrar-ficha"]'); if (b) b.focus();
 }
 function cerrarFicha(desdeHistorial) {
-  const f = $('#fichaFondo'); if (f) f.remove();
+  const f = $('#fichaFondo'); if (f) { despedirCapa(f); f.remove(); }
   document.body.style.overflow = '';
   const id = S.ficha && S.ficha.id;
   S.ficha = null;

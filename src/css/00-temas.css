@@ -863,11 +863,11 @@ img.tema-muestra { background: none; box-shadow: none; }
   /* el ancho de lectura de una página en el ordenador */
   --pagina-max: 1240px; --pagina-aire: 36px;
   /* MOVIMIENTO: duraciones y curvas con nombre. «muelle» pasa un poco y vuelve; «salir» es más corta que «entrar» */
-  --mov-toque: 120ms; --mov-corto: 180ms; --mov-medio: 280ms; --mov-largo: 460ms; --mov-dibujo: 900ms; --mov-cifra: 700ms;
+  --mov-toque: 120ms; --mov-corto: 180ms; --mov-medio: 280ms; --mov-largo: 460ms; --mov-dibujo: 900ms; --mov-cifra: 700ms; --mov-pagina: 200ms; /* 0.9a: cambiar de pestaña en el móvil, todo, sin espera */
   --curva-entrar: cubic-bezier(.16, 1, .3, 1); --curva-salir: cubic-bezier(.4, 0, 1, 1); --curva-cambiar: cubic-bezier(.65, 0, .35, 1);
   --curva-muelle: linear(0, .009, .035 2.1%, .141 4.4%, .723 12.9%, .938 16.7%, 1.017 19.4%, 1.067 22.4%, 1.089 25.5%, 1.088 29%, 1.012 43.6%, .996 51.8%, 1);
   --paso-escalera: 45ms; /* lo que tarda en entrar cada tarjeta después de la anterior */
 }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-tema], [data-tema] { --mov-toque: 0ms; --mov-corto: 0ms; --mov-medio: 0ms; --mov-largo: 0ms; --mov-dibujo: 0ms; --mov-cifra: 0ms; --paso-escalera: 0ms; }
+  :root[data-tema], [data-tema] { --mov-toque: 0ms; --mov-corto: 0ms; --mov-medio: 0ms; --mov-largo: 0ms; --mov-dibujo: 0ms; --mov-cifra: 0ms; --mov-pagina: 0ms; --paso-escalera: 0ms; }
 }

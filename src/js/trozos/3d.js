@@ -418,7 +418,8 @@ svg.t3-cambia text,svg.t3-cambia circle,svg.t3-cambia .hg-otra,svg.t3-cambia .gh
     }
     MON.tres.tema(temaAhora());
     // al volver a Hoy, una vuelta
-    if (MON.vista && MON.vista !== 'cartera' && S.vista === 'cartera') MON.tres.girar(1);
+    // 0.9a: después de que entre la página, no en el mismo fotograma que el paso y el primer pintado
+    if (MON.vista && MON.vista !== 'cartera' && S.vista === 'cartera') { const m = MON.tres; trasPagina(() => { if (MON.tres === m && S.vista === 'cartera') m.girar(1); }); }
     MON.vista = S.vista;
   }
   document.addEventListener('click', (e) => { if (MON.tres && S.vista === 'cartera' && e.target.closest && e.target.closest('.navbar a.nav-centro, .riel-nav .k2-marca')) MON.tres.girar(1); });
@@ -459,11 +460,24 @@ svg.t3-cambia text,svg.t3-cambia circle,svg.t3-cambia .hg-otra,svg.t3-cambia .gh
   /* ---------- la gráfica de Hoy se transforma: al cambiar de periodo o de pestaña, cada punto de la línea viaja a su sitio ---------- */
   const GR = { el: null, obs: null, ult: null, an: 0, vista: '' };
   const lineasDe = (svg) => $$('.gh-trazo, .hg-linea', svg);
+  /* 0.9a: los puntos de la línea salen de su «d» (M, L y C absolutas, como las pintan curvaSuave y camino): el final de
+     cada tramo es un dato. Antes eran 261 getPointAtLength, y cada uno recorre la curva entera: con un año de datos,
+     ~3 s con la CPU de un móvil medio, justo al entrar en Hoy y dentro del cambio de página */
+  function puntosDe(d) {
+    if (!d || /[^MLC\d\s.,eE+-]/.test(d)) return null;
+    const p = [];
+    for (const m of d.matchAll(/[MLC]([^MLC]*)/g)) { const n = m[1].match(/-?[\d.]+(?:e[+-]?\d+)?/gi) || []; if (n.length >= 2) p.push([+n[n.length - 2], +n[n.length - 1]]); }
+    return p.length > 1 && p.every((q) => isFinite(q[0]) && isFinite(q[1])) ? p : null;
+  }
   function muestra(svg) {
     const l = lineasDe(svg).pop(); if (!l) return null;
-    let len = 0; try { len = l.getTotalLength(); } catch (e) { return null; }
-    if (!(len > 4)) return null;
-    const p = []; for (let i = 0; i <= 260; i++) { const q = l.getPointAtLength(len * i / 260); p.push([q.x, q.y]); }
+    let p = puntosDe(l.getAttribute('d'));
+    if (!p) {
+      let len = 0; try { len = l.getTotalLength(); } catch (e) { return null; }
+      if (!(len > 4)) return null;
+      p = []; for (let i = 0; i <= 60; i++) { const q = l.getPointAtLength(len * i / 60); p.push([q.x, q.y]); }
+    }
+    if (Math.abs(p[p.length - 1][0] - p[0][0]) < 4) return null;
     const x0 = p[0][0], x1 = p[p.length - 1][0], o = []; let j = 0;
     for (let i = 0; i <= 120; i++) { const x = x0 + (x1 - x0) * i / 120; while (j < p.length - 2 && p[j + 1][0] < x) j++; const a = p[j], b = p[j + 1], f = b[0] > a[0] ? max(0, min(1, (x - a[0]) / (b[0] - a[0]))) : 0; o.push([x, a[1] + (b[1] - a[1]) * f]); }
     return o;

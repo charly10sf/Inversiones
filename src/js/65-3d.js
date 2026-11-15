@@ -16,7 +16,8 @@ function pedir3D(ya) {
     tresDPedido = 2; cargarTrozo('3d').catch(() => { tresDPedido = 0; }); };   // si no baja, se queda lo plano y no se dice nada
   if (ya) { clearTimeout(tresDLuego); baja(); return; }
   tresDPedido = 1;
-  tresDLuego = setTimeout(() => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(baja, { timeout: 3000 }), 2600);
+  // 0.9a: y si en ese momento está entrando una página, cuando acabe (que no coincidan la bajada y el paso)
+  tresDLuego = setTimeout(() => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => trasPagina(baja), { timeout: 3000 }), 2600);
 }
 /* después de cada pintado: lo pide (una vez) y, si ya está, recoloca la moneda y el anillo */
 function poner3D() { if (window.T3D) window.T3D.poner(); else pedir3D(); }
@@ -30,7 +31,12 @@ function ruedaCifra(el, txt, desdeCero) {
   if (!cols) {
     el.innerHTML = ds.map((c) => (esD(c) ? `<span class="rd" style="--d:${desdeCero ? 0 : c}">${c}</span>` : `<span class="rp">${esc(c)}</span>`)).join('');
     if (!desdeCero) return;
-    cols = [...el.children]; void el.offsetWidth;
+    cols = [...el.children];
+    // 0.9a: si la página está entrando (el paso del móvil), la rueda arranca cuando acaba, no en el mismo fotograma; y sin
+    // forzar la maqueta de toda la página recién pintada (la tira ya se ha pintado una vez en el 0)
+    if (typeof pasandoPagina === 'function' && pasandoPagina()) { const c0 = cols; trasPagina(() => { if (el.isConnected && c0[0] && c0[0].parentNode === el) girar(c0); }); return; }
+    void el.offsetWidth;
   }
-  cols.forEach((c, i) => { if (!esD(ds[i])) { if (c.textContent !== ds[i]) c.textContent = ds[i]; return; } if (c.textContent !== ds[i]) c.textContent = ds[i]; c.style.setProperty('--i', i); c.style.setProperty('--d', ds[i]); });
+  girar(cols);
+  function girar(cs) { cs.forEach((c, i) => { if (!esD(ds[i])) { if (c.textContent !== ds[i]) c.textContent = ds[i]; return; } if (c.textContent !== ds[i]) c.textContent = ds[i]; c.style.setProperty('--i', i); c.style.setProperty('--d', ds[i]); }); }
 }

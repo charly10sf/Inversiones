@@ -158,7 +158,9 @@ window.addEventListener('hashchange', () => {
     const cambiar = () => { S.vista = v; S.scrollTop = !(y > 0); S.scrollA = y > 0 ? y : null; LS.set('inv-vista', v); pintar(); };
     // 0.9 · rediseño: con la View Transitions API, la página vieja se funde y la nueva entra desde su lado (34-sistema.css);
     // sin ella (o con «reducir movimiento»), la entrada de siempre
-    if (conTransicion()) {
+    // 0.9a: en el móvil, sin View Transitions: la barra de cristal sigue viva y solo se mueve la página (64-movimiento.js)
+    if (pasoMovil()) pasarPagina(cambiar, dx * 0.7, grupoDe(v).k);
+    else if (conTransicion()) {
       const raiz = document.documentElement; raiz.classList.add('vt'); raiz.style.setProperty('--vt-dx', `${dx * 1.4}px`);
       let t = null; try { t = document.startViewTransition(cambiar); } catch (e) { if (!vtEnCurso) raiz.classList.remove('vt'); cambiar(); }
       // si llega otra navegación antes de acabar, la transición se salta y «ready» se rechaza: no es un error

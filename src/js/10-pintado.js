@@ -746,7 +746,8 @@ function pintar() {
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
   if (S.ficha) refrescarFicha();
-  S.firmaPintada = firmaRecom(M);
+  // 0.9a: la firma de las recomendaciones (para avisar si cambian) no hace falta para enseñar la página: si está entrando, después
+  if (pasandoPagina()) trasPagina(() => { if (S.M === M) S.firmaPintada = firmaRecom(M); }); else S.firmaPintada = firmaRecom(M);
   if (S.senalesSucias && !S.guardandoSenales) { S.senalesSucias = false; S.guardandoSenales = true; setTimeout(() => guardarCarteraCallada('Señales').catch(() => {}).finally(() => { S.guardandoSenales = false; }), 4000); }
   enviarWidget();
   requestAnimationFrame(marcarDesbordes);

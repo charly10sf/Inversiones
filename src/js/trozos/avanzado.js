@@ -277,7 +277,8 @@ function pintarPanelAv() {
   const primera = el.hasAttribute('aria-busy') && S.pavEntrada !== p; S.pavEntrada = p;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
   if (p === 'reparto') an3Pinta(primera);
-  if (primera) { el.classList.add('entra'); setTimeout(() => el.classList.remove('entra'), 1100); }
+  // 0.9a: si la pestaña se llena mientras entra la página (el paso del móvil), entra con ella, de una vez
+  if (primera && !(typeof pasandoPagina === 'function' && pasandoPagina())) { el.classList.add('entra'); setTimeout(() => el.classList.remove('entra'), 1100); }
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
   requestAnimationFrame(() => dibujarPanelAv(p, M));
 }

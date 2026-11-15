@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "node tests/servidor.js dist 8766",
     "test:solo": "playwright test",
-    "rendimiento": "GF_RENDIMIENTO=1 playwright test tests/rendimiento.spec.js --project=movil --workers=1"
+    "rendimiento": "GF_RENDIMIENTO=1 playwright test tests/rendimiento.spec.js --project=movil --workers=1",
+    "fluidez": "GF_FLUIDEZ=1 playwright test tests/fluidez.spec.js --project=movil --workers=1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

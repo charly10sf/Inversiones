@@ -154,6 +154,10 @@ jobs:
       - name: Presupuesto de rendimiento (solo, sin otras pruebas a la vez)
         run: npm run rendimiento
 
+      # 0.9a: cambiar de pestaña en el móvil con la CPU frenada ×4 y ×6 (tests/fluidez.spec.js), también solo
+      - name: Fluidez del cambio de pestañas
+        run: npm run fluidez
+
       # «nadie nota nada»: una cartera creada con lo que hay publicado (main) se abre igual con este build
       - name: Subida desde la versión publicada
         run: |

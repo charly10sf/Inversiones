@@ -164,7 +164,8 @@ function celebrarMetas(M) {
 addEventListener('scroll', () => {
   const m = $('#topMini'); if (!m) return;
   const h = S.vista === 'cartera' && $('.car-hero'), on = !!h && h.getBoundingClientRect().bottom < 80;
-  if (on) { const t = $('#heroNum'), d = $('.hero-sub [data-b="dia"]'); m.innerHTML = `<b>${esc(t ? t.textContent.trim() : '')}</b>${d ? `<small class="${esc(d.className)}">${esc(d.textContent.trim())}</small>` : ''}`; }
+  // 0.9a: solo si cambia (antes se reescribía en cada evento de bajar y rehacía la cabecera en cada fotograma)
+  if (on) { const t = $('#heroNum'), d = $('.hero-sub [data-b="dia"]'), h2 = `<b>${esc(t ? t.textContent.trim() : '')}</b>${d ? `<small class="${esc(d.className)}">${esc(d.textContent.trim())}</small>` : ''}`; if (m.dataset.h !== h2) { m.dataset.h = h2; m.innerHTML = h2; } }
   document.body.classList.toggle('mini-total', on);
 }, { passive: true });
 // un toque corto al cambiar de sección o de pestaña

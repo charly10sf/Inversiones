@@ -63,7 +63,7 @@ function hoja(titulo, html, alCerrar, ancha) {
   f.className = 'hoja-fondo';
   f.innerHTML = `<div class="hoja${ancha ? ' ancha' : ''}" role="dialog" aria-modal="true" aria-label="${esc(titulo)}"><div class="hoja-cab"><h2>${esc(titulo)}</h2><button class="ib" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button></div>${sinCortes(html)}</div>`;
   let quitarAtras = () => {};
-  const cerrar = (sinAviso, desdeAtras) => { if (!f.isConnected) return; f.remove(); document.removeEventListener('keydown', tecla, true); if (desdeAtras !== true) quitarAtras(); if (alCerrar && sinAviso !== true) alCerrar(); };
+  const cerrar = (sinAviso, desdeAtras) => { if (!f.isConnected) return; despedirCapa(f); f.remove(); document.removeEventListener('keydown', tecla, true); if (desdeAtras !== true) quitarAtras(); if (alCerrar && sinAviso !== true) alCerrar(); };
   // con dos hojas apiladas, Escape cierra solo la de arriba (las de abajo esperan su turno)
   const tecla = (e) => { if (e.key !== 'Escape') return; const hs = document.querySelectorAll('.hoja-fondo'); if (hs[hs.length - 1] !== f) return; e.stopImmediatePropagation(); cerrar(); };
   f.addEventListener('click', (e) => { if (e.target === f || e.target.closest('[data-cerrar]')) cerrar(); });
