@@ -86,8 +86,12 @@ test('Rendimiento: el marcador cuadra con la gráfica y con el índice', async (
   await expect(marc.locator('.hm-ref')).toHaveCount(1);
   // al pasar el ratón o el dedo, la fecha y los dos datos
   const box = await page.locator('#grafEvo svg').boundingBox();
-  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.5);
-  await expect(page.locator('#grafEvo .gh-fecha')).toContainText(' · tú ');
+  // si la gráfica se repinta justo después de mover el ratón (llega un dato), la nueva no se entera: se vuelve a mover
+  await expect(async () => {
+    await page.mouse.move(box.x + box.width * 0.4 + 3, box.y + box.height * 0.5);
+    await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.5);
+    await expect(page.locator('#grafEvo .gh-fecha')).toContainText(' · tú ', { timeout: 1500 });
+  }).toPass({ timeout: 20_000 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize().width + 1);
 });
 

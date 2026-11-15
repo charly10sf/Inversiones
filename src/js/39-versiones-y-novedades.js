@@ -6,10 +6,10 @@
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
+/* 0.9 (15 nov): el rediseño. El plan decía «Toisón, para cualquiera» (27 dic; claude/versiones/0.9.md): Carlos decidió el
+   15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
+   El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
-  /* 0.9 (15 nov): el rediseño. El plan decía «Toisón, para cualquiera» (27 dic; claude/versiones/0.9.md): Carlos decidió el
-     15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
-     El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
   { v: '0.9', f: '2026-11-15', h: '18:30', t: 'Toisón, rediseñado', cosas: [
     { d: 'hoy4', ir: { v: 'cartera', sel: '.hoy-pest' }, t: 'Hoy, con cuatro gráficas', x: 'Encima de la gráfica eliges qué ver: Valor, la de siempre; Rendimiento, tu porcentaje al lado del MSCI World; Caída, cuánto has estado por debajo de tu máximo; y Cobros, los dividendos de cada mes y los que vienen.', g: 'Valor, Rendimiento, Caída o Cobros: toca una.' },
     { d: 'hoydia', ir: { v: 'cartera', sel: '.hoy-dia' }, t: 'Lo de hoy, en una frase', x: 'Debajo de la gráfica: si hoy subes o bajas y qué es lo que más tira, cómo fue el último día de bolsa, lo que viene y lo que más mueve tu cartera.', g: 'Lo de hoy, resumido aquí.' },
