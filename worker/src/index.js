@@ -963,7 +963,7 @@ export default {
       if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, intradia: true, historico: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS, correo: !!(env.RESEND_API_KEY && env.FIREBASE_CORREO) });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
       if (url.pathname === '/claude') return await claude(req, env, cors, res, ctx);
-      if (url.pathname === '/correo' || url.pathname.startsWith('/correo/')) return await correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes });
+      if (url.pathname === '/correo' || url.pathname.startsWith('/correo/')) return await correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes, esDueno: puedeBanco });
       // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
       if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
       // igual que /isin: desde la web o la app, sin sesión; desde otro sitio, con ella

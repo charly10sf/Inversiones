@@ -34,7 +34,7 @@ function puedeLeer(ruta) {
   if (col === 'usuarios') return id === u.uid;
   if (col === 'modos') return esDueno() || (id === String(u.email || '').toLowerCase() && (u.emailVerified || u.proveedor !== 'password'));
   if (col === 'cuentas' || col === 'opiniones') return esDueno() || (crudo(ruta) || {}).uid === u.uid;
-  if (col === 'fallos_ia' || col === 'bajas') return esDueno();
+  if (col === 'fallos_ia' || col === 'bajas' || col === 'acceso') return esDueno();
   return true;
 }
 function snap(ruta) {
@@ -72,7 +72,9 @@ export async function deleteDoc(ref) {
   if (ref.path.startsWith('bajas/') && !esDueno()) throw sinPermiso();
   localStorage.removeItem(P + ref.path); escribe(); avisarCambio(ref.path);
 }
-export async function updateDoc(ref, data) { if (!crudo(ref.path)) { const e = new Error('No document to update'); e.code = 'not-found'; throw e; } poner(ref.path, data, true); }
+// acceso (15 nov): solo el dueño, y solo «dado» (true) y «dadoCuando» (la hora del servidor)
+const accesoMal = (ref, data) => ref.path.startsWith('acceso/') && (!esDueno() || Object.keys(data).some((k) => !['dado', 'dadoCuando'].includes(k)) || data.dado !== true || !(data.dadoCuando && data.dadoCuando.__ts === 'server'));
+export async function updateDoc(ref, data) { if (accesoMal(ref, data)) throw sinPermiso(); if (!crudo(ref.path)) { const e = new Error('No document to update'); e.code = 'not-found'; throw e; } poner(ref.path, data, true); }
 export async function addDoc(col, data) {
   const id = Math.random().toString(36).slice(2, 12), ruta = col.path + '/' + id;
   poner(ruta, data, false); return { id, path: ruta };
@@ -82,7 +84,7 @@ export async function getDocs(q) {
   const filtro = cond.filter((c) => c.t === 'where');
   const soloLoSuyo = filtro.some((c) => c.campo === 'uid' && yo() && c.valor === yo().uid);
   if ((q.path === 'opiniones' || q.path === 'cuentas' || q.path === 'modos') && !esDueno() && !soloLoSuyo) throw sinPermiso();
-  if (q.path === 'fallos_ia' && !esDueno()) throw sinPermiso();
+  if ((q.path === 'fallos_ia' || q.path === 'acceso') && !esDueno()) throw sinPermiso();
   let docs = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);

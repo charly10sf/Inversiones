@@ -217,7 +217,9 @@ async function filaAcceso(h) {
   const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
   if (S.esDueno) {
     w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va la IA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va la IA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aEspera">${ICONOS.enviar}<span><b>${L('Lista de espera', 'Waiting list')}</b><small>${L('Quien pide acceso en toison.es, y el botón para mandarle «Ya tienes acceso». Solo lo ves tú.', 'Who asked for access on toison.es, and the button to send them «You now have access». Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aEspera', h.el).onclick = () => { h.cerrar(true); verListaEspera(); };
     $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
     $('#aSaludIA', h.el).onclick = () => { h.cerrar(true); verSaludIA(); };
   } else if (correoSinConfirmar()) {

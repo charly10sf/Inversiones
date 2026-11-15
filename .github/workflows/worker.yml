@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       prueba:
-        description: '«correos»: publica el Worker de pruebas growfolio-correos (solo con lo de los correos) y manda los tres a la cuenta de prueba'
+        description: '«correos»: publica el Worker de pruebas growfolio-correos (solo con lo de los correos) y manda los cinco a la cuenta de prueba'
         required: false
         default: 'no'
         type: choice
@@ -100,7 +100,7 @@ jobs:
           if ! npx --yes wrangler@4 secret list 2>/dev/null | grep -q '"ESTADO"'; then poner ESTADO "$(openssl rand -hex 32)"; fi
 
       # 0.8.3: el Worker de pruebas de los correos (growfolio-correos), desde cualquier rama y sin tocar el de verdad. Solo lleva
-      # la clave de Resend, la cuenta de servicio y un token de pruebas que nadie ve; manda los tres correos a la cuenta de prueba
+      # la clave de Resend, la cuenta de servicio y un token de pruebas que nadie ve; manda los cinco correos a la cuenta de prueba
       - name: Worker de pruebas de los correos
         if: steps.cf.outputs.ok == 'si' && inputs.prueba == 'correos'
         working-directory: worker
@@ -122,7 +122,7 @@ jobs:
           printf '%s' "$T" | npx --yes wrangler@4 secret put PRUEBA_TOKEN --env correos > /dev/null
           sleep 15
           echo "::notice::Worker de pruebas: $url ($(curl -s "$url/salud"))"
-          for tipo in confirmar clave bienvenida; do
+          for tipo in confirmar clave bienvenida apuntado acceso; do
             r=$(curl -s -X POST "$url/correo/prueba" -H "X-Prueba: $T" -H 'Content-Type: application/json' -H 'Origin: https://toison.es' -d "{\"tipo\":\"$tipo\",\"lang\":\"es\"}")
             echo "::notice::$tipo: $r"
             sleep 2

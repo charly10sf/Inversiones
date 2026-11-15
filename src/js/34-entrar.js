@@ -46,7 +46,13 @@ function pantallaCuenta(errorTxt = '') {
     $('#bOlvido').hidden = modo === 'crear'; err('');
   };
   // desde el final de la presentación: «Crear mi cartera» abre en crear y «Ya tengo cuenta: entrar», en entrar
-  const pm = S.modoCuenta; S.modoCuenta = null;
+  // 0.8.3 (15 nov): el correo «Ya tienes acceso» abre la app con ?entrar=crear, que empieza en «Crear cuenta» (una vez:
+  // se quita de la dirección)
+  let pm = S.modoCuenta; S.modoCuenta = null;
+  if (!pm && /[?&]entrar=crear(&|$)/.test(location.search)) {
+    pm = 'crear';
+    try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])entrar=crear(&|$)/, (m, a, z) => (z ? a : '')).replace(/[?&]$/, '') + location.hash); } catch (e) {}
+  }
   if (pm ? pm === 'crear' : primeraVez) { const bc = $('.cuenta-modo button[data-m="crear"]'); if (bc) bc.click(); }
   if ($('#bGoogle')) $('#bGoogle').onclick = async () => {
     const b = $('#bGoogle'); err(''); b.disabled = true;

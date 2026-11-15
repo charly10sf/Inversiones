@@ -324,3 +324,121 @@ test('los contadores de los correos se borran solos pasado su tiempo', async () 
   await o.alarm();
   expect(m.get('u')).toBe(1);
 });
+
+/* ---------- 15 nov · los dos correos de la lista de espera ---------- */
+test('apuntado: sin sesión, solo desde toison.es, sin texto del usuario y una vez por correo para siempre', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv();
+    // desde otro sitio (también la app en github.io), no
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'nuevo@prueba.com' })).j).toEqual({ ok: false, motivo: 'origen' });
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'nuevo@prueba.com' }, { origen: 'https://malo.example' })).status).toBe(403);
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'no-es-correo' }, { origen: 'https://toison.es' })).j).toEqual({ ok: false, motivo: 'correo' });
+    const r = await pedir(env, { tipo: 'apuntado', lang: 'en', correo: ' Nuevo@Prueba.com ', nombre: '<b>compra aquí</b>', mensaje: 'spam' }, { origen: 'https://toison.es' });
+    expect(r).toEqual({ status: 200, j: { ok: true } });
+    expect(v.fb.length).toBe(0);
+    const m = v.resend[0].c;
+    expect(m.to).toEqual(['nuevo@prueba.com']);
+    expect(m.subject).toBe('You’re on the Toisón waiting list');
+    expect(m.tags).toEqual([{ name: 'tipo', value: 'apuntado' }]);
+    expect(m.html + m.text).not.toContain('compra aquí');
+    expect(m.html + m.text).not.toContain('spam');
+    expect(m.html).toContain('href="https://toison.es/"');
+    // la segunda vez (también con otra IP y otras mayúsculas), la misma respuesta y no sale nada
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'NUEVO@prueba.com' }, { origen: 'https://toison.es', ip: '9.9.9.9' })).j).toEqual({ ok: true });
+    expect(v.resend.length).toBe(1);
+  });
+});
+
+test('apuntado: tope por IP (las IPv6 por su /64) y es lo primero que se deja de mandar si el día se llena', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv();
+    for (let i = 1; i <= 5; i++) expect((await pedir(env, { tipo: 'apuntado', correo: `p${i}@prueba.com` }, { origen: 'https://toison.es', ip: '2001:db8:1:2::' + i })).j.ok).toBe(true);
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'p6@prueba.com' }, { origen: 'https://toison.es', ip: '2001:db8:1:2:ffff::9' })).j).toEqual({ ok: false, motivo: 'cupo' });
+    expect(v.resend.length).toBe(5);
+    // con el día a 10, «apuntado» para en 7; los demás siguen hasta 10
+    const env2 = nuevoEnv({ CORREO_POR_DIA: '10' });
+    for (let i = 1; i <= 9; i++) await pedir(env2, { tipo: 'apuntado', correo: `q${i}@prueba.com` }, { origen: 'https://toison.es', ip: '5.5.' + i + '.1' });
+    expect(v.resend.length).toBe(5 + 7);
+    // los demás correos siguen cabiendo hasta el tope del día
+    const r = await pedir(env2, { tipo: 'bienvenida' }, { uid: 'dd1', email: 'ana@prueba.com', verificado: true });
+    expect(r.j).toEqual({ ok: true });
+    expect(v.resend.length).toBe(13);
+  });
+});
+
+test('apuntado: si Resend falla, la web recibe «ok» igual y el correo puede volver a salir', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv();
+    expect((await pedir(env, { tipo: 'apuntado', correo: 'cae@prueba.com' }, { origen: 'https://toison.es' })).j).toEqual({ ok: true });
+    expect(v.resend.length).toBe(1);
+    // no quedó marcado: al volver a apuntarse, lo intenta otra vez
+    await pedir(env, { tipo: 'apuntado', correo: 'cae@prueba.com' }, { origen: 'https://toison.es', ip: '8.8.8.8' });
+    expect(v.resend.length).toBe(2);
+  }, { resendFalla: true });
+});
+
+test('acceso: solo el dueño (BANCO_EMAILS, correo confirmado), con el botón a la app en «Crear cuenta»', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv({ BANCO_EMAILS: 'carlos@prueba.com' });
+    expect((await pedir(env, { tipo: 'acceso', correo: 'amigo@prueba.com' })).j).toEqual({ ok: false, motivo: 'sesion' });
+    // otra cuenta, aunque esté confirmada
+    expect((await pedir(env, { tipo: 'acceso', correo: 'amigo@prueba.com' }, { uid: 'x1', email: 'ana@prueba.com', verificado: true })).j).toEqual({ ok: false, motivo: 'dueno' });
+    // el correo del dueño sin confirmar tampoco
+    expect((await pedir(env, { tipo: 'acceso', correo: 'amigo@prueba.com' }, { uid: 'c1', email: 'carlos@prueba.com', verificado: false })).status).toBe(403);
+    // un token firmado con otra clave no vale
+    expect(v.resend.length).toBe(0);
+    const r = await pedir(env, { tipo: 'acceso', lang: 'es', correo: 'Amigo@Prueba.com' }, { uid: 'c1', email: 'carlos@prueba.com', verificado: true, origen: 'https://toison.es' });
+    expect(r).toEqual({ status: 200, j: { ok: true } });
+    const m = v.resend[0].c;
+    expect(m.to).toEqual(['amigo@prueba.com']);
+    expect(m.subject).toBe('Ya tienes acceso a Toisón');
+    expect(m.html).toContain('href="https://toison.es/app/?entrar=crear"');
+    expect(m.text).toContain('https://toison.es/app/?entrar=crear');
+    expect(m.html).not.toContain('amigo%40');
+    expect(m.text).toContain('hola@toison.es');
+    // sin BANCO_EMAILS no lo puede mandar nadie
+    expect((await pedir(nuevoEnv(), { tipo: 'acceso', correo: 'amigo@prueba.com' }, { uid: 'c1', email: 'carlos@prueba.com', verificado: true })).j.motivo).toBe('dueno');
+  });
+});
+
+test('acceso: un token falso con el correo del dueño no vale, y tiene su propio tope', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv({ BANCO_EMAILS: 'carlos@prueba.com' });
+    const otra = generateKeyPairSync('rsa', { modulusLength: 2048 }), ahora = Math.floor(Date.now() / 1000);
+    const cab = b64u(JSON.stringify({ alg: 'RS256', kid: 'k-correo', typ: 'JWT' }));
+    const cue = b64u(JSON.stringify({ aud: PROYECTO, iss: `https://securetoken.google.com/${PROYECTO}`, sub: 'c1', iat: ahora - 10, exp: ahora + 3600, email: 'carlos@prueba.com', email_verified: true }));
+    const falso = `${cab}.${cue}.${b64u(createSign('RSA-SHA256').update(`${cab}.${cue}`).sign(otra.privateKey))}`;
+    expect((await pedir(env, { tipo: 'acceso', correo: 'amigo@prueba.com' }, { cab: { Authorization: 'Bearer ' + falso } })).j).toEqual({ ok: false, motivo: 'sesion' });
+    for (let i = 1; i <= 10; i++) expect((await pedir(env, { tipo: 'acceso', correo: `a${i}@prueba.com` }, { uid: 'c1', email: 'carlos@prueba.com', verificado: true })).j.ok).toBe(true);
+    const r = await pedir(env, { tipo: 'acceso', correo: 'a11@prueba.com' }, { uid: 'c1', email: 'carlos@prueba.com', verificado: true });
+    expect(r.status).toBe(429);
+    expect(r.j.motivo).toBe('espera');
+    expect(v.resend.length).toBe(10);
+  });
+});
+
+test('las plantillas de la lista de espera: los dos idiomas, sin el chip de «Cuenta» y con su pie', () => {
+  const img = (n) => 'https://w/' + n;
+  for (const lang of ['es', 'en']) {
+    for (const tipo of ['apuntado', 'acceso']) {
+      const m = render(tipo, lang, { correo: 'a<b>@x.com', enlace: 'https://toison.es/', img });
+      expect(m.html).toContain('a&lt;b&gt;@x.com');
+      expect(m.html).not.toContain('a<b>@x.com');
+      expect(m.html).toContain('hola@toison.es');
+      expect(m.html).toContain('prefers-color-scheme: dark');
+      expect(m.texto).toContain('toison.es');
+      expect(m.html).not.toMatch(lang === 'es' ? /Cuenta: / : /Account: /);
+    }
+  }
+  expect(render('acceso', 'es', { correo: 'a@x.com', enlace: 'u', img }).html).toContain('sin eso, la IA no te contesta');
+});
+
+test('el Worker de pruebas manda también los dos de la lista de espera (solo a la cuenta de prueba)', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv({ SOLO_PRUEBA: '1', PRUEBA_TOKEN: 'q'.repeat(40) });
+    for (const tipo of ['apuntado', 'acceso']) expect((await pedir(env, { tipo }, { ruta: '/correo/prueba', cab: { 'X-Prueba': 'q'.repeat(40) } })).j).toEqual({ ok: true, tipo, lang: 'es' });
+    expect((await pedir(env, { tipo: 'acceso', correo: 'otro@prueba.com' }, { ruta: '/correo/prueba', cab: { 'X-Prueba': 'q'.repeat(40) } })).j.motivo).toBe('pedido');
+    expect(v.resend.map((x) => x.c.to[0])).toEqual(['toison.web.app+revision@gmail.com', 'toison.web.app+revision@gmail.com']);
+    expect(v.fb.length).toBe(0);
+  });
+});
