@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toisón · El 3D y el movimiento, para elegir</title>
+<style>
+@font-face { font-family: Inter; src: url(assets/inter-B2oYsByV.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Ibarra Real Nova"; src: url(assets/ibarra-2WhveqwF.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Ibarra Real Nova"; src: url(assets/ibarra-italic-BwbvlKxn.woff2) format("woff2"); font-weight: 400 700; font-style: italic; font-display: swap; }
+:root {
+  --fondo: #121110; --panel: #1b1a18; --panel-2: #24221f; --linea: #34312c;
+  --texto: #f2eee7; --tenue: #aaa298; --oro: #e3b45f; --oro-osc: #2b2214; --ok: #7fd3a0; --ok-osc: #15281d; --aviso: #e8a07a; --aviso-osc: #2e1c13;
+  --display: "Ibarra Real Nova", Georgia, "Times New Roman", serif;
+  --cuerpo: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--fondo); color: var(--texto); font: 400 15px/1.5 var(--cuerpo); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+
+.barra { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--fondo) 90%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--linea); }
+.barra-in { max-width: 1760px; margin: 0 auto; padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.marca { font: 600 21px/1 var(--display); letter-spacing: .04em; margin-right: 6px; }
+.marca em { font-style: italic; color: var(--oro); font-weight: 500; }
+.grupo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.grupo > span { font: 600 11px/1 var(--cuerpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.seg { display: inline-flex; flex-wrap: wrap; padding: 3px; border-radius: 14px; background: var(--panel); border: 1px solid var(--linea); gap: 2px; }
+.seg button { border: 0; background: none; padding: 7px 13px; border-radius: 11px; font-weight: 550; font-size: 13.5px; color: var(--tenue); white-space: nowrap; }
+.seg button:hover { color: var(--texto); }
+.seg button[aria-pressed="true"] { background: var(--oro); color: #1a1205; }
+.elegidas { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cuenta { font-size: 13px; color: var(--tenue); }
+.cuenta b { color: var(--texto); }
+.btn { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.btn:hover { border-color: #4a463f; }
+.btn.pri { background: var(--oro); border-color: var(--oro); color: #1a1205; }
+.btn[aria-pressed="true"] { border-color: var(--oro); color: var(--oro); background: var(--oro-osc); }
+
+.pagina { max-width: 1760px; margin: 0 auto; padding: 22px 20px 80px; display: grid; grid-template-columns: minmax(0, 1.72fr) minmax(360px, 1fr); gap: 30px; align-items: start; }
+.intro { grid-column: 1 / -1; max-width: 104ch; }
+.intro h1 { font: 500 30px/1.15 var(--display); letter-spacing: .01em; margin-bottom: 10px; }
+.intro p { color: var(--tenue); margin-top: 8px; }
+.intro p b { color: var(--texto); font-weight: 600; }
+
+.escena { position: sticky; top: 74px; min-width: 0; }
+.escena-cab { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.escena-cab .seg button { padding: 8px 16px; }
+.escena-que { margin-left: auto; font-size: 13px; color: var(--tenue); }
+.marco { position: relative; border: 1px solid var(--linea); border-radius: 14px; background: #000; overflow: hidden; }
+.marco iframe { display: block; border: 0; transform-origin: 0 0; background: #000; }
+.marco.movil { width: 414px; max-width: 100%; margin: 0 auto; border-radius: 44px; border: 12px solid #26241f; box-shadow: 0 30px 80px -40px #000; }
+.controles { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; min-height: 40px; }
+.controles .sep { width: 1px; height: 22px; background: var(--linea); margin: 0 4px; }
+.fps { margin-left: auto; font: 600 12.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--tenue); min-width: 62px; text-align: right; }
+.fps b { color: var(--ok); font-weight: 600; }
+.cargando[hidden] { display: none; }
+.cargando { position: absolute; inset: 0; display: grid; place-items: center; color: var(--tenue); font-size: 13px; pointer-events: none; }
+.pista { font-size: 13px; color: var(--tenue); margin-top: 8px; }
+
+.escena.grande { position: fixed; inset: 0; z-index: 50; background: var(--fondo); padding: 12px 14px; overflow: auto; top: 0; }
+.escena.grande .marco:not(.movil) { width: 1440px; max-width: none; margin: 0 auto; }
+.escena.grande .controles { justify-content: center; }
+.escena.grande .fps { margin-left: 0; }
+
+.bloques { display: grid; gap: 14px; min-width: 0; }
+.parte { font: 500 22px/1.2 var(--display); margin: 14px 0 0; }
+.parte:first-child { margin-top: 0; }
+.parte small { display: block; font: 400 13px/1.45 var(--cuerpo); color: var(--tenue); margin-top: 4px; }
+.bloque { border: 1px solid var(--linea); border-radius: 16px; background: var(--panel); padding: 16px 16px 14px; }
+.bloque.activo { border-color: color-mix(in srgb, var(--oro) 60%, var(--linea)); }
+.bloque.si { box-shadow: inset 3px 0 0 var(--ok); } .bloque.cambios { box-shadow: inset 3px 0 0 var(--aviso); }
+.bloque-cab { display: flex; gap: 10px; align-items: baseline; }
+.bloque-n { font: 600 12px/1 var(--cuerpo); letter-spacing: .08em; color: var(--oro); flex: none; }
+.bloque h3 { font: 600 16.5px/1.3 var(--cuerpo); }
+.bloque .duda { margin-top: 8px; font-size: 14px; color: var(--tenue); }
+.bloque .duda b { color: var(--texto); font-weight: 600; }
+.ver { margin-top: 10px; border: 0; background: none; padding: 0; color: var(--oro); font-weight: 600; font-size: 13.5px; }
+.ver:hover { text-decoration: underline; }
+.ops { display: grid; gap: 8px; margin-top: 12px; }
+.op { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; text-align: left; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--linea); background: var(--panel-2); }
+.op i { width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; border: 2px solid #5a554c; }
+.op[aria-pressed="true"] { border-color: var(--oro); background: var(--oro-osc); }
+.op[aria-pressed="true"] i { border-color: var(--oro); background: radial-gradient(circle, var(--oro) 0 45%, transparent 50%); }
+.op b { font-weight: 600; font-size: 14px; display: block; }
+.op small { display: block; font-size: 13px; color: var(--tenue); margin-top: 2px; }
+.op em { font-style: normal; font: 600 10.5px/1 var(--cuerpo); letter-spacing: .08em; text-transform: uppercase; color: var(--oro); margin-left: 8px; }
+.op .peso { display: inline-block; margin-top: 6px; font: 600 11.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--texto); background: var(--fondo); border: 1px solid var(--linea); border-radius: 6px; padding: 4px 7px; }
+.porque { margin-top: 12px; padding: 9px 12px; border-left: 2px solid var(--oro); background: var(--panel-2); border-radius: 0 10px 10px 0; font-size: 13.5px; color: var(--tenue); }
+.porque b { color: var(--texto); font-weight: 600; }
+.decide { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.decide button { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 13px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.decide button[data-d="si"][aria-pressed="true"] { background: var(--ok-osc); border-color: var(--ok); color: var(--ok); }
+.decide button[data-d="cambios"][aria-pressed="true"] { background: var(--aviso-osc); border-color: var(--aviso); color: var(--aviso); }
+.nota { width: 100%; margin-top: 10px; min-height: 44px; resize: vertical; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font-size: 14px; }
+.nota::placeholder { color: #746e64; }
+.final { border: 1px dashed var(--linea); border-radius: 16px; padding: 16px; }
+.final p { color: var(--tenue); font-size: 14px; margin-top: 6px; }
+.texto-copia { width: 100%; min-height: 150px; margin-top: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; display: none; }
+.texto-copia.visible { display: block; }
+.copiado { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px); background: var(--ok-osc); color: var(--ok); border: 1px solid var(--ok); padding: 9px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; opacity: 0; transition: opacity .2s ease, transform .2s ease; pointer-events: none; z-index: 60; }
+.copiado.visible { opacity: 1; transform: translateX(-50%); }
+
+.pesos { border: 1px solid var(--linea); border-radius: 16px; background: var(--panel); padding: 16px; }
+.pesos h3 { font: 600 16.5px/1.3 var(--cuerpo); }
+.pesos p { font-size: 14px; color: var(--tenue); margin-top: 8px; }
+.pesos p b { color: var(--texto); font-weight: 600; }
+.pesos table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+.pesos th, .pesos td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--linea); vertical-align: top; }
+.pesos th { font: 600 11px/1.2 var(--cuerpo); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); border-top: 0; }
+.pesos td:last-child, .pesos th:last-child { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pesos tr.suma td { font-weight: 650; color: var(--texto); }
+.pesos tr.lejos td { color: var(--tenue); }
+.pesos ul { margin: 10px 0 0; padding-left: 18px; font-size: 14px; color: var(--tenue); }
+.pesos li { margin-top: 5px; }
+.pesos li b { color: var(--texto); font-weight: 600; }
+
+.volver { display: none; }
+@media (max-width: 1099px) {
+  .pagina { grid-template-columns: minmax(0, 1fr); }
+  .escena { position: static; scroll-margin-top: 8px; }
+  .elegidas { margin-left: 0; }
+  .barra { position: static; }
+  .volver { display: inline-block; }
+  .escena-que { display: none; }
+}
+@media (max-width: 480px) {
+  .pagina { padding: 18px 0 70px; }
+  .intro, .escena-cab, .controles, .bloques, .pista { padding-inline: 16px; }
+  .intro h1 { font-size: 25px; }
+  .marco.movil { width: 100%; border: 0; border-radius: 0; border-block: 1px solid var(--linea); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="barra"><div class="barra-in">
+  <span class="marca">Toisón <em>· 3D y movimiento</em></span>
+  <div class="grupo"><span>Pantalla</span><div class="seg" id="segPant"><button data-v="pc" aria-pressed="true">Ordenador</button><button data-v="movil" aria-pressed="false">Móvil</button></div></div>
+  <div class="grupo"><span>Diseño</span><div class="seg" id="segTema"><button data-v="marmol" aria-pressed="true">Mármol</button><button data-v="marfil" aria-pressed="false">Marfil</button></div></div>
+  <div class="elegidas"><span class="cuenta" id="cuenta"></span><button class="btn pri" id="copiar">Copiar lo decidido</button></div>
+</div></header>
+
+<main class="pagina">
+  <section class="intro">
+    <h1>El 3D y el movimiento de Toisón</h1>
+    <p>Cinco cosas, cada una con tres versiones <b>que se mueven de verdad</b>: la moneda de Hoy, el anillo del reparto, la cifra, las gráficas y el paso de una página a otra. La maqueta de la izquierda es la app real (Hoy y Reparto de la rama, con la cartera de prueba), en el ordenador con el acabado híbrido y en el móvil con tarjetas. Se toca: cambia de pestaña y de periodo, toca el anillo, arrástralo, toca la moneda.</p>
+    <p>Al elegir una versión, la maqueta la enseña sola. En cada bloque: <b>«Me vale así»</b> o <b>«Quiero cambios»</b>, una nota si quieres y, al acabar, <b>«Copiar lo decidido»</b> para pegármelo. Viene marcada la que haría yo. No hay nada construido en el código todavía.</p>
+  </section>
+
+  <section class="escena" id="escena" aria-label="La maqueta">
+    <div class="escena-cab">
+      <div class="seg" id="segVista"><button data-v="hoy" aria-pressed="true">Hoy</button><button data-v="reparto" aria-pressed="false">Reparto</button></div>
+      <button class="btn" id="grande">Ver a tamaño real</button>
+      <span class="escena-que" id="escenaQue"></span>
+    </div>
+    <div class="marco" id="marco"><div class="cargando" id="cargando">Cargando la maqueta…</div><iframe id="marcoF" title="Maqueta de Toisón" loading="eager"></iframe></div>
+    <div class="controles" id="controles">
+      <button class="btn pri" id="repetir">▶ Repetir</button>
+      <button class="btn" id="tick">Llega un precio</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" data-conm="quieto" aria-pressed="false">Reducir movimiento</button>
+      <button class="btn" data-conm="discreto" aria-pressed="false">Importes ocultos</button>
+      <button class="btn" data-conm="sin3d" aria-pressed="false">Sin el 3D</button>
+      <button class="btn volver" id="volver">Volver al bloque ↓</button>
+      <span class="fps" id="fps" title="Fotogramas por segundo del 3D en este aparato, medidos mientras se mueve"></span>
+    </div>
+    <p class="pista" id="pista"></p>
+  </section>
+
+  <section class="bloques" id="bloques" aria-label="Lo que hay que decidir"></section>
+</main>
+<div class="copiado" id="copiado" role="status">Copiado</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const CLAVE = 'toison-3d-v1';
+  // lo que se le manda a la maqueta; por defecto, lo que haría yo
+  const E = { tema: 'marmol', moneda: 'canto', anillo: 'volumen', cifras: 'rueda', graf: 'transforma', paso: 'fondo', quieto: false, discreto: false, sin3d: false };
+  const MIAS = ['moneda', 'anillo', 'cifras', 'graf', 'paso'];
+  let D = { dec: {}, notas: {} };
+  let vista = 'hoy', pant = 'pc', activo = 'm1', listo = false;
+  try { const g = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (g) { D = g.D || D; for (const k of MIAS) if (g.E && g.E[k]) E[k] = g.E[k]; } } catch (e) { /* sin memoria: se empieza de cero */ }
+  const guardar = () => { try { const m = {}; for (const k of MIAS) m[k] = E[k]; localStorage.setItem(CLAVE, JSON.stringify({ D, E: m })); } catch (e) { /* nada */ } };
+
+  const BLOQUES = [
+    { parte: 'El 3D', sub: 'Dos piezas con volumen de verdad, hechas a mano (sin librería). En sitios distintos: una en Hoy y otra en Reparto.' },
+    { k: 'm1', n: '1', tit: 'La moneda de Hoy', clave: 'moneda', vista: 'hoy', pant: 'movil',
+      duda: 'Es el botón redondo del centro de la barra del móvil (en el ordenador, el sello de arriba a la izquierda). <b>Tócala</b> para verla saludar y mueve el dedo o el ratón por la pantalla: la luz le sigue. En el móvil de verdad, además, seguiría la inclinación del teléfono (aquí dentro no se puede leer).',
+      ops: [
+        ['luz', 'Relieve con luz', 'La moneda de ahora, plana, con un brillo que la cruza al volver a Hoy y una luz suave que sigue al dedo. No es 3D.', '≈ 0,4 KB'],
+        ['canto', 'Moneda con canto', 'Una moneda de verdad: canto de oro, esmalte y el sello en relieve. Al volver a Hoy da una vuelta y se asienta; quieta el resto del tiempo, con la luz siguiéndote.', '≈ 4,3 KB', true],
+        ['viva', 'Moneda viva', 'La misma, pero no para nunca: se mece despacio y la luz va y viene sola. Más presencia y más batería.', '≈ 4,3 KB'],
+      ],
+      porque: '<b>La del canto.</b> Se nota que es un objeto y no un icono, pero solo se mueve cuando haces algo: en una barra que tienes siempre delante, lo que no para cansa y gasta batería.' },
+    { k: 'm2', n: '2', tit: 'El anillo del reparto', clave: 'anillo', vista: 'reparto',
+      duda: 'Arriba de Reparto, un bloque nuevo, «De un vistazo»: el anillo con tu reparto por clase, región, sector, tipo o bróker. <b>Toca un trozo</b> (o su fila) y <b>arrástralo</b> para girarlo; cambia de reparto arriba y mira cómo se recoloca. Con los importes ocultos, el centro no enseña cifras.',
+      ops: [
+        ['plano', 'Plano, con luz', 'De frente, sin volumen: se dibuja en redondo y un brillo lo recorre. Es también lo que se ve mientras llega el 3D o si falla.', '≈ 1 KB'],
+        ['volumen', 'Con volumen', 'Inclinado, con grosor y bisel, en los colores de cada parte. Los trozos suben en escalera al entrar; el que tocas se levanta y viene al frente.', '≈ 4,7 KB', true],
+        ['joya', 'De oro, girando', 'La misma pieza en tonos de oro pulido, girando despacio. Más joya y menos gráfica: las partes se distinguen peor.', '≈ 4,7 KB'],
+      ],
+      porque: '<b>Con volumen y en sus colores.</b> El 3D aquí sirve para algo: el trozo elegido se separa y viene hacia ti. El de oro es más vistoso, pero un reparto en seis tonos de dorado se lee peor, y el giro continuo no aporta.' },
+    { parte: 'El movimiento que los acompaña', sub: 'No es 3D y casi no pesa. Cambia mucho la sensación de calidad.' },
+    { k: 'm3', n: '3', tit: 'La cifra del patrimonio', clave: 'cifras', vista: 'hoy',
+      duda: 'Cómo aparece la cifra grande al abrir Hoy y qué hace cuando llega un precio nuevo. Pulsa <b>«Llega un precio»</b> debajo de la maqueta varias veces. Las demás cifras de la app no se animan: muchas a la vez marean.',
+      ops: [
+        ['cuenta', 'Cuenta hasta su valor', 'Lo que hay hoy en la rama: sube deprisa desde un poco menos hasta la cifra.', '0 KB · ya está'],
+        ['rueda', 'Rueda de dígitos', 'Cada dígito rueda hasta su sitio, como un cuentakilómetros. Con un precio nuevo solo giran los que cambian.', '≈ 1 KB', true],
+        ['nitida', 'Aparece nítida', 'No cuenta: sale desenfocada y se enfoca en medio segundo. La más sobria.', '≈ 0,1 KB'],
+      ],
+      porque: '<b>La rueda.</b> Con precios en directo es la única que enseña qué ha cambiado: se mueven dos dígitos, no la cifra entera. Y es el detalle que más se asocia a una app cara.' },
+    { k: 'm4', n: '4', tit: 'Las gráficas: se dibujan y se transforman', clave: 'graf', vista: 'hoy',
+      duda: 'Al abrir Hoy la gráfica se dibuja siempre de izquierda a derecha. Lo que se elige es qué pasa <b>al cambiar de periodo</b> (1M, 1A, 5A…) <b>y de pestaña</b> (Valor, Rendimiento, Caída, Cobros). Cámbialos en la maqueta; los números de la línea de debajo también cuentan.',
+      ops: [
+        ['dibuja', 'Se vuelve a dibujar', 'Cada cambio borra y dibuja la línea otra vez, de izquierda a derecha.', '0 KB · casi está'],
+        ['funde', 'Se funde', 'La gráfica vieja se apaga y la nueva aparece encima, en un cuarto de segundo. Rápido y sin adorno.', '≈ 0,3 KB'],
+        ['transforma', 'Se transforma', 'La línea no desaparece: cada punto viaja a su sitio nuevo. De Valor a Rendimiento se despega la línea del índice; a Caída, se tiñe y cuelga de arriba; a Cobros, se posa y crecen las barras.', '≈ 1,5 KB', true],
+      ],
+      porque: '<b>Que se transforme.</b> Ves que es la misma cartera mirada de otra forma, no cuatro gráficas distintas. Y al cambiar de 1A a 5A entiendes dónde cae el último año dentro de los cinco.' },
+    { k: 'm5', n: '5', tit: 'El paso de una página a otra', clave: 'paso', vista: 'hoy',
+      duda: 'Qué se ve entre Hoy y Reparto (y entre cualquier par de páginas). En la maqueta: en el ordenador, «Hoy» y «Reparto» del menú; en el móvil, «Análisis» y la moneda. O los botones de arriba.',
+      ops: [
+        ['fundido', 'Fundido corto', 'Lo que hay hoy en la rama: una se apaga y la otra entra desde su lado.', '0 KB · ya está'],
+        ['fondo', 'Con profundidad', 'La página que dejas se aleja y se apaga; la nueva llega desde delante y sus bloques entran en escalera.', '≈ 0,5 KB', true],
+        ['viaja', 'Con algo que viaja', 'El fundido corto y, además, la cifra del patrimonio vuela de Hoy al centro del anillo (y vuelve). En el resto de la app sería la cifra de una posición volando a su ficha.', '≈ 1 KB'],
+      ],
+      porque: '<b>Con profundidad</b> en toda la app, y dejar lo de «algo que viaja» para donde hay algo que de verdad es lo mismo en las dos pantallas (una posición y su ficha), cuando se rehaga la ficha.' },
+  ];
+  const CON_K = BLOQUES.filter((b) => b.k);
+  const PESOS = { moneda: { luz: 0.4, canto: 4.3, viva: 4.3 }, anillo: { plano: 1, volumen: 4.7, joya: 4.7 }, cifras: { cuenta: 0, rueda: 1, nitida: 0.1 }, graf: { dibuja: 0, funde: 0.3, transforma: 1.5 }, paso: { fundido: 0, fondo: 0.5, viaja: 1 } };
+
+  /* ---------- la maqueta ---------- */
+  const marco = $('#marco'), F = $('#marcoF'), escena = $('#escena');
+  const mandar = (extra) => { if (listo) F.contentWindow.postMessage(Object.assign({ mqEstado: E }, extra || {}), '*'); };
+  function cargar() {
+    listo = false; $('#cargando').hidden = false; vista = 'hoy';
+    F.src = `${pant}.html`;
+    marco.classList.toggle('movil', pant === 'movil');
+    marcarCab(); medir();
+  }
+  function marcarCab() {
+    $$('#segVista button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === vista)));
+    $$('#segPant button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === pant)));
+    $$('#segTema button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === E.tema)));
+    $$('[data-conm]').forEach((b) => b.setAttribute('aria-pressed', String(!!E[b.dataset.conm])));
+    $('#tick').disabled = vista !== 'hoy'; $('#tick').style.opacity = vista === 'hoy' ? '' : '.4';
+    const b = CON_K.find((x) => x.k === activo);
+    $('#escenaQue').textContent = b ? `${b.n} · ${b.tit}` : '';
+    $('#pista').textContent = activo === 'm1' && pant === 'pc' ? 'En el ordenador la moneda es el sello de arriba a la izquierda, pequeño. Se ve mejor con la pantalla en Móvil.' : E.sin3d ? 'Sin el 3D: lo que se ve mientras llega el trozo, si falla o con el ahorro de datos del móvil activado.' : E.quieto ? 'Con «reducir movimiento» activado en el aparato: todo quieto y claro.' : '';
+  }
+  function medir() {
+    if (pant === 'movil') { F.style.width = innerWidth <= 480 ? '100%' : '390px'; F.style.height = Math.min(800, Math.max(560, innerHeight - 250)) + 'px'; F.style.transform = ''; marco.style.height = ''; return; }
+    const grande = escena.classList.contains('grande');
+    const w = grande ? 1440 : marco.clientWidth, esc = Math.min(1, w / 1440);
+    const alto = grande ? Math.max(700, innerHeight - 130) : Math.max(520, Math.min(innerHeight - 250, 1000));
+    F.style.width = '1440px'; F.style.height = Math.round(alto / esc) + 'px'; F.style.transform = esc < 1 ? `scale(${esc})` : ''; marco.style.height = alto + 'px';
+  }
+  addEventListener('resize', medir);
+  addEventListener('message', (ev) => {
+    const m = ev.data; if (!m || !m.mq || ev.source !== F.contentWindow) return;
+    if (m.listo) { listo = true; $('#cargando').hidden = true; mandar({ silencio: true }); if (pendiente) { const p = pendiente; pendiente = null; setTimeout(p, 500); } }
+    if (m.vista && m.vista !== vista) { vista = m.vista; marcarCab(); }
+    if (m.estado) { Object.assign(E, m.estado); marcarCab(); }
+    if ('fps' in m) $('#fps').innerHTML = m.fps ? `<b>${Math.min(m.fps, 120)}</b> fps` : '';
+  });
+  let pendiente = null;
+  /* enseña un bloque en la maqueta: la pantalla y la página que le tocan, y repite su movimiento */
+  function ensenar(b, cambioOp) {
+    activo = b.k;
+    const hacer = () => {
+      if (b.clave === 'paso') { mandar({ repetir: 'paso' }); return; }
+      // si hay que cambiar de página, al entrar ya se ve su movimiento; la gráfica, además, cambia de pestaña para enseñarlo
+      if (b.vista !== vista) { mandar({ ir: b.vista }); if (b.clave === 'graf') setTimeout(() => mandar({ repetir: 'graf' }), 1700); } else mandar({ repetir: b.clave });
+    };
+    if (b.pant && b.pant !== pant && innerWidth >= 700) { pant = b.pant; pendiente = hacer; cargar(); } else if (listo) hacer(); else pendiente = hacer;
+    marcarCab(); pintarBloques();
+    if (innerWidth < 1100) escena.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---------- los bloques ---------- */
+  const kb = (x) => String(x).replace('.', ',');
+  function pintarBloques() {
+    const foco = document.activeElement && document.activeElement.classList.contains('nota') ? document.activeElement.dataset.k : null;
+    const suma3d = PESOS.moneda[E.moneda] * (E.moneda === 'luz' ? 0 : 1) + PESOS.anillo[E.anillo] * (E.anillo === 'plano' ? 0 : 1);
+    const comun = (E.moneda !== 'luz' && E.anillo !== 'plano') ? 2.1 : 0;   // lo que comparten la moneda y el anillo se cuenta una vez
+    const t3d = Math.max(0, suma3d - comun), mov = PESOS.cifras[E.cifras] + PESOS.graf[E.graf] + PESOS.paso[E.paso] + (E.moneda === 'luz' ? 0.4 : 0) + 1;
+    $('#bloques').innerHTML = BLOQUES.map((b) => {
+      if (b.parte) return `<h2 class="parte">${b.parte}<small>${b.sub}</small></h2>`;
+      const d = D.dec[b.k] || '';
+      return `<article class="bloque${activo === b.k ? ' activo' : ''}${d ? ' ' + d : ''}" data-k="${b.k}">
+        <div class="bloque-cab"><span class="bloque-n">${b.n}</span><h3>${b.tit}</h3></div>
+        <p class="duda">${b.duda}</p>
+        <button class="ver" data-ver="${b.k}">Verlo en la maqueta →</button>
+        <div class="ops" role="group" aria-label="Versiones">${b.ops.map(([v, t, x, p, rec]) => `<button class="op" data-op="${b.k}" data-v="${v}" aria-pressed="${E[b.clave] === v}"><i></i><span><b>${t}${rec ? '<em>la que haría yo</em>' : ''}</b><small>${x}</small><span class="peso">${p}</span></span></button>`).join('')}</div>
+        <p class="porque">${b.porque}</p>
+        <div class="decide"><button data-d="si" data-k="${b.k}" aria-pressed="${d === 'si'}">Me vale así</button><button data-d="cambios" data-k="${b.k}" aria-pressed="${d === 'cambios'}">Quiero cambios</button></div>
+        <textarea class="nota" data-k="${b.k}" placeholder="Nota (si quieres)" aria-label="Nota de ${b.tit}">${(D.notas[b.k] || '').replace(/</g, '&lt;')}</textarea>
+      </article>`;
+    }).join('') + `<h2 class="parte">Cuánto pesa<small>El 3D está medido con el código de esta maqueta, comprimido como viaja por la red. Lo del movimiento es una estimación: parte ya existe en la app.</small></h2>
+      <div class="pesos">
+        <h3>Con lo que tienes marcado ahora</h3>
+        <table><thead><tr><th>Qué</th><th>Peso</th></tr></thead><tbody>
+          <tr><td>El 3D (moneda y anillo), hecho a mano</td><td>${kb(t3d.toFixed(1))} KB</td></tr>
+          <tr><td>El movimiento (cifra, gráficas, páginas y el anillo plano de reserva)</td><td>${kb(mov.toFixed(1))} KB</td></tr>
+          <tr class="suma"><td>Total, en su trozo aparte (tope: 250 KB)</td><td>${kb((t3d + mov).toFixed(1))} KB</td></tr>
+          <tr><td>Lo que carga al abrir (hoy 961 KB, tope 1.000): solo la orden de bajar el trozo</td><td>≈ +0,3 KB</td></tr>
+          <tr class="lejos"><td>Lo mismo con three.js (lo mínimo para estas dos piezas, medido)</td><td>143 KB</td></tr>
+        </tbody></table>
+        <p><b>Por eso va a mano y no con three.js:</b> cabría en los 250 KB, pero son veinte veces más para dos piezas, tarda más en arrancar en un móvil normal y no se ve mejor (compáralo tú: lo de la maqueta ya es el de a mano).</p>
+        <h3 style="margin-top:16px">Elijas lo que elijas</h3>
+        <ul>
+          <li><b>No retrasa Hoy.</b> Todo va en un trozo que se baja después de pintar Hoy, cuando el móvil está libre; mientras llega, se ve la versión plana y nada salta de sitio. Pruébalo con «Sin el 3D».</li>
+          <li><b>Ahorro de datos del móvil:</b> no se baja; se queda la plana.</li>
+          <li><b>«Reducir movimiento»:</b> todo quieto y claro. Con la app en segundo plano, parado.</li>
+          <li><b>Importes ocultos:</b> el anillo no enseña ninguna cifra.</li>
+          <li><b>Fluidez:</b> el 3D solo se pinta mientras algo se mueve. Si un móvil va justo, baja la nitidez antes que dar tirones. Los fps de este aparato salen debajo de la maqueta: ábrela en el S25.</li>
+        </ul>
+      </div>
+      <div class="final"><h3>Cuando acabes</h3><p>«Copiar lo decidido» deja en el portapapeles lo que has marcado y tus notas. Pégamelo en el chat y lo construyo. Si el botón no copia, el texto aparece aquí debajo para copiarlo a mano.</p><div class="decide"><button class="btn pri" id="copiar2">Copiar lo decidido</button></div><textarea class="texto-copia" id="textoCopia" readonly aria-label="Texto de lo decidido"></textarea></div>`;
+    if (foco) { const t = $(`.nota[data-k="${foco}"]`); if (t) { t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } }
+    const n = CON_K.filter((b) => D.dec[b.k]).length;
+    $('#cuenta').innerHTML = `<b>${n}</b> de ${CON_K.length} decididas`;
+  }
+  function texto() {
+    const l = ['El 3D y el movimiento de Toisón · 15 nov 2026', ''];
+    for (const b of CON_K) {
+      const d = D.dec[b.k] === 'si' ? 'me vale así' : D.dec[b.k] === 'cambios' ? 'quiero cambios' : 'sin decidir';
+      const op = b.ops.find((o) => o[0] === E[b.clave]);
+      l.push(`${b.n} · ${b.tit}: ${op[1]} · ${d}${D.notas[b.k] && D.notas[b.k].trim() ? ` · «${D.notas[b.k].trim()}»` : ''}`);
+    }
+    return l.join('\n');
+  }
+  function copiar() {
+    const t = texto(), area = $('#textoCopia');
+    const visto = () => { const c = $('#copiado'); c.classList.add('visible'); setTimeout(() => c.classList.remove('visible'), 1600); };
+    const aMano = () => { area.value = t; area.classList.add('visible'); area.focus(); area.select(); try { if (document.execCommand('copy')) visto(); } catch (e) { /* queda a la vista para copiarlo a mano */ } };
+    try { navigator.clipboard.writeText(t).then(visto, aMano); } catch (e) { aMano(); }
+  }
+
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest('button'); if (!t) return;
+    if (t.id === 'copiar' || t.id === 'copiar2') return copiar();
+    if (t.id === 'grande') { const g = escena.classList.toggle('grande'); t.textContent = g ? 'Cerrar ✕' : 'Ver a tamaño real'; medir(); return; }
+    if (t.id === 'volver') { const a = $(`.bloque[data-k="${activo}"]`); if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (t.id === 'repetir') { if (listo) F.contentWindow.postMessage({ repetirTodo: true }, '*'); return; }
+    if (t.id === 'tick') { if (listo) F.contentWindow.postMessage({ tick: true }, '*'); return; }
+    if (t.dataset.conm) { E[t.dataset.conm] = !E[t.dataset.conm]; mandar(); marcarCab(); return; }
+    if (t.dataset.ver) return ensenar(CON_K.find((b) => b.k === t.dataset.ver));
+    if (t.dataset.op) { const b = CON_K.find((x) => x.k === t.dataset.op); E[b.clave] = t.dataset.v; guardar(); return ensenar(b, true); }
+    if (t.dataset.d) { const k = t.dataset.k; D.dec[k] = D.dec[k] === t.dataset.d ? '' : t.dataset.d; guardar(); pintarBloques(); return; }
+    if (t.closest('#segVista')) { if (listo) F.contentWindow.postMessage({ ir: t.dataset.v }, '*'); return; }
+    if (t.closest('#segPant')) { pant = t.dataset.v; cargar(); return; }
+    if (t.closest('#segTema')) { E.tema = t.dataset.v; mandar(); marcarCab(); return; }
+  });
+  document.addEventListener('input', (ev) => { const t = ev.target; if (t.classList && t.classList.contains('nota')) { D.notas[t.dataset.k] = t.value; guardar(); } });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && escena.classList.contains('grande')) $('#grande').click(); });
+
+  if (innerWidth < 700) pant = 'movil';
+  pintarBloques(); cargar();
+})();
+</script>
+</body>
+</html>
