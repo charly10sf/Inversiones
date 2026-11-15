@@ -27,6 +27,7 @@ const NAV = 232;
 const anchoCol = (page) => page.evaluate(() => Math.round(anchoK2Ahora()));
 // arrastra el borde de la segunda barra hasta x (en px de la ventana)
 const arrastrar = async (page, x) => {
+  await quitarCapas(page);   // 0.9a: la hoja de novedades sale sola al rato y se quedaba con el ratón (también en main)
   const b = await page.locator('#k2Tirador').boundingBox();
   await page.mouse.move(b.x + b.width / 2, 400);
   await page.mouse.down();
@@ -90,14 +91,14 @@ test('ordenador: con la IA agrandada se guarda otro ancho', async ({ page }, inf
   test.skip(info.project.name !== 'pc', 'solo en el ordenador');
   await lista(page);
   await abrirIA(page);
-  await page.locator('[data-as="agrandar"]').click();
+  await tocar(page, '[data-as="agrandar"]');
   await expect.poll(() => anchoCol(page)).toBe(520);
   // la página se queda siempre con 640 px: a 1.440, la IA agrandada llega como mucho a 568
   await arrastrar(page, NAV + 560);
   expect(await anchoCol(page)).toBe(560);
   expect(Math.round((await page.locator('#asesorFondo').boundingBox()).width)).toBe(560);
   // reducida, vuelve a la suya
-  await page.locator('[data-as="agrandar"]').click();
+  await tocar(page, '[data-as="agrandar"]');
   await expect.poll(() => anchoCol(page)).toBe(360);
   expect(await page.evaluate(() => LS.get('inv-k2-ancho'))).toEqual({ g: 560 });
 });
