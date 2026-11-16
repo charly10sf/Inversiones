@@ -26,6 +26,7 @@ import yfinance as yf
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalogo_listas as LISTAS  # noqa: E402
 from precios import a_euros, num, pedidas_firestore, redondeo, rentabilidad, serie_cierres, serie_por_isin, tipos_de_cambio  # noqa: E402
+import peticiones as PET  # noqa: E402
 
 # El catálogo ampliado (5 nov 2026): además de catalogo.json, los ETF/ETC/ETN de Xetra y los fondos españoles de la
 # CNMV a los que Yahoo pone precio (unos 5.700). catalogo-precios.json (lo que baja la web al abrir) sigue con
@@ -528,6 +529,7 @@ def ampliado(cat_ids, dir_anterior, dir_salida, fx, modo=None):
 
 
 def main(ruta_cat, dir_anterior, dir_salida):
+    PET.activar()  # 16 nov 2026: al final dice cuántas peticiones ha hecho (solo en el registro)
     cat = json.load(open(ruta_cat, encoding="utf-8"))
     # los fondos y ETF que alguien ha metido a mano por su ISIN y no estaban (la lista común «simbolos» de Firestore)
     try:
@@ -633,6 +635,7 @@ def main(ruta_cat, dir_anterior, dir_salida):
             j["mas"] = mas
         json.dump(j, f, ensure_ascii=False, separators=(",", ":"))
     print(f"{len(salida)} en el catálogo; {len(errores)} errores ({len(dudas)} por el nombre)")
+    PET.imprimir(f"catalogo.py ({MODO})")
     for x in errores:
         print("  -", x)
     if not salida:

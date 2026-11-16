@@ -41,6 +41,8 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import yfinance as yf
 
+import peticiones as PET  # 16 nov 2026: cuántas peticiones hace cada parte de la pasada (peticiones.json)
+
 # Escala SRRI de riesgo (1-7) según la volatilidad anual en %
 BANDAS_RIESGO = [0.5, 2, 5, 10, 15, 25]
 ANIOS_HISTORICO = 10
@@ -1714,8 +1716,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
     prev_part = anterior.get("participaciones_etf", {})
     prev_not = anterior.get("noticias", {})
 
+    PET.activar()
     errores = []
-    fx = tipos_de_cambio()
+    with PET.fuente("fx"):
+        fx = tipos_de_cambio()
 
     salida = {
         "version": 3,
@@ -1735,7 +1739,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     for inst in instrumentos:
         iid = inst["id"]
         try:
-            salida["instrumentos"][iid] = procesar(inst, fx, prev_inst.get(iid))
+            with PET.fuente("instrumentos"):
+                salida["instrumentos"][iid] = procesar(inst, fx, prev_inst.get(iid))
             print(f"ok   {iid:20s} {salida['instrumentos'][iid]['precio']} desde {salida['instrumentos'][iid]['historico_desde']}")
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
@@ -1750,7 +1755,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     hoy = dt.date.today().isoformat()
     for etf in etfs:
         try:
-            salida["sectores_etf"][etf] = sectores_etf(etf)
+            with PET.fuente("sectores_etf"):
+                salida["sectores_etf"][etf] = sectores_etf(etf)
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
             errores.append(f"sectores {etf}: {e}")
@@ -1761,7 +1767,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
             salida["participaciones_etf"][etf] = prev_part[etf]
             continue
         try:
-            salida["participaciones_etf"][etf] = participaciones_etf(etf)
+            with PET.fuente("participaciones_etf"):
+                salida["participaciones_etf"][etf] = participaciones_etf(etf)
         except Exception as e:  # noqa: BLE001
             errores.append(f"participaciones {etf}: {e}")
             if etf in prev_part:
@@ -1770,14 +1777,16 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     for sim, nombre, grupo in MERCADOS:
         try:
-            salida["mercados"][sim] = mercado(sim, nombre, grupo)
+            with PET.fuente("mercados"):
+                salida["mercados"][sim] = mercado(sim, nombre, grupo)
         except Exception as e:  # noqa: BLE001
             errores.append(f"mercado {sim}: {e}")
             if sim in prev_merc:
                 salida["mercados"][sim] = prev_merc[sim]
 
     try:
-        salida["mapa"] = bolsas_mapa(anterior)
+        with PET.fuente("mapa"):
+            salida["mapa"] = bolsas_mapa(anterior)
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         salida["mapa"] = anterior.get("mapa") or {}
@@ -1785,7 +1794,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     prev_extra = anterior.get("extra", {})
     for sim, nombre in EXTRA:
         try:
-            v = mercado(sim, nombre)
+            with PET.fuente("extra"):
+                v = mercado(sim, nombre)
             v.pop("historico", None)
             salida["extra"][sim] = v
         except Exception as e:  # noqa: BLE001
@@ -1802,7 +1812,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro"), None) for inst in instrumentos if inst.get("noticias")]
         for clave, q, debe, zona in consultas:
             try:
-                lista = noticias(q, 6, debe, NOTICIAS_MERCADO_CUANDO) if zona else noticias(q, 8, debe)
+                with PET.fuente("noticias_google"):
+                    lista = noticias(q, 6, debe, NOTICIAS_MERCADO_CUANDO) if zona else noticias(q, 8, debe)
                 for x in lista:
                     if zona:
                         x["z"] = zona
@@ -1822,7 +1833,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         salida["noticias"]["_region"] = prev_reg
         salida["noticias_region_generado"] = anterior.get("noticias_region_generado")
     else:
-        reg, err = noticias_region(prev_reg)
+        with PET.fuente("noticias_region"):
+            reg, err = noticias_region(prev_reg)
         errores += err
         salida["noticias"]["_region"] = reg
         salida["noticias_region_generado"] = ahora()
@@ -1843,7 +1855,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     if nuevo_descubrir:
         try:
             fijas = {sim for simbolos in RADAR.values() for sim in simbolos}
-            halladas, diag = descubrir(fx, fijas)
+            with PET.fuente("descubrir"):
+                halladas, diag = descubrir(fx, fijas)
             if halladas:
                 extra = halladas
             print(f"descubrir: {diag.get('elegidas')} de {diag.get('candidatas')} candidatas {diag.get('por_region')}")
@@ -1855,14 +1868,16 @@ def main(ruta_inst, dir_anterior, dir_salida):
     try:
         propias = {str(i.get("yahoo") or "").upper() for i in instrumentos}
         fijas_todas = {sim for simbolos in RADAR.values() for sim in simbolos} | {s for s, _ in extra} | propias
-        pedidas = [x["s"] for x in pedidas_firestore() if x["s"]]
+        with PET.fuente("pedidas"):
+            pedidas = [x["s"] for x in pedidas_firestore() if x["s"]]
         pedidas = [s for s in dict.fromkeys(pedidas) if s not in fijas_todas][:150]
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         pedidas = []
     radar_sal = None
     try:
-        valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas], todas=not previos)
+        with PET.fuente("radar_fichas"):
+            valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas], todas=not previos)
         radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else None
         print(f"radar: {len(valores)} empresas")
     except Exception as e:  # noqa: BLE001
@@ -1890,7 +1905,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         mas = [x for x in todos if x.get("s") not in nucleo]
         radar_sal["pedidas"] = pedidas
         try:
-            n = radar_precios(radar_sal["valores"], fx)
+            with PET.fuente("radar_precios"):
+                n = radar_precios(radar_sal["valores"], fx)
             radar_sal["precios"] = ahora()
             print(f"radar: precios de {n} empresas")
         except Exception as e:  # noqa: BLE001
@@ -1907,7 +1923,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
             precios_mas = prev_mas.get("precios") or ""
             if not hace_menos_de(precios_mas, MINUTOS_PRECIOS_MAS / 60):
                 try:
-                    n = radar_precios(mas, fx)
+                    with PET.fuente("radar_mas_precios"):
+                        n = radar_precios(mas, fx)
                     precios_mas = ahora()
                     print(f"radar-mas: precios de {n} empresas")
                 except Exception as e:  # noqa: BLE001
@@ -1922,7 +1939,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         rh = prev_rh if prev_rh and hace_menos_de(prev_rh.get("generado") or "", 20) else None
         if not rh:
             try:
-                rh = radar_historico(todos) or prev_rh
+                with PET.fuente("radar_historico"):
+                    rh = radar_historico(todos) or prev_rh
                 if rh and rh is not prev_rh:
                     print(f"radar: histórico de {len(rh.get('s') or {})} empresas")
             except Exception as e:  # noqa: BLE001
@@ -1958,7 +1976,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
             clave = re.escape(nombre.split()[0]) if nombre.split() else None
             try:
                 # con palabras de bolsa, para no traer noticias de productos que se llaman igual
-                ns = noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, clave)
+                with PET.fuente("noticias_ideas"):
+                    ns = noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, clave)
                 if ns:
                     salida["noticias_ideas"][x["s"]] = ns
             except Exception as e:  # noqa: BLE001
@@ -1983,7 +2002,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     with open(f"{dir_salida}/precios.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
     try:
-        intra = intradia(instrumentos, salida)
+        with PET.fuente("intradia"):
+            intra = intradia(instrumentos, salida)
         with open(f"{dir_salida}/intradia.json", "w", encoding="utf-8") as f:
             json.dump({"generado": salida["generado"], "p": intra}, f, ensure_ascii=False, separators=(",", ":"))
         print(f"intradía: {len(intra)} instrumentos")
@@ -1994,6 +2014,11 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     buenos = sum(1 for v in salida["instrumentos"].values() if v.get("estado") == "ok")
     print(f"{buenos}/{len(instrumentos)} instrumentos al día; {len(errores)} errores")
+    try:
+        PET.imprimir("precios.py")
+        PET.guardar(f"{dir_salida}/peticiones.json", "precios", leer_json(f"{dir_anterior}/peticiones.json"))
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
     for e in errores:
         print("  -", e)
     # Solo falla la ejecución si no ha salido nada bueno (así no se pisa el archivo anterior con basura)

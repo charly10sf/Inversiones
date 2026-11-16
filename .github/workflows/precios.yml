@@ -42,6 +42,14 @@ on:
         description: "Solo con partes=lecturas o lecturas-rama: partes del encargo de lectura que se quitan para ver cuál mueve el resultado (fecha, frase, pasada); varias variantes separadas por |. Cada variante se lee dos veces en lugar de la rama"
         type: string
         default: ""
+      sin_ia:
+        description: "Solo con ensayo: sin Claude (ni lectura, ni informe, ni decisión, ni traducción). Para medir las peticiones a Yahoo sin gastar"
+        type: boolean
+        default: false
+      medir:
+        description: "Solo con ensayo: «todo» hace también lo que va cada hora, cada 2 horas o una vez al día (fichas lentas, noticias, radar-mas, histórico semanal, descubrir), para contar sus peticiones. Vacío: la pasada que toque"
+        type: string
+        default: ""
   push:
     branches: [main]
     paths:
@@ -95,11 +103,40 @@ jobs:
             git show origin/datos:fichas-mas.json > anterior/fichas-mas.json || true
             git show origin/datos:banco.json > anterior/banco.json || true
             git show origin/datos:banco-muestra.json > anterior/banco-muestra.json || true
+            git show origin/datos:peticiones.json > anterior/peticiones.json || true
           fi
           # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
           if git fetch --depth=1 origin catalogo 2>/dev/null; then
             git show origin/catalogo:catalogo-precios.json > anterior/catalogo-precios.json || true
           fi
+
+      # 16 nov 2026: para contar las peticiones de todo lo que no va en cada pasada, el ensayo con medir=todo hace como si
+      # lo de la pasada anterior fuera viejo (solo en anterior/, que no se publica)
+      - name: Ensayo de medida, todo de una vez
+        if: ${{ inputs.ensayo && inputs.medir == 'todo' }}
+        run: |
+          python - <<'PY'
+          import json
+          viejo = "2000-01-01T00:00:00+00:00"
+          def tocar(ruta, f):
+              try:
+                  d = json.load(open(ruta))
+              except Exception as e:
+                  print("sin", ruta, e); return
+              f(d); json.dump(d, open(ruta, "w"))
+          def precios(d):
+              for v in (d.get("instrumentos") or {}).values():
+                  if v.get("lento"): v["lento"] = viejo
+              for k in ("noticias_generado", "noticias_region_generado", "noticias_ideas_generado"): d[k] = viejo
+              d["participaciones_fecha"] = "2000-01-01"
+          def radar(d):
+              if isinstance(d.get("descubrir"), dict): d["descubrir"]["fecha"] = viejo
+          tocar("anterior/precios.json", precios)
+          tocar("anterior/radar.json", radar)
+          tocar("anterior/radar-mas.json", lambda d: d.update(precios=viejo))
+          tocar("anterior/radar-hist.json", lambda d: d.update(generado=viejo))
+          print("medir=todo: lo lento, como si fuera viejo")
+          PY
 
       - name: Descargar precios
         run: |
@@ -176,7 +213,7 @@ jobs:
       # anterior.
       - name: Escaneo de prensa e informe de la IA
         env:
-          ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
+          ANTHROPIC_RADAR_KEY: ${{ !inputs.sin_ia && secrets.ANTHROPIC_RADAR_KEY || '' }}
           INFORME_FORZAR: ${{ (inputs.informe || inputs.ensayo) && '1' || '' }}
           INFORME_DECIDIR: ${{ inputs.ensayo && '1' || '' }}
           # 14 nov 2026 (auditoría): otro modelo solo para la decisión de las ideas (claude-sonnet-5-5). Vacío: el del radar
@@ -189,6 +226,7 @@ jobs:
       # con su propio límite de tiempo y sin poder tumbar la pasada: los precios se publican igual
       - name: Traducir al inglés
         timeout-minutes: 8
+        if: ${{ !inputs.sin_ia }}
         continue-on-error: true
         env:
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
@@ -224,7 +262,7 @@ jobs:
         if: ${{ inputs.ensayo }}
         run: |
           mkdir -p ensayo-pasada
-          for f in radar.json radar-mas.json precios.json noticias-cache.json escaneo.json informe.json fichas.json fichas-mas.json traduccion-en.json; do
+          for f in radar.json radar-mas.json radar-hist.json precios.json historico.json noticias-cache.json escaneo.json informe.json fichas.json fichas-mas.json traduccion-en.json peticiones.json seguimiento.json; do
             [ -f salida/$f ] && cp salida/$f ensayo-pasada/ || true
           done
           [ -f anterior/escaneo.json ] && cp anterior/escaneo.json ensayo-pasada/escaneo-anterior.json || true

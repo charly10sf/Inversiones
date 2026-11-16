@@ -44,6 +44,7 @@ import urllib.request
 import yfinance as yf
 
 import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
+import peticiones as PET  # noqa: E402  (16 nov 2026: cuántas peticiones hace cada parte)
 # 9 nov 2026: precios.json guarda ahora hasta 60 titulares de mercado (para la página de Noticias); la IA sigue leyendo
 # 30, hasta 3 por zona, como antes: ni más gasto ni menos zonas
 elegir_mercado = P.elegir_mercado
@@ -868,14 +869,15 @@ def lote_google(cache, valores, ahora_dt=None):
 def actualizar_noticias(cache, valores):
     """Noticias de las empresas que más tiempo llevan sin mirar (las nuevas, primero)."""
     lote = sorted(valores, key=lambda x: (cache.get(x["s"]) or {}).get("fy") or "")[:LOTE_YAHOO]
-    with cf.ThreadPoolExecutor(max_workers=HILOS_YAHOO) as ex:
+    with PET.fuente("noticias_yahoo"), cf.ThreadPoolExecutor(max_workers=HILOS_YAHOO) as ex:
         for x, ns in ex.map(lambda x: (x, noticias_yahoo(x["s"], 6)), lote):
             mezclar(cache, x["s"], ns, "fy")
     lote_g = lote_google(cache, valores)
     for x in lote_g:
         nombre = nombre_corto(x.get("n"), x["s"])
         try:
-            ns = P.noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, re.escape(nombre.split()[0]) if nombre.split() else None)
+            with PET.fuente("noticias_google_es"):
+                ns = P.noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, re.escape(nombre.split()[0]) if nombre.split() else None)
             DIAG["google"] += 1
         except Exception as e:  # noqa: BLE001
             DIAG["google_error"] += 1
@@ -1872,6 +1874,7 @@ def estado_ia(esc, hay_ia):
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
+    PET.activar()
     hay_ia = bool(clave_claude())
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     radar = leer(f"{dir_salida}/radar.json")
@@ -1901,7 +1904,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias ({e})")
         try:
-            noticias_de_carteras(cache, instrumentos, todas, leer(f"{dir_salida}/precios.json"))
+            with PET.fuente("noticias_carteras"):
+                noticias_de_carteras(cache, instrumentos, todas, leer(f"{dir_salida}/precios.json"))
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias de las carteras ({e})")
         if hay_ia:
@@ -1948,6 +1952,11 @@ def main(ruta_inst, dir_anterior, dir_salida):
     with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
     marcar(dir_salida, "escaneo_id", salida["generado"])
+    try:
+        PET.imprimir("informe.py")
+        PET.guardar(f"{dir_salida}/peticiones.json", "informe", leer(f"{dir_anterior}/peticiones.json"))
+    except Exception:  # noqa: BLE001
+        pass
 
 
 if __name__ == "__main__":
