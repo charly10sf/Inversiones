@@ -334,7 +334,19 @@ async function velasYahoo(sim) {
   if (!r) return null;
   const ts = r.timestamp || [], cl = (r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close) || [];
   const h = velasLimpias(ts.map((t, k) => [t * 1000, cl[k]]));
-  return h.length ? { m: String((r.meta && r.meta.currency) || 'EUR'), tipo: String((r.meta && r.meta.instrumentType) || ''), h } : null;
+  const sesion = r.meta && r.meta.currentTradingPeriod && r.meta.currentTradingPeriod.regular;
+  return h.length ? { m: String((r.meta && r.meta.currency) || 'EUR'), tipo: String((r.meta && r.meta.instrumentType) || ''), h, fin: sesion && +sesion.end ? +sesion.end * 1000 : null } : null;
+}
+// 16 nov 2026: con la bolsa cerrada las velas ya no cambian hasta la sesión siguiente: se guardan más tiempo (hasta 3 horas
+// y como mucho hasta 14 horas después del cierre, antes de que abra otra vez cualquier bolsa de acciones). Solo acciones,
+// ETF, fondos e índices, y desde 75 minutos después del cierre (subasta, retrasos de Yahoo). Lo demás, como siempre
+const TIPOS_CON_CIERRE = new Set(['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX']);
+function ttlIntra(v, ahora = Date.now()) {
+  if (!v || !v.fin || !TIPOS_CON_CIERRE.has(String(v.tipo).toUpperCase())) return INTRA_TTL;
+  const ultima = v.h.length ? v.h[v.h.length - 1][0] : 0;
+  if (ahora < v.fin + 75 * 60e3 || ultima > v.fin) return INTRA_TTL;
+  const hasta = Math.min(3 * 3600, Math.floor((v.fin + 14 * 3600e3 - ahora) / 1000));
+  return Math.max(INTRA_TTL, hasta);
 }
 async function velasBitvavo(mercado) {
   const r = await fetch(`https://api.bitvavo.com/v2/${encodeURIComponent(mercado)}/candles?interval=30m&limit=240`, { headers: { Accept: 'application/json' } });
@@ -381,7 +393,7 @@ async function intraSimbolo(sim, cache, cambios) {
   }
   const d = { p };
   // lo que Yahoo no tiene (un fondo, un símbolo raro) se recuerda más tiempo: no va a aparecer en 12 minutos
-  await cache.put(clave, new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${p.length ? INTRA_TTL : 3600}` } }));
+  await cache.put(clave, new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${p.length ? ttlIntra(v) : 3600}` } }));
   return d;
 }
 async function intradiaRuta(url, req, env, res, deFuera) {
