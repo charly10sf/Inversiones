@@ -28,7 +28,7 @@ test('móvil: Más en el sitio de Tú abre la hoja con el buscador, Lo tuyo, los
   await expect(h).toBeVisible();
   // no se ha ido a Tú: la hoja se abre encima de Hoy
   expect(await page.evaluate(() => S.vista)).toBe('cartera');
-  await expect(h.locator('.mas-g')).toHaveText(['Lo tuyo', 'Tus fijados', 'Tu cartera', 'Riesgo y rentabilidad', 'Hacienda', 'Mercados e ideas', 'Herramientas', 'La app']);
+  await expect(h.locator('.mas-g')).toHaveText(['A tu gusto', 'Lo tuyo', 'Tus fijados', 'Tu cartera', 'Riesgo y rentabilidad', 'Hacienda', 'Mercados e ideas', 'Herramientas', 'La app']);
   await expect(h.locator('.mas-tuyo a')).toHaveText(['Tu cuenta', 'Objetivos', /Paso a paso|Tu plan/]);
   // el buscador: escribe y salen las páginas; la primera se abre con Intro
   await h.locator('.busca-fun').fill('divid');

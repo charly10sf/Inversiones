@@ -62,8 +62,9 @@
   .mas-rejilla li svg { width: 18px; height: 18px; }
   .mas-rejilla .fij-b { width: 28px; }
 }
-.mas-app li:first-child { grid-column: 1 / -1; flex-wrap: wrap; align-items: center; padding-right: 8px; }
-.mas-app li:first-child .mas-modo { flex: 1 1 auto; cursor: default; }
+/* 0.9b: las dos filas de «A tu gusto» (Diseño y Cómo la ves) van a lo ancho, con su interruptor a la derecha */
+.mas-gusto li { grid-column: 1 / -1; flex-wrap: wrap; align-items: center; padding-right: 8px; }
+.mas-gusto li .mas-modo { flex: 1 1 auto; cursor: default; }
 .mas-app .seg-modo { display: flex; padding: 3px; gap: 2px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--aro, var(--borde)); }
 .mas-app .seg-modo button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--texto-2); font: 600 12.5px/1 var(--ui); cursor: pointer; }
 .mas-app .seg-modo button[aria-pressed="true"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); }

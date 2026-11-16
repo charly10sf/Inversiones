@@ -139,6 +139,10 @@ table td.txt { white-space: normal; min-width: 260px; }
 /* al pasar el dedo la cifra sigue en blanco: lo que cambia es la etiqueta de arriba, que dice el día */
 .hero-cifra:has(.hero-num.mira) .hero-lbl { color: var(--primario); }
 .hero-var { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+/* 0.9b (captura de Carlos, 16 nov): en el móvil la ⓘ bajaba sola a otra línea. Ahora va siempre al lado: si no cabe, se parte el texto */
+.hero-var { flex-wrap: nowrap; }
+.hero-var .hv-p, .hero-var .hv-info { flex: none; }
+.hero-var .k { min-width: 0; }
 .hv-p { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
 .hv-p.up { background: var(--sube-fondo); color: var(--sube); }
 .hv-p.down { background: var(--baja-fondo); color: var(--baja); }

@@ -137,8 +137,9 @@ test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debaj
     await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
     const tabs = page.locator('.exp-tabs');
     await expect(tabs).toBeAttached({ timeout: 15_000 });
-    const r = await tabs.evaluate((el) => ({ pos: getComputedStyle(el).position, fondo: getComputedStyle(el).backgroundColor }));
-    expect(r.pos).toBe('sticky');
+    // 0.9b: la página se repinta con cada dato; se leen las pestañas que están puestas (si no, a veces salía vacío)
+    await expect.poll(() => page.evaluate(() => { const el = document.querySelector('.exp-tabs'); return el ? getComputedStyle(el).position : ''; })).toBe('sticky');
+    const r = await page.evaluate(() => { const el = document.querySelector('.exp-tabs'); return { pos: getComputedStyle(el).position, fondo: getComputedStyle(el).backgroundColor }; });
     // opaco: ni transparente ni con alfa
     expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
   }

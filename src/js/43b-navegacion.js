@@ -254,9 +254,14 @@ function abrirMas() {
   if ($('.hoja-mas')) return;
   const tuyo = PAGINAS.filter((p) => p.g === 'tuyo');
   const casilla = (p) => `<li><a href="${hrefPag(p)}" data-cerrar aria-current="${paginaActual() === p.id ? 'page' : 'false'}">${icoItem(p)}<span>${esc(nomPag(p))}</span></a>${estrella(p.id)}</li>`;
-  const app = `<li><span class="mas-modo">${ICONOS_PL.ver}<span>${L('Cómo la ves', 'How you see it')}</span></span>${segModo()}</li>` + ACCIONES_APP.map((a) => `<li><button type="button" data-accion="${a.a}" data-cerrar>${a.ico()}<span>${esc(L(a.t, a.en))}</span></button>${estrella(a.id)}</li>`).join('');
+  // 0.9b (Carlos, 16 nov: «tiene que ser más fácil encontrarlo»): Mármol o Marfil y Básico o Avanzado, arriba del todo
+  const tm = temaActual(), nomT = { marmol: 'Mármol', marfil: 'Marfil' };
+  const segTema = `<div class="seg-modo seg-tema" role="group" aria-label="${L('Diseño', 'Design')}" data-no-trad>${TEMAS.map((k) => `<button type="button" data-elige-tema="${k}" aria-pressed="${tm === k}">${nomT[k] || k}</button>`).join('')}</div>`;
+  const gusto = `<li><span class="mas-modo">${ICONOS_PL.ver}<span>${L('Diseño', 'Design')}</span></span>${segTema}</li><li><span class="mas-modo">${ICONOS_PL.ver}<span>${L('Cómo la ves', 'How you see it')}</span></span>${segModo()}</li>`;
+  const app = ACCIONES_APP.map((a) => `<li><button type="button" data-accion="${a.a}" data-cerrar>${a.ico()}<span>${esc(L(a.t, a.en))}</span></button>${estrella(a.id)}</li>`).join('');
   const h = hoja(L('Más', 'More'), `<div class="hoja-mas">${htmlCajaBusca()}
     <div class="mas-cuerpo">
+      <h3 class="mas-g">${L('A tu gusto', 'Your way')}</h3><ul class="mas-rejilla mas-app mas-gusto">${gusto}</ul>
       <h3 class="mas-g">${L('Lo tuyo', 'Yours')}</h3><ul class="mas-rejilla mas-tuyo">${tuyo.map(casilla).join('')}</ul>
       <h3 class="mas-g">${L('Tus fijados', 'Your pinned')}</h3>${htmlMasFijados()}
       ${GRUPOS_MAS.map(([g, t, en]) => { const ps = PAGINAS.filter((p) => p.g === g && enLista(p)); return ps.length ? `<h3 class="mas-g">${L(t, en)}</h3><ul class="mas-rejilla">${ps.map(casilla).join('')}</ul>` : ''; }).join('')}
@@ -264,6 +269,7 @@ function abrirMas() {
     </div></div>`);
   h.el.classList.add('hoja-mas-f');
   activarBusca(h.el);
+  activarSelectorTema(h.el);
 }
 
 /* ---------- el ordenador: la K2 ---------- */

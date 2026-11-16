@@ -424,6 +424,13 @@ function vistaTu(M) {
       <div><p class="tu-nom">${nom ? esc(nom) : L('Tu cuenta', 'Your account')}</p><small>${FB.user && FB.user.email ? esc(FB.user.email) : PERFIL_LOCAL ? L('Cartera guardada en este dispositivo', 'Portfolio saved on this device') : ''}</small></div>
       ${falta ? `<button type="button" class="btn peq pri" data-accion="perfil-guiado">${vacio ? L('Hacer tu perfil', 'Set up your profile') : L('Terminar tu perfil', 'Finish your profile')}</button>` : ''}
     </section>
+    ${/* 0.9b (Carlos, 16 nov: «tiene que ser más fácil encontrarlo»): Mármol o Marfil, Básico o Avanzado y el acabado, arriba del todo */ ''}
+    <h2 class="aj-grupo">${L('A tu gusto', 'Your way')}</h2>
+    <div class="aj-caja aj-gusto">
+      ${htmlSelectorTema()}
+      ${htmlSelectorModo()}
+      ${htmlSelectorAcabado()}
+    </div>
     <h2 class="aj-grupo">${L('Lo tuyo', 'Yours')}</h2>
     <div class="aj-caja">
       ${fila(ICONOS_PL.tu, L('Tu perfil de inversor', 'Your investor profile'), falta ? L('A medias: sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera.', 'Unfinished: without your age, horizon and risk, the AI talks to you like anyone else.') : L('Tu edad, tu plazo, el riesgo que aguantas y tus límites.', 'Your age, horizon, risk and limits.'), 'href="#tu-perfil"', falta ? ' falta' : '')}
@@ -434,9 +441,6 @@ function vistaTu(M) {
     </div>
     <h2 class="aj-grupo">${L('La app', 'The app')}</h2>
     <div class="aj-caja">
-      ${htmlSelectorTema()}
-      ${htmlSelectorModo()}
-      ${htmlSelectorAcabado()}
       ${boton(ICONOS_PL.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
       ${boton(ICONOS_PL.novedades, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
       ${boton(ICONOS_PL.enviar, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}
