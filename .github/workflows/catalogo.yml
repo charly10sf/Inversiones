@@ -47,6 +47,17 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r scripts/requirements.txt
 
+      # 16 nov 2026: la zona horaria de cada símbolo, guardada de una pasada a otra. Sin ella, yfinance hace una
+      # petición de más por símbolo en cada pasada para saberla (no cambia nunca: es la de su bolsa). Solo ese archivo
+      - name: Zonas horarias de yfinance
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/py-yfinance/tkr-tz.db
+          key: yf-tz-catalogo-${{ github.run_id }}
+          restore-keys: |
+            yf-tz-catalogo-
+            yf-tz-
+
       - name: Recuperar el catálogo anterior
         run: |
           mkdir -p anterior

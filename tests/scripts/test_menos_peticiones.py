@@ -186,3 +186,12 @@ class MapaConLaBolsaCerrada(unittest.TestCase):
         anterior = {"mapa": {"^SSMI": {"n": "SMI", "p": "CH", "f": "2026-11-16", "v": 0.5}}}
         P.bolsas_mapa(anterior, {"CH": "2026-11-16T09:07:00+00:00"}, t("2026-11-16T10:07"))
         self.assertIn("CH", self.pedidos)
+
+
+class ZonasHorariasGuardadas(unittest.TestCase):
+    def test_las_actions_guardan_la_zona_de_cada_simbolo(self):
+        # sin el archivo de yfinance, cada símbolo cuesta una petición de más en cada pasada (la de su zona horaria)
+        for flujo in ("precios.yml", "catalogo.yml"):
+            yml = (RAIZ / ".github" / "workflows" / flujo).read_text(encoding="utf-8")
+            self.assertIn("path: ~/.cache/py-yfinance/tkr-tz.db", yml, flujo)
+            self.assertIn("uses: actions/cache@v4", yml, flujo)
