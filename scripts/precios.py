@@ -1564,23 +1564,46 @@ def radar_precios(valores, fx, estado=None, ahora=None):
         if vale(estado.get(s)):
             guardados[s] = estado[s]
     pedir = [s for s in dict.fromkeys(sims) if s not in guardados]
-    nuevos, dias = {}, {}
+    nuevos, dias, sin_cierre = {}, {}, []
     # de 250 en 250 (5 nov 2026: 2.206 empresas en 94 s, frente a 135 s de 100 en 100)
     for i in range(0, len(pedir), 250):
         trozo = pedir[i:i + 250]
         try:
             df = yf.download(trozo, period="5d", interval="1d", progress=False, auto_adjust=False, threads=True, group_by="column")
             cierre = df["Close"]
+            apertura = df["Open"] if "Open" in df.columns.get_level_values(0) else None
             for sim in trozo:
                 if sim not in cierre:
                     continue
                 c = cierre[sim].dropna()
                 c = c[c > 0]
+                if apertura is not None and sim in apertura and len(c):
+                    o = apertura[sim].dropna()
+                    if len(o) and o.index[-1] > c.index[-1]:
+                        sin_cierre.append((sim, c))
+                        continue
                 if len(c) >= 2:
                     nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
                     dias[sim] = pd.Timestamp(c.index[-1]).date().isoformat()
         except Exception:  # noqa: BLE001
             traceback.print_exc()
+    # 17 nov 2026 (revisión): pasada la medianoche de su bolsa, Yahoo deja la vela del día con el cierre vacío (Helsinki,
+    # el 16 nov a las 0:35 de allí: NOKIA.HE con close null y regularMarketPrice 7,21) y el radar enseñaba el cierre de la
+    # víspera como de hoy. Como en mercados y el mapa (al_dia), se completa con el último precio de los metadatos: una
+    # petición más, solo para lo que viene así.
+    for sim, c in sin_cierre:
+        try:
+            t = yf.Ticker(sim)
+            t.history(period="5d", interval="1d", auto_adjust=False)
+            c2 = al_dia(c, t.history_metadata or {})
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+            c2 = c
+        if len(c2) >= 2:
+            nuevos[sim] = (float(c2.iloc[-1]), float(c2.iloc[-2]))
+            dias[sim] = pd.Timestamp(c2.index[-1]).date().isoformat()
+    if sin_cierre:
+        print(f"radar precios: {len(sin_cierre)} con la vela del día sin cierre, completadas con su último precio")
     marca = ahora.replace(microsecond=0).isoformat()
     for sim, (p, ant) in nuevos.items():
         estado[sim] = [marca, p, ant, dias.get(sim) or ""]

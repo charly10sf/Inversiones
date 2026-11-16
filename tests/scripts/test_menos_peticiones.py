@@ -151,6 +151,37 @@ class RadarPrecios(unittest.TestCase):
         self.assertEqual(estado["SAN.MC"][3], "2026-11-16")
         self.assertEqual(estado["SAN.MC"][1:3], [12.0, 11.0])
 
+    def test_revision_vela_del_dia_sin_cierre_se_completa(self):
+        # 16 nov 2026, 22:35 UTC (0:35 en Helsinki): Yahoo da la vela del lunes con el cierre vacío y el precio solo en
+        # los metadatos. Antes salía el cierre del viernes como de hoy; ahora, el último precio, como al_dia()
+        # con el día de hoy (al_dia() solo completa precios de los últimos 6 días)
+        dias = pd.bdate_range(end=pd.Timestamp.now(tz="UTC").date() - pd.Timedelta(days=1), periods=5)
+        cols = pd.MultiIndex.from_product([["Close", "Open"], ["NOKIA.HE", "SAN.MC"]])
+        filas = [[7.4, 9.0, 7.3, 9.0], [7.7, 9.1, 7.6, 9.1], [7.6, 9.2, 7.5, 9.2], [7.294, 9.3, 7.5, 9.3], [float("nan"), 9.4, 7.28, 9.35]]
+        P.yf.download = lambda trozo, **k: pd.DataFrame(filas, index=dias, columns=cols)
+        tickers = []
+
+        class Falso:
+            def __init__(self, sim):
+                tickers.append(sim)
+                self.history_metadata = {"regularMarketPrice": 7.21, "exchangeTimezoneName": "Europe/Helsinki",
+                                         "regularMarketTime": int(pd.Timestamp(f"{dias[-1].date()}T16:29:32Z").timestamp())}
+
+            def history(self, **k):
+                return None
+        original, P.yf.Ticker = P.yf.Ticker, Falso
+        try:
+            ahora = pd.Timestamp.now(tz="UTC").to_pydatetime()
+            valores = [{"s": "NOKIA.HE", "m": "EUR"}, {"s": "SAN.MC", "m": "EUR"}]
+            estado = {}
+            P.radar_precios(valores, {}, estado, ahora)
+        finally:
+            P.yf.Ticker = original
+        self.assertEqual(tickers, ["NOKIA.HE"])
+        self.assertEqual((valores[0]["p"], valores[0]["v"]), (7.21, P.num((7.21 / 7.294 - 1) * 100, 2)))
+        self.assertEqual(estado["NOKIA.HE"][1:], [7.21, 7.294, dias[-1].date().isoformat()])
+        self.assertEqual(valores[1]["p"], 9.4)
+
     def test_revision_festivo_se_pide(self):
         # 26 nov 2026, Acción de Gracias: la última vela de AAPL es del 25; esa noche se sigue pidiendo, como antes
         self.assertFalse(H.quieto("AAPL", t("2026-11-26T22:30"), t("2026-11-27T03:00"), "2026-11-25"))
