@@ -36,7 +36,8 @@ BOLSAS = {
 }
 
 # Índices (por su símbolo). Fuera de la tabla, y a propósito: los que cotizan casi todo el día (divisas, futuros, bonos,
-# VIX, cripto) y las bolsas que abren en domingo o han cambiado de días hace poco (Golfo, Egipto, Israel, Dubái).
+# VIX, cripto), las bolsas que abren en domingo o han cambiado de días hace poco (Golfo, Egipto, Israel, Dubái) y la India
+# (abre en sábado o domingo algunos días, como el de los presupuestos, y tiene la sesión de Diwali por la tarde).
 INDICES = {
     "^IBEX": ("Europe/Madrid", "09:00", "17:30"),
     "^STOXX50E": ("Europe/Berlin", "09:00", "18:00"),
@@ -49,13 +50,14 @@ INDICES = {
     "^N225": ("Asia/Tokyo", "09:00", "15:30"),
     "^HSI": ("Asia/Hong_Kong", "09:30", "16:10"),
     "000001.SS": ("Asia/Shanghai", "09:30", "15:00"),
-    "^NSEI": ("Asia/Kolkata", "09:15", "15:30"),
     "^BVSP": ("America/Sao_Paulo", "10:00", "18:00"),
     "^SSMI": ("Europe/Zurich", "09:00", "17:35"),
     "^GSPTSE": ("America/Toronto", "09:30", "16:00"),
     "^AEX": ("Europe/Amsterdam", "09:00", "17:35"),
     "FTSEMIB.MI": ("Europe/Rome", "09:00", "17:35"),
-    "^MXX": ("America/Mexico_City", "08:30", "15:00"),
+    # la Bolsa Mexicana abre y cierra con Nueva York: en el verano de EEUU, de 7:30 a 14:00 de México (sin cambio de hora
+    # desde 2022); en invierno, de 8:30 a 15:00
+    "^MXX": ("America/New_York", "09:30", "16:00"),
     "^BFX": ("Europe/Brussels", "09:00", "17:35"),
     "PSI20.LS": ("Europe/Lisbon", "08:00", "16:35"),
     "^OMX": ("Europe/Stockholm", "09:00", "17:35"),
@@ -86,10 +88,17 @@ def bolsa_de(sim):
         return None
     if s in INDICES:
         return INDICES[s]
-    if s.startswith("^") or "=" in s or s.endswith("-EUR") or s.endswith("-USD") or s.startswith("0P"):
+    if s.startswith("^") or "=" in s or s.startswith("0P"):
         return None
     if "." in s:
         return BOLSAS.get(s.rsplit(".", 1)[1])
+    # 16 nov 2026 (revisión): la cripto en cualquier moneda (BTC-EUR, ETH-GBP, SOL-USDT…; las clases de EEUU son BRK-B,
+    # BF-A) y los fondos de inversión de EEUU (cinco letras acabadas en X: VFIAX, FXAIX), que dan el valor liquidativo
+    # horas después del cierre
+    if "-" in s and len(s.rsplit("-", 1)[1]) >= 3:
+        return None
+    if len(s) == 5 and s.isalpha() and s.endswith("X"):
+        return None
     return BOLSAS[""]
 
 

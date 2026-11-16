@@ -54,6 +54,34 @@ class Horario(unittest.TestCase):
             self.assertIsNone(H.bolsa_de(sim), sim)
             self.assertFalse(H.quieto(sim, t("2026-11-15T23:00"), t("2026-11-15T23:20")), sim)
 
+    def test_revision_cripto_fondos_de_eeuu_e_india_se_piden_siempre(self):
+        # 16 nov 2026 (revisión): la cripto en otras monedas y los fondos de EEUU (valor liquidativo horas después del
+        # cierre) caían en el horario de las acciones de EEUU; la India abre algunos sábados y domingos
+        for sim in ("ETH-GBP", "SOL-USDT", "BTC-CHF", "VFIAX", "FXAIX", "^NSEI"):
+            self.assertIsNone(H.bolsa_de(sim), sim)
+            self.assertFalse(H.quieto(sim, t("2026-11-14T03:00"), t("2026-11-14T12:00")), sim)
+        # las clases de acciones de EEUU siguen con su horario
+        for sim in ("BRK-B", "BF-A", "GOOGL", "AAPL"):
+            self.assertEqual(H.bolsa_de(sim)[0], "America/New_York", sim)
+
+    def test_revision_mexico_con_el_horario_de_nueva_york(self):
+        # en el verano de EEUU la Bolsa Mexicana abre a las 7:30 de México (13:30 UTC): a las 13:45 ya está en sesión
+        self.assertTrue(H.en_sesion("^MXX", t("2026-07-15T13:45")))
+        self.assertFalse(H.quieto("^MXX", t("2026-07-14T21:30"), t("2026-07-15T13:45")))
+        # en invierno, de 8:30 a 15:00 (14:30 a 21:00 UTC)
+        self.assertFalse(H.en_sesion("^MXX", t("2026-11-17T13:45")))
+        self.assertTrue(H.en_sesion("^MXX", t("2026-11-17T14:30")))
+
+    def test_revision_semanas_con_un_solo_cambio_de_hora(self):
+        # 16 mar 2026: Nueva York ya en verano (cierra a las 20:00 UTC) y Madrid todavía en invierno (16:30 UTC)
+        self.assertTrue(H.quieto("AAPL", t("2026-03-16T21:20"), t("2026-03-16T23:00")))
+        self.assertFalse(H.quieto("AAPL", t("2026-03-16T21:10"), t("2026-03-16T23:00")))
+        self.assertTrue(H.quieto("SAN.MC", t("2026-03-16T17:50"), t("2026-03-16T23:00")))
+        # 27 oct 2026: Madrid ya en invierno (abre a las 08:00 UTC) y Nueva York todavía en verano (abre a las 13:30 UTC)
+        self.assertTrue(H.en_sesion("SAN.MC", t("2026-10-27T07:50")))
+        self.assertTrue(H.en_sesion("AAPL", t("2026-10-27T13:20")))
+        self.assertFalse(H.en_sesion("AAPL", t("2026-10-27T13:10")))
+
     def test_sin_hora_se_pide(self):
         self.assertFalse(H.quieto("AAPL", None, t("2026-11-15T12:00")))
 
