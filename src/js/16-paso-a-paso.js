@@ -67,7 +67,7 @@ function pasosRuta0(M) {
       como: 'Déjalo en el efectivo remunerado de tu bróker o en un fondo monetario: no baja y lo tienes cuando lo necesites.', ref: { pl } });
     if (pl.aIdea > 0 && top) {
       const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
-      add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Comprar ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`,
+      add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: (() => { const n = accionesRadar(top, pl.aIdea); return n ? L(`Comprar ${n} de ${esc(nombreRadar(top))} (${eur(pl.aIdea, 0)})`, `Buy ${n} of ${esc(nombreRadar(top))} (${eur(pl.aIdea, 0)})`) : `Comprar ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`; })(),
         pq: `De las ${radarVals().length} empresas del radar, la mejor contrastada para una acción nueva que no repita lo que ya tienes: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
         como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(nombreRadar(top))} (${esc(top.s)}), Comprar, orden limitada a ${precioR(top.p, top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
@@ -185,6 +185,14 @@ function pasosRuta0(M) {
    la renta. Cada cosa con lo suyo: un fondo se reembolsa (un traspaso no deja la pérdida), la cripto no cierra y en un ETC
    la recompra es de dos meses */
 const diaSemCorto = (s) => { const d = deIso(s); return L(`${DIAS_SEM[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}`, `${DIAS_EN[d.getDay()].slice(0, 3)}, ${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}`); };
+// 16 nov: cuántas acciones del radar salen por un importe (enteras; si no llega a una, con decimales): «unas 9 acciones»
+function accionesRadar(t, importe) {
+  const pe = t && (t.pe > 0 ? t.pe : aEuros(t.p, t.m));
+  if (!(pe > 0) || !(importe > 0)) return '';
+  const n = importe / pe, k = n >= 1 ? Math.floor(n) : +n.toFixed(2);
+  const q = k >= 1 ? fmtNum(k, 0) : fmtNum(k, 2).replace(/0+$/, '');
+  return k >= 1 && k < 2 ? L('1 acción', '1 share') : L(`unas ${q} acciones`, `about ${q} shares`);
+}
 const laborableAntes = (s) => { let d = s; while (deIso(d).getDay() % 6 === 0) d = sumarDias(d, -1); return d; };
 // el horario de su bolsa, en hora de España: sin sufijo en Yahoo es EEUU
 const cierreBolsa = (inst) => (String((inst && inst.yahoo) || '.').includes('.') ? '17:30' : L('22:00, hora de España', '22:00 Spanish time'));

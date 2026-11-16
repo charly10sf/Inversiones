@@ -63,8 +63,15 @@ test('vender con pérdidas: cantidad, pasos numerados, día límite, recompra co
   const li = page.locator('.tarea.pp-paso[data-id^="perdida:p8:"]');
   await expect(li.locator('.pp-molde')).toContainText('Trade Republic');
   await expect(li.locator('.pp-molde')).toContainText('hasta el');
+  await expect(li.locator('.pp-molde')).toContainText(/Cuánto\s*652,53 acciones \(todas\)/);
   await li.locator('.pp-fila').click();
+  // el cómo, plegado: se abre al tocarlo
+  const como = li.locator('details.pp-como');
+  await expect(como).not.toHaveAttribute('open', '');
+  await expect(li.locator('.t-pasos li').first()).toBeHidden();
+  await como.locator('summary').click();
   await expect(li.locator('.t-pasos li')).toHaveCount(5);
+  await expect(li.locator('.t-pasos li').first()).toBeVisible();
   await expect(li.locator('.t-imp')).toContainText('Qué cambia en la renta');
 });
 
@@ -92,7 +99,9 @@ test('el mismo molde en cada tarjeta de «Haz esto»: dónde, cuándo con su dí
   await expect(m).toContainText('Dónde'); await expect(m).toContainText('Trade Republic');
   await expect(m).toContainText(/(lun|mar|mié|jue|vie) \d+ (ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)/);
   await expect(m).toContainText('Después');
+  await expect(m.locator('.pp-m').first()).toContainText(/Cuánto\s*\d+ acciones de tus [\d,]+/);
   await venta.locator('.pp-fila').click();
+  await venta.locator('details.pp-como summary').click();
   await expect(venta.locator('.t-pasos li').first()).toContainText('pulsa Vender');
   await expect(venta.locator('.t-pasos li').nth(1)).toContainText('acciones');
   // sin el «cuándo» repetido en la cabecera de la tarjeta
@@ -156,4 +165,24 @@ test('en inglés, el molde y las opciones salen traducidos', async ({ page, cont
   await expect(venta.locator('.pp-molde')).toContainText('Then');
   await expect(venta.locator('.pp-conf-s')).toHaveText(/^(Very reliable|Fairly reliable|Not very reliable)$/);
   if (await page.locator('.pp-sino').count()) await expect(page.locator('.pp-sino button').first()).toHaveText('Yes, do it');
+});
+
+test('cuánto comprar: acciones y participaciones con su importe, también en las tres salidas de lo que queda libre', async ({ page }) => {
+  await fundador(page); await abrirPaso(page);
+  // las acciones del radar por un importe: enteras, al precio en euros
+  const n = await page.evaluate(() => [accionesRadar({ pe: 100 }, 950), accionesRadar({ pe: 100 }, 150), accionesRadar({ pe: 1000 }, 300)]);
+  expect(n).toEqual(['unas 9 acciones', '1 acción', 'unas 0,3 acciones']);
+  // meter lo de la venta en el fondo: euros y participaciones
+  const nu = page.locator('.tarea.pp-paso[data-id^="nucleo:"]').first();
+  if (await nu.count()) await expect(nu.locator('.pp-molde')).toContainText(/Cuánto\s*[\d.]+\s€ · unas [\d,]+ participaciones a/);
+  // lo libre de Repsol: cada salida con lo que compras
+  const lib = page.locator('.tarea.pp-paso[data-id^="libres:"]').first();
+  if (await lib.count()) {
+    await lib.locator('.pp-fila').click();
+    await expect(lib.locator('.pp-salida').nth(0)).toContainText('participaciones');
+    await expect(lib.locator('.pp-salida').nth(1)).toContainText(/acci(ón|ones)/);
+  }
+  // la aportación al fondo que más lejos está: euros y participaciones
+  const ap = page.locator('.tarea.pp-paso[data-id^="aportd:"]').first();
+  if (await ap.count()) await expect(ap.locator('.pp-molde')).toContainText('participaciones');
 });
