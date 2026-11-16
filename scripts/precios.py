@@ -1587,8 +1587,8 @@ def radar_precios(valores, fx, estado=None, ahora=None):
                     c = c[~dup]
                 if apertura is not None and sim in apertura and len(c):
                     o = apertura[sim].dropna()
-                    if len(o) and o.index[-1] > c.index[-1]:
-                        sin_cierre.append((sim, c))
+                    if len(o) and o.index[-1].normalize() > c.index[-1].normalize():
+                        sin_cierre.append((sim, c, o.index[-1].normalize()))
                         continue
                 if len(c) >= 2:
                     nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
@@ -1597,23 +1597,40 @@ def radar_precios(valores, fx, estado=None, ahora=None):
             traceback.print_exc()
     # 17 nov 2026 (revisión): pasada la medianoche de su bolsa, Yahoo deja la vela del día con el cierre vacío (Helsinki,
     # el 16 nov a las 0:35 de allí: NOKIA.HE con close null y regularMarketPrice 7,21) y el radar enseñaba el cierre de la
-    # víspera como de hoy. Como en mercados y el mapa (al_dia), se completa con el último precio de los metadatos: una
-    # petición más, solo para lo que viene así.
+    # víspera como de hoy. Como en mercados y el mapa (al_dia), se completa con el último precio de los metadatos, si es
+    # de ese mismo día: una petición más, solo para lo que viene así. Si no cuadra, lo de siempre (y solo vale para la noche
+    # si su última vela es la de la última sesión).
     def completar(par):
-        sim, c = par
+        """(precio, cierre anterior, día) con el último precio de los metadatos, solo si es del día de la vela sin
+        cierre; el anterior, el último cierre de antes de ese día. Si no cuadra, None (se queda lo de main)."""
+        sim, c, dia = par
         try:
             t = yf.Ticker(sim)
             t.history(period="5d", interval="1d", auto_adjust=False)
-            return sim, al_dia(c, t.history_metadata or {})
+            meta = t.history_metadata or {}
+            p, ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+            if not p or p <= 0 or not ts:
+                return sim, None
+            cuando = pd.Timestamp(ts, unit="s", tz="UTC") if isinstance(ts, (int, float)) else pd.Timestamp(ts)
+            if cuando.tzinfo is None:
+                cuando = cuando.tz_localize("UTC")
+            if cuando.tz_convert(meta.get("exchangeTimezoneName") or "UTC").date() != dia.date():
+                return sim, None
+            antes = c[c.index.normalize() < dia]
+            if not len(antes) or abs(float(p) / float(antes.iloc[-1]) - 1) > 0.5:
+                return sim, None
+            return sim, (float(p), float(antes.iloc[-1]), dia.date().isoformat())
         except Exception:  # noqa: BLE001
             traceback.print_exc()
-            return sim, c
+            return sim, None
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
         completadas = list(ex.map(completar, sin_cierre))
-    for sim, c2 in completadas:
-        if len(c2) >= 2:
-            nuevos[sim] = (float(c2.iloc[-1]), float(c2.iloc[-2]))
-            dias[sim] = pd.Timestamp(c2.index[-1]).date().isoformat()
+    for (sim, c, _), (_, r) in zip(sin_cierre, completadas):
+        if r:
+            nuevos[sim], dias[sim] = (r[0], r[1]), r[2]
+        elif len(c) >= 2:
+            nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
+            dias[sim] = pd.Timestamp(c.index[-1]).date().isoformat()
     if sin_cierre:
         print(f"radar precios: {len(sin_cierre)} con la vela del día sin cierre, completadas con su último precio")
     if repetidas:
@@ -1622,7 +1639,7 @@ def radar_precios(valores, fx, estado=None, ahora=None):
     for sim, (p, ant) in nuevos.items():
         # 17 nov 2026 (revisión): un último cierre igual al anterior no se da por bueno para toda la noche (si es otra
         # forma de la vela repetida, se vería 0 % hasta abrir): se guarda sin día y se vuelve a pedir, como en main
-        estado[sim] = [marca, p, ant, (dias.get(sim) or "") if p != ant else ""]
+        estado[sim] = [marca, p, ant, (dias.get(sim) or "") if abs(p / ant - 1) > 1e-6 else ""]
     for sim, e in guardados.items():
         nuevos[sim] = (e[1], e[2])
     if guardados:

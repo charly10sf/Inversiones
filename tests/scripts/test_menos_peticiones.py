@@ -151,36 +151,59 @@ class RadarPrecios(unittest.TestCase):
         self.assertEqual(estado["SAN.MC"][3], "2026-11-16")
         self.assertEqual(estado["SAN.MC"][1:3], [12.0, 11.0])
 
-    def test_revision_vela_del_dia_sin_cierre_se_completa(self):
-        # 16 nov 2026, 22:35 UTC (0:35 en Helsinki): Yahoo da la vela del lunes con el cierre vacío y el precio solo en
-        # los metadatos. Antes salía el cierre del viernes como de hoy; ahora, el último precio, como al_dia()
-        # con el día de hoy (al_dia() solo completa precios de los últimos 6 días)
-        dias = pd.bdate_range(end=pd.Timestamp.now(tz="UTC").date() - pd.Timedelta(days=1), periods=5)
-        cols = pd.MultiIndex.from_product([["Close", "Open"], ["NOKIA.HE", "SAN.MC"]])
-        filas = [[7.4, 9.0, 7.3, 9.0], [7.7, 9.1, 7.6, 9.1], [7.6, 9.2, 7.5, 9.2], [7.294, 9.3, 7.5, 9.3], [float("nan"), 9.4, 7.28, 9.35]]
+    def _con_ticker(self, meta, filas, sims, dias, ahora):
+        cols = pd.MultiIndex.from_product([["Close", "Open"], sims])
         P.yf.download = lambda trozo, **k: pd.DataFrame(filas, index=dias, columns=cols)
         tickers = []
 
         class Falso:
             def __init__(self, sim):
                 tickers.append(sim)
-                self.history_metadata = {"regularMarketPrice": 7.21, "exchangeTimezoneName": "Europe/Helsinki",
-                                         "regularMarketTime": int(pd.Timestamp(f"{dias[-1].date()}T16:29:32Z").timestamp())}
+                self.history_metadata = meta
 
             def history(self, **k):
                 return None
         original, P.yf.Ticker = P.yf.Ticker, Falso
         try:
-            ahora = pd.Timestamp.now(tz="UTC").to_pydatetime()
-            valores = [{"s": "NOKIA.HE", "m": "EUR"}, {"s": "SAN.MC", "m": "EUR"}]
-            estado = {}
+            valores, estado = [{"s": x, "m": "EUR"} for x in sims], {}
             P.radar_precios(valores, {}, estado, ahora)
         finally:
             P.yf.Ticker = original
+        return valores, estado, tickers
+
+    def test_revision_vela_del_dia_sin_cierre_se_completa(self):
+        # 16 nov 2026, 22:35 UTC (0:35 en Helsinki): Yahoo da la vela del lunes con el cierre vacío y el precio solo en
+        # los metadatos. Antes salía el cierre del viernes como de hoy; ahora, el último precio, si es de ese día
+        dias = pd.bdate_range(end="2026-11-16", periods=5)
+        filas = [[7.4, 9.0, 7.3, 9.0], [7.7, 9.1, 7.6, 9.1], [7.6, 9.2, 7.5, 9.2], [7.294, 9.3, 7.5, 9.3], [float("nan"), 9.4, 7.28, 9.35]]
+        meta = {"regularMarketPrice": 7.21, "exchangeTimezoneName": "Europe/Helsinki",
+                "regularMarketTime": int(pd.Timestamp("2026-11-16T16:29:32Z").timestamp())}
+        valores, estado, tickers = self._con_ticker(meta, filas, ["NOKIA.HE", "SAN.MC"], dias, t("2026-11-16T22:35"))
         self.assertEqual(tickers, ["NOKIA.HE"])
         self.assertEqual((valores[0]["p"], valores[0]["v"]), (7.21, P.num((7.21 / 7.294 - 1) * 100, 2)))
-        self.assertEqual(estado["NOKIA.HE"][1:], [7.21, 7.294, dias[-1].date().isoformat()])
+        self.assertEqual(estado["NOKIA.HE"][1:], [7.21, 7.294, "2026-11-16"])
+        self.assertTrue(H.quieto("NOKIA.HE", t("2026-11-16T22:35"), t("2026-11-17T03:00"), estado["NOKIA.HE"][3]))
         self.assertEqual(valores[1]["p"], 9.4)
+
+    def test_revision_vela_de_un_dia_nuevo_sin_cierre_no_repite_el_precio(self):
+        # pasada la medianoche, una vela del martes sin cierre y el último precio del lunes: el lunes sigue siendo el
+        # último cierre y el viernes el anterior (ACS.MC salía con 0 %)
+        dias = list(pd.bdate_range(end="2026-11-16", periods=4)) + [pd.Timestamp("2026-11-17")]
+        filas = [[92.0, 92.0], [93.5, 93.0], [93.05, 93.0], [91.05, 92.0], [float("nan"), 91.1]]
+        meta = {"regularMarketPrice": 91.05, "exchangeTimezoneName": "Europe/Madrid",
+                "regularMarketTime": int(pd.Timestamp("2026-11-16T16:35:00Z").timestamp())}
+        cols = pd.MultiIndex.from_product([["Close", "Open"], ["ACS.MC"]])
+        valores, estado, _ = self._con_ticker(meta, [[f[0], f[1]] for f in filas], ["ACS.MC"], pd.DatetimeIndex(dias), t("2026-11-16T23:13"))
+        self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
+        self.assertEqual(estado["ACS.MC"][1:], [91.05, 93.05, "2026-11-16"])
+
+    def test_revision_cierre_casi_igual_al_anterior_se_vuelve_a_pedir(self):
+        dias = pd.bdate_range(end="2026-11-16", periods=5)
+        cols = pd.MultiIndex.from_product([["Close"], ["ACS.MC"]])
+        P.yf.download = lambda trozo, **k: pd.DataFrame([[92.0], [93.5], [93.05], [91.0500030517578], [91.05]], index=dias, columns=cols)
+        valores, estado = [{"s": "ACS.MC", "m": "EUR"}], {}
+        P.radar_precios(valores, {}, estado, t("2026-11-16T23:13"))
+        self.assertEqual(estado["ACS.MC"][3], "")
 
     def test_revision_vela_repetida_no_da_cero(self):
         # 16 nov 2026, 22:53 UTC: Yahoo dio dos veces la vela del lunes (ACS.MC 91,05 y 91,05) y salía 0 %; con lo
