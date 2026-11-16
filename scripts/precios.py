@@ -1187,19 +1187,32 @@ def bolsa_mapa(pais, simbolos, nombre, etf=None):
     raise RuntimeError(f"{pais} {simbolos}: {fallo}")
 
 
-def bolsas_mapa(anterior):
+def bolsas_mapa(anterior, estado=None, ahora=None):
     """Todas las del mapa a la vez (en paralelo: son casi 30 y cada una tarda lo suyo). Si una falla, se queda
-    la de la vez anterior; si no había, ese país sale en gris."""
+    la de la vez anterior; si no había, ese país sale en gris.
+
+    16 nov 2026: «estado» ({país: cuándo se pidió}, de seguimiento.json): con su bolsa cerrada y lo de la vez anterior
+    pedido después del cierre (horario.quieto), se queda lo de la vez anterior sin volver a pedirlo (es lo mismo)."""
     import concurrent.futures as cf
     prev = anterior.get("mapa") or {}
-    out, fallos = {}, []
+    estado = {} if estado is None else estado
+    ahora = ahora or dt.datetime.now(dt.timezone.utc)
+    out, fallos, pedir = {}, [], []
+    for x in MAPA:
+        pais, nombre = x[0], x[2]
+        viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais), None)
+        if viejo and viejo[1].get("n") == nombre and not viejo[1].get("my") and H.quieto(viejo[0], H.leer_hora(estado.get(pais)), ahora):
+            out[viejo[0]] = viejo[1]
+        else:
+            pedir.append(x)
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
-        futuros = {ex.submit(bolsa_mapa, *x): x for x in MAPA}
+        futuros = {ex.submit(bolsa_mapa, *x): x for x in pedir}
         for fu in cf.as_completed(futuros):
             pais, simbolos = futuros[fu][:2]
             try:
                 sim, v = fu.result()
                 out[sim] = v
+                estado[pais] = ahora.replace(microsecond=0).isoformat()
             except Exception as e:  # noqa: BLE001
                 fallos.append(str(e))
                 # el de la pasada anterior, mientras no tenga más de diez días: después, mejor sin dato que uno viejo
@@ -1833,10 +1846,19 @@ def main(ruta_inst, dir_anterior, dir_salida):
                 salida["participaciones_etf"][etf] = prev_part[etf]
     salida["participaciones_fecha"] = hoy
 
+    # 16 nov 2026: con su bolsa cerrada y lo de la vez anterior pedido después del cierre, se queda tal cual (es lo mismo)
+    ahora_dt = dt.datetime.now(dt.timezone.utc)
+    marca = ahora_dt.replace(microsecond=0).isoformat()
+    estado_merc = seguimiento.setdefault("mercados", {})
     for sim, nombre, grupo in MERCADOS:
+        viejo = prev_merc.get(sim) or {}
+        if viejo.get("historico") and viejo.get("nombre") == nombre and viejo.get("grupo") == grupo and H.quieto(sim, H.leer_hora(estado_merc.get(sim)), ahora_dt):
+            salida["mercados"][sim] = viejo
+            continue
         try:
             with PET.fuente("mercados"):
                 salida["mercados"][sim] = mercado(sim, nombre, grupo)
+            estado_merc[sim] = marca
         except Exception as e:  # noqa: BLE001
             errores.append(f"mercado {sim}: {e}")
             if sim in prev_merc:
@@ -1844,18 +1866,24 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     try:
         with PET.fuente("mapa"):
-            salida["mapa"] = bolsas_mapa(anterior)
+            salida["mapa"] = bolsas_mapa(anterior, seguimiento.setdefault("mapa", {}), ahora_dt)
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         salida["mapa"] = anterior.get("mapa") or {}
 
     prev_extra = anterior.get("extra", {})
+    estado_extra = seguimiento.setdefault("extra", {})
     for sim, nombre in EXTRA:
+        viejo = prev_extra.get(sim) or {}
+        if viejo.get("nombre") == nombre and viejo.get("precio") is not None and H.quieto(sim, H.leer_hora(estado_extra.get(sim)), ahora_dt):
+            salida["extra"][sim] = viejo
+            continue
         try:
             with PET.fuente("extra"):
                 v = mercado(sim, nombre)
             v.pop("historico", None)
             salida["extra"][sim] = v
+            estado_extra[sim] = marca
         except Exception as e:  # noqa: BLE001
             errores.append(f"extra {sim}: {e}")
             if sim in prev_extra:

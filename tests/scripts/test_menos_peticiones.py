@@ -156,3 +156,33 @@ class FichaEnMenosPeticiones(unittest.TestCase):
         t._quote._fetch(P.INFO_MODULOS)
         self.assertEqual(self.llamadas, [P.INFO_MODULOS])
         self.assertFalse(getattr(t._quote, "_already_fetched_complementary", False))
+
+
+class MapaConLaBolsaCerrada(unittest.TestCase):
+    def setUp(self):
+        self.original = P.bolsa_mapa
+        self.pedidos = []
+
+        def falso(pais, simbolos, nombre, etf=None):
+            self.pedidos.append(pais)
+            return simbolos[0], {"n": nombre, "p": pais, "f": "2026-11-13", "v": 1.0, "m": 2.0, "y": 3.0}
+        P.bolsa_mapa = falso
+
+    def tearDown(self):
+        P.bolsa_mapa = self.original
+
+    def test_sabado_solo_lo_que_no_tiene_horario(self):
+        anterior = {"mapa": {"^SSMI": {"n": "SMI", "p": "CH", "f": "2026-11-13", "v": 0.5, "m": 1.0, "y": 9.0},
+                             "^TASI.SR": {"n": "Tadawul", "p": "SA", "f": "2026-11-13", "v": 0.1}}}
+        estado = {"CH": "2026-11-13T18:07:00+00:00", "SA": "2026-11-13T18:07:00+00:00"}
+        out = P.bolsas_mapa(anterior, estado, t("2026-11-14T04:17"))
+        self.assertEqual(out["^SSMI"], anterior["mapa"]["^SSMI"])
+        self.assertNotIn("CH", self.pedidos)
+        self.assertIn("SA", self.pedidos)  # el Golfo abre en domingo: siempre se pide
+        self.assertEqual(len(self.pedidos), len(P.MAPA) - 1)
+        self.assertEqual(estado["SA"], "2026-11-14T04:17:00+00:00")
+
+    def test_con_la_bolsa_abierta_se_pide(self):
+        anterior = {"mapa": {"^SSMI": {"n": "SMI", "p": "CH", "f": "2026-11-16", "v": 0.5}}}
+        P.bolsas_mapa(anterior, {"CH": "2026-11-16T09:07:00+00:00"}, t("2026-11-16T10:07"))
+        self.assertIn("CH", self.pedidos)
