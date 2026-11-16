@@ -1,0 +1,94 @@
+name: Equivalencia
+
+# 16 nov 2026 (menos peticiones a Yahoo): comprueba que el código de una rama da lo mismo que el de main con menos
+# peticiones. Solo a mano y sin publicar nada: 1) una pasada con la rama (deja su seguimiento.json, como haría la pasada
+# anterior); 2) a la vez, una con main y otra con la rama sobre esa; 3) compara lo que sale (scripts/equivalencia.py) y
+# cuenta las peticiones de cada una. Sin la IA: solo precios.py.
+on:
+  workflow_dispatch:
+    inputs:
+      espera:
+        description: "Minutos entre la primera pasada y las dos que se comparan (para que la primera quede como «la de antes»)"
+        default: "20"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: equivalencia
+  cancel-in-progress: false
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r scripts/requirements.txt
+
+      - name: Zonas horarias de yfinance
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/py-yfinance/tkr-tz.db
+          key: yf-tz-precios-${{ github.run_id }}
+          restore-keys: |
+            yf-tz-precios-
+            yf-tz-
+
+      - name: Lo publicado y el código de main
+        run: |
+          mkdir -p anterior main/scripts
+          git fetch --depth=1 origin datos main
+          for f in precios.json historico.json radar.json radar-mas.json radar-hist.json peticiones.json seguimiento.json; do
+            git show origin/datos:$f > anterior/$f 2>/dev/null || rm -f anterior/$f
+          done
+          git archive origin/main scripts | tar -x -C main
+          git show origin/main:instrumentos.json > main/instrumentos.json
+
+      - name: Primera pasada con la rama
+        run: |
+          mkdir -p primera
+          python scripts/precios.py instrumentos.json anterior primera > primera.log 2>&1 || true
+          grep -E "^peticiones|radar precios|instrumentos al día" primera.log || true
+
+      - name: Esperar
+        run: sleep $(( ${{ inputs.espera || '20' }} * 60 ))
+
+      - name: Main y rama a la vez
+        run: |
+          mkdir -p ant-rama sal-main sal-rama
+          cp anterior/* ant-rama/ 2>/dev/null || true
+          # la rama sigue desde su primera pasada, como seguiría desde la pasada anterior publicada
+          cp primera/seguimiento.json ant-rama/
+          # main sin tocar, con el contador de la rama por fuera (solo cuenta: todo sale como «otros»)
+          (cd main && python -c "import sys, atexit, runpy; sys.path[:0] = ['scripts', '../scripts']; import peticiones as P; P.activar(); atexit.register(P.imprimir, 'main'); sys.argv = ['scripts/precios.py', 'instrumentos.json', '../anterior', '../sal-main']; runpy.run_path('scripts/precios.py', run_name='__main__')" > ../main.log 2>&1) &
+          python scripts/precios.py instrumentos.json ant-rama sal-rama > rama.log 2>&1 &
+          wait
+          echo "== main"; grep -E "^peticiones|instrumentos al día|radar: precios" main.log || true
+          echo "== rama"; grep -E "^peticiones|^  [a-z_]+ +\{|radar precios|instrumentos al día|radar: precios" rama.log | cut -c1-260 || true
+
+      - name: Comparar
+        run: python scripts/equivalencia.py sal-main sal-rama
+
+      - name: Guardar lo que ha salido
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: equivalencia
+          path: |
+            sal-main
+            sal-rama
+            primera/seguimiento.json
+            primera/peticiones.json
+            main.log
+            rama.log
+            primera.log
+          retention-days: 7
