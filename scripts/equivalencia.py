@@ -58,10 +58,34 @@ def simbolo_de(ruta):
     return None
 
 
+def explicada(nombre, ruta, x, y, a, b, seg):
+    """17 nov 2026 (revisión): dos diferencias con la bolsa cerrada que no vienen de la rama, y se cuentan aparte:
+    «main sin la vela»: en el radar, main enseña como precio el cierre anterior al último que tiene la rama (Yahoo deja la
+    vela del día sin cierre pasada la medianoche de su bolsa: main se queda en la víspera; la rama, con lo guardado o
+    completado con su último precio); «objetivo en otra moneda»: el precio objetivo de una ficha que las dos piden por su
+    lado y Yahoo convierte de moneda al momento (menos de un 0,5 % y con el mismo precio)."""
+    if nombre not in ("radar.json", "radar-mas.json") or "[" not in ruta:
+        return None
+    sim, campo = simbolo_de(ruta), ruta.rsplit("/", 1)[-1]
+    va = {v.get("s"): v for v in a.get("valores") or []}.get(sim) or {}
+    vb = {v.get("s"): v for v in b.get("valores") or []}.get(sim) or {}
+    e = seg.get(sim)
+    if isinstance(e, list) and len(e) >= 4 and va.get("p") is not None and va.get("p") != vb.get("p") \
+            and abs(float(va["p"]) - float(e[2])) <= 1e-6 * max(1.0, abs(float(e[2]))):
+        return "main sin la vela"
+    if va.get("p") == vb.get("p") and campo in ("obj", "ta", "tb", "pot"):
+        oa, ob = va.get("obj"), vb.get("obj")
+        if isinstance(oa, (int, float)) and isinstance(ob, (int, float)) and oa and abs(oa / ob - 1) < 0.005:
+            return "objetivo en otra moneda"
+    return None
+
+
 def main(d_main, d_rama):
     ahora = dt.datetime.now(dt.timezone.utc)
     inst = (leer(os.path.join(d_main, "precios.json")) or {}).get("instrumentos") or {}
+    seg = (leer(os.path.join(d_rama, "seguimiento.json")) or {}).get("precios") or {}
     total_cerradas = 0
+    total_explicadas = {}
     for nombre in ARCHIVOS:
         a, b = leer(os.path.join(d_main, nombre)), leer(os.path.join(d_rama, nombre))
         if a is None and b is None:
@@ -69,7 +93,7 @@ def main(d_main, d_rama):
         if a is None or b is None:
             print(f"{nombre}: solo está en {'la rama' if a is None else 'main'}")
             continue
-        abiertas, cerradas, otras = [], [], []
+        abiertas, cerradas, otras, explicadas = [], [], [], []
         for ruta, x, y in diferencias(a, b):
             sim = simbolo_de(ruta)
             if sim in inst:
@@ -79,13 +103,20 @@ def main(d_main, d_rama):
             elif H.bolsa_de(sim) is None or H.en_sesion(sim, ahora):
                 abiertas.append((ruta, x, y))
             else:
-                cerradas.append((ruta, x, y))
+                por = explicada(nombre, ruta, x, y, a, b, seg)
+                if por:
+                    explicadas.append((ruta, x, y, por))
+                    total_explicadas[por] = total_explicadas.get(por, 0) + 1
+                else:
+                    cerradas.append((ruta, x, y))
         total_cerradas += len(cerradas)
-        print(f"{nombre}: {len(cerradas)} diferencias con la bolsa cerrada, {len(abiertas)} con la bolsa abierta o sin horario, {len(otras)} otras")
+        print(f"{nombre}: {len(cerradas)} diferencias con la bolsa cerrada, {len(explicadas)} explicadas, {len(abiertas)} con la bolsa abierta o sin horario, {len(otras)} otras")
         for titulo, lista in (("CERRADA", cerradas), ("otra", otras), ("abierta", abiertas)):
             for ruta, x, y in lista[:25 if titulo != "abierta" else 8]:
                 print(f"   {titulo:8s} {ruta}: {str(x)[:90]} → {str(y)[:90]}")
-    print(f"total con la bolsa cerrada: {total_cerradas}")
+        for ruta, x, y, por in explicadas[:12]:
+            print(f"   ({por}) {ruta}: {str(x)[:60]} → {str(y)[:60]}")
+    print(f"total con la bolsa cerrada: {total_cerradas}; explicadas aparte: {total_explicadas or 0}")
 
 
 if __name__ == "__main__":
