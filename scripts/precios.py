@@ -41,6 +41,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import yfinance as yf
 
+import horario as H  # 16 nov 2026: con la bolsa cerrada no se vuelve a pedir lo que ya no cambia
 import peticiones as PET  # 16 nov 2026: cuántas peticiones hace cada parte de la pasada (peticiones.json)
 
 # Escala SRRI de riesgo (1-7) según la volatilidad anual en %
@@ -1490,14 +1491,22 @@ def radar(fx, previo, extra=(), todas=False):
     return out
 
 
-def radar_precios(valores, fx):
+def radar_precios(valores, fx, estado=None, ahora=None):
     """Precio y variación del día de todas las empresas del radar en pocas consultas, para que el
-    potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos)."""
+    potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos).
+
+    16 nov 2026: «estado» ({símbolo: [cuándo, último cierre, cierre anterior]}, de seguimiento.json) guarda lo que dio
+    Yahoo la última vez. Con su bolsa cerrada y pedido después del cierre (horario.quieto), no se vuelve a pedir: se usa lo
+    guardado, que es lo mismo que daría Yahoo. El precio en euros se rehace igual con el cambio de ahora."""
+    ahora = ahora or dt.datetime.now(dt.timezone.utc)
+    estado = {} if estado is None else estado
     sims = [x["s"] for x in valores]
+    guardados = {s: estado[s] for s in sims if s in estado and H.quieto(s, H.leer_hora(estado[s][0]), ahora)}
+    pedir = [s for s in dict.fromkeys(sims) if s not in guardados]
     nuevos = {}
     # de 250 en 250 (5 nov 2026: 2.206 empresas en 94 s, frente a 135 s de 100 en 100)
-    for i in range(0, len(sims), 250):
-        trozo = sims[i:i + 250]
+    for i in range(0, len(pedir), 250):
+        trozo = pedir[i:i + 250]
         try:
             df = yf.download(trozo, period="5d", interval="1d", progress=False, auto_adjust=False, threads=True, group_by="column")
             cierre = df["Close"]
@@ -1510,6 +1519,13 @@ def radar_precios(valores, fx):
                     nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
         except Exception:  # noqa: BLE001
             traceback.print_exc()
+    marca = ahora.replace(microsecond=0).isoformat()
+    for sim, (p, ant) in nuevos.items():
+        estado[sim] = [marca, p, ant]
+    for sim, e in guardados.items():
+        nuevos[sim] = (e[1], e[2])
+    if guardados:
+        print(f"radar precios: {len(pedir)} pedidos a Yahoo y {len(guardados)} con la bolsa cerrada (lo de después del cierre)")
     for x in valores:
         if x["s"] not in nuevos:
             continue
@@ -1715,6 +1731,12 @@ def main(ruta_inst, dir_anterior, dir_salida):
     prev_sect = anterior.get("sectores_etf", {})
     prev_part = anterior.get("participaciones_etf", {})
     prev_not = anterior.get("noticias", {})
+    # 16 nov 2026: lo último que dio Yahoo de cada cosa y cuándo (seguimiento.json; la web no lo lee), para no volver a
+    # pedir lo que, con la bolsa cerrada, ya no cambia
+    seguimiento = leer_json(f"{dir_anterior}/seguimiento.json")
+    if seguimiento.get("v") != 1:
+        seguimiento = {"v": 1}
+    estado_precios = seguimiento.setdefault("precios", {})
 
     PET.activar()
     errores = []
@@ -1874,7 +1896,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         pedidas = []
-    radar_sal = None
+    radar_sal, mas = None, []
     try:
         with PET.fuente("radar_fichas"):
             valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas], todas=not previos)
@@ -1906,7 +1928,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         radar_sal["pedidas"] = pedidas
         try:
             with PET.fuente("radar_precios"):
-                n = radar_precios(radar_sal["valores"], fx)
+                n = radar_precios(radar_sal["valores"], fx, estado_precios)
             radar_sal["precios"] = ahora()
             print(f"radar: precios de {n} empresas")
         except Exception as e:  # noqa: BLE001
@@ -1924,7 +1946,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
             if not hace_menos_de(precios_mas, MINUTOS_PRECIOS_MAS / 60):
                 try:
                     with PET.fuente("radar_mas_precios"):
-                        n = radar_precios(mas, fx)
+                        n = radar_precios(mas, fx, estado_precios)
                     precios_mas = ahora()
                     print(f"radar-mas: precios de {n} empresas")
                 except Exception as e:  # noqa: BLE001
@@ -2001,6 +2023,14 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     with open(f"{dir_salida}/precios.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
+    # lo que ya no está en el radar sale del seguimiento
+    en_radar = {x.get("s") for x in ((radar_sal or {}).get("valores") or [])} | {x.get("s") for x in mas}
+    if en_radar - {None}:
+        for sim in [k for k in estado_precios if k not in en_radar]:
+            del estado_precios[sim]
+    seguimiento["generado"] = ahora()
+    with open(f"{dir_salida}/seguimiento.json", "w", encoding="utf-8") as f:
+        json.dump(seguimiento, f, ensure_ascii=False, separators=(",", ":"))
     try:
         with PET.fuente("intradia"):
             intra = intradia(instrumentos, salida)
