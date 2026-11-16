@@ -352,6 +352,9 @@ class EquivalenciaExplicadas(unittest.TestCase):
                "SAN.MC": ["2026-11-16T18:52:39+00:00", 9.1, 9.05, "2026-11-16"]}
         self.assertEqual(E.explicada("radar.json", "/valores[NOKIA.HE]/v", -4.5, -1.15, a, b, seg), "main sin la vela")
         self.assertEqual(E.explicada("radar-mas.json", "/valores[BAKKA.OL]/obj", 489.8753, 489.7028, a, b, seg), "objetivo en otra moneda")
+        a["valores"][2]["pe"], b["valores"][2]["pe"], b["valores"][2]["p"] = 9.0, 9.001, 9.0
+        self.assertEqual(E.explicada("radar.json", "/valores[SAN.MC]/pe", 9.0, 9.001, a, b, seg), "cambio del euro")
+        b["valores"][2]["p"] = 9.1
         # una diferencia de precio de verdad no se explica
         self.assertIsNone(E.explicada("radar.json", "/valores[SAN.MC]/p", 9.0, 9.1, a, b, seg))
         self.assertIsNone(E.explicada("precios.json", "/mercados/^IBEX/precio", 1, 2, a, b, seg))

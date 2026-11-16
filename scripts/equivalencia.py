@@ -73,6 +73,9 @@ def explicada(nombre, ruta, x, y, a, b, seg):
     if isinstance(e, list) and len(e) >= 4 and va.get("p") is not None and va.get("p") != vb.get("p") \
             and abs(float(va["p"]) - float(e[2])) <= 1e-6 * max(1.0, abs(float(e[2]))):
         return "main sin la vela"
+    if va.get("p") == vb.get("p") and isinstance(x, (int, float)) and isinstance(y, (int, float)) and y \
+            and abs(x / y - 1) < 0.001 and campo in ("pe", "cap", "dve"):
+        return "cambio del euro"
     if va.get("p") == vb.get("p") and campo in ("obj", "ta", "tb", "pot"):
         oa, ob = va.get("obj"), vb.get("obj")
         if isinstance(oa, (int, float)) and isinstance(ob, (int, float)) and oa and abs(oa / ob - 1) < 0.005:
