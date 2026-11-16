@@ -1,6 +1,34 @@
 {
  "versiones": [
   {
+   "v": "0.9a",
+   "f": "2026-11-16",
+   "h": "05:45",
+   "t": "Más fluido al cambiar de pestaña",
+   "commits": [
+    {
+     "cuando": "2026-11-16 00:03",
+     "asunto": "0.9a: el cambio de pestañas, fluido y con la barra de cristal viva",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 00:25",
+     "asunto": "0.9a: revision-083c sin la hoja de novedades encima del botón y del tirador (fallaba a ratos, también en main)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 00:40",
+     "asunto": "0.9a: la prueba de la rueda y el lector de pantalla lee la rueda puesta (fallaba a ratos en la Action)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 05:45",
+     "asunto": "Versión 0.9a: novedades",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9",
    "f": "2026-11-15",
    "h": "18:30",

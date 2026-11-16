@@ -10,6 +10,10 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9a', f: '2026-11-16', h: '05:45', t: 'Más fluido al cambiar de pestaña', arreglos: [
+    'Cambiar de pestaña en el móvil va más fluido: la barra de abajo ya no pierde el cristal, la página nueva sale antes y entra más rápido, y al volver a Hoy ya no se queda parada un momento.',
+    'Las hojas y la ficha se cierran con una salida corta en vez de desaparecer de golpe, y con «reducir movimiento» la página ya no se anima al cambiar.',
+  ] },
   { v: '0.9', f: '2026-11-15', h: '18:30', t: 'Toisón, rediseñado', cosas: [
     { d: 'hoy4', ir: { v: 'cartera', sel: '.hoy-pest' }, t: 'Hoy, con cuatro gráficas', x: 'Encima de la gráfica eliges qué ver: Valor, la de siempre; Rendimiento, tu porcentaje al lado del MSCI World; Caída, cuánto has estado por debajo de tu máximo; y Cobros, los dividendos de cada mes y los que vienen.', g: 'Valor, Rendimiento, Caída o Cobros: toca una.' },
     { d: 'hoydia', ir: { v: 'cartera', sel: '.hoy-dia' }, t: 'Lo de hoy, en una frase', x: 'Debajo de la gráfica: si hoy subes o bajas y qué es lo que más tira, cómo fue el último día de bolsa, lo que viene y lo que más mueve tu cartera.', g: 'Lo de hoy, resumido aquí.' },
