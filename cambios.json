@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.9b",
+   "f": "2026-11-16",
+   "h": "10:00",
+   "t": "Diseño y modo, a mano",
+   "commits": [
+    {
+     "cuando": "2026-11-16 06:31",
+     "asunto": "0.9b: «A tu gusto» arriba en Más y en Tú (diseño y Básico/Avanzado) y la ⓘ al lado de la pastilla",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 10:00",
+     "asunto": "Versión 0.9b: novedades",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9a",
    "f": "2026-11-16",
    "h": "05:45",

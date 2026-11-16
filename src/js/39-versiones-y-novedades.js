@@ -10,6 +10,10 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9b', f: '2026-11-16', h: '10:00', t: 'Diseño y modo, a mano', arreglos: [
+    'En Más, arriba del todo, «A tu gusto»: cambia entre Mármol y Marfil y entre Básico y Avanzado sin buscarlo. En Tú está justo debajo de tu cuenta.',
+    'En Hoy, la ⓘ de la cifra del periodo ya no se queda sola en otra línea: va al lado.',
+  ] },
   { v: '0.9a', f: '2026-11-16', h: '05:45', t: 'Más fluido al cambiar de pestaña', arreglos: [
     'Cambiar de pestaña en el móvil va más fluido: la barra de abajo ya no pierde el cristal, la página nueva sale antes y entra más rápido, y al volver a Hoy ya no se queda parada un momento.',
     'Las hojas y la ficha se cierran con una salida corta en vez de desaparecer de golpe, y con «reducir movimiento» la página ya no se anima al cambiar.',
