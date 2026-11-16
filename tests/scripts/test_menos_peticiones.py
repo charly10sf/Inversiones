@@ -109,3 +109,50 @@ class RadarPrecios(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FichaEnMenosPeticiones(unittest.TestCase):
+    """La ficha del radar: los votos de los analistas en el mismo quoteSummary de t.info y sin la serie del PEG."""
+
+    def setUp(self):
+        self.original = P._fetch_yf
+        self.llamadas = []
+
+        def falso(quote, modules):
+            self.llamadas.append(list(modules))
+            res = {"price": {"currentPrice": 10.0}, "financialData": {"targetMeanPrice": 12.0}}
+            if "recommendationTrend" in modules:
+                res["recommendationTrend"] = {"trend": [{"period": "0m", "strongBuy": 3, "buy": 5, "hold": 2, "sell": 0, "strongSell": 0},
+                                                        {"period": "-3m", "strongBuy": 2, "buy": 4, "hold": 3, "sell": 1, "strongSell": 0}], "maxAge": 86400}
+            return {"quoteSummary": {"result": [res]}}
+        P._fetch_yf = falso
+
+    def tearDown(self):
+        P._fetch_yf = self.original
+
+    def test_los_nombres_de_yfinance_siguen_ahi(self):
+        import inspect
+        from yfinance.scrapers import quote
+        fuente = inspect.getsource(quote.Quote._fetch_info)
+        self.assertIn(repr(P.INFO_MODULOS).replace('"', "'"), fuente)
+        self.assertIn("_already_fetched_complementary", inspect.getsource(quote.Quote._fetch_complementary))
+        self.assertIs(quote.Quote._fetch, P._fetch_con_votos)
+        t = P.yf.Ticker("AAPL")
+        self.assertTrue(hasattr(t, "_quote"))
+
+    def test_votos_en_la_misma_peticion(self):
+        t = P.juntar_votos(P.yf.Ticker("AAPL"))
+        r = t._quote._fetch(P.INFO_MODULOS)
+        # lo de t.info sale igual que sin los votos (el módulo se quita antes de que yfinance lo aplane)
+        self.assertNotIn("recommendationTrend", r["quoteSummary"]["result"][0])
+        v = P.votos_analistas(t)
+        self.assertEqual(v, {"ahora": {"strongBuy": 3, "buy": 5, "hold": 2, "sell": 0, "strongSell": 0},
+                             "hace3m": {"strongBuy": 2, "buy": 4, "hold": 3, "sell": 1, "strongSell": 0}})
+        self.assertEqual(self.llamadas, [P.INFO_MODULOS + ["recommendationTrend"]])
+        self.assertTrue(t._quote._already_fetched_complementary)
+
+    def test_sin_marcar_va_como_antes(self):
+        t = P.yf.Ticker("AAPL")
+        t._quote._fetch(P.INFO_MODULOS)
+        self.assertEqual(self.llamadas, [P.INFO_MODULOS])
+        self.assertFalse(getattr(t._quote, "_already_fetched_complementary", False))

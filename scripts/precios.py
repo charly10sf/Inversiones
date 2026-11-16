@@ -810,10 +810,46 @@ def rec_de_votos(v):
 ORDEN_VOTOS = ("strongBuy", "buy", "hold", "sell", "strongSell")
 
 
+# 16 nov 2026: menos peticiones por ficha del radar, con lo mismo. yfinance pide t.info en tres veces (quoteSummary, quote
+# y la serie del PEG) y los votos de los analistas en una cuarta (otro quoteSummary). En el radar el PEG no se usa, y los
+# votos (el módulo recommendationTrend) pueden venir en el mismo quoteSummary de t.info: Yahoo devuelve cada módulo igual
+# pidiéndolo solo o con otros. Solo con los Ticker marcados con juntar_votos(); si el módulo no viene, se pide aparte, como
+# antes. Va con la versión de yfinance de requirements.txt (1.7.0): una prueba avisa si cambian los nombres de dentro.
+from yfinance.scrapers import quote as _yf_quote  # noqa: E402
+
+INFO_MODULOS = ['financialData', 'quoteType', 'defaultKeyStatistics', 'assetProfile', 'summaryDetail']
+_fetch_yf = _yf_quote.Quote._fetch
+
+
+def _fetch_con_votos(self, modules):
+    if getattr(self, "_toison_votos", False) and list(modules) == INFO_MODULOS:
+        r = _fetch_yf(self, list(modules) + ["recommendationTrend"])
+        try:
+            self._toison_trend = r["quoteSummary"]["result"][0].pop("recommendationTrend")["trend"]
+        except (KeyError, IndexError, TypeError):
+            self._toison_trend = None
+        return r
+    return _fetch_yf(self, modules)
+
+
+_yf_quote.Quote._fetch = _fetch_con_votos
+
+
+def juntar_votos(t, sin_peg=True):
+    """Marca un Ticker para que t.info traiga también los votos (y, en el radar, sin la petición del PEG)."""
+    q = t._quote
+    q._toison_votos = True
+    if sin_peg:
+        q._already_fetched_complementary = True
+    return t
+
+
 def votos_analistas(t):
     """Cuántos analistas dicen comprar, mantener o vender: ahora y hace 3 meses."""
     try:
-        r = t.recommendations
+        trend = getattr(getattr(t, "_quote", None), "_toison_trend", None)
+        # lo mismo que hace yfinance con t.recommendations, con lo que ya vino junto a t.info
+        r = pd.DataFrame(trend) if trend else t.recommendations
         if r is None or r.empty:
             return None
         filas = {str(f["period"]): f for f in r.to_dict(orient="records")}
@@ -1341,7 +1377,7 @@ def objetivo_creible(objetivo, precio):
 def radar_ficha(sim, zona, fx):
     """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
     rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
-    t = yf.Ticker(sim)
+    t = juntar_votos(yf.Ticker(sim))
     info = t.info or {}
     precio = info.get("currentPrice") or info.get("regularMarketPrice")
     if not precio:
