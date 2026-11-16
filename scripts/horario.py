@@ -137,13 +137,26 @@ def fin_ultima_sesion(sim, ahora):
     return None
 
 
-def quieto(sim, pedido, ahora):
+def dia_ultima_sesion(sim, ahora):
+    """El día (en la hora de su bolsa, AAAA-MM-DD) de la última sesión antes de ahora. None si no se sabe."""
+    fin = fin_ultima_sesion(sim, ahora)
+    return fin.astimezone(ZoneInfo(bolsa_de(sim)[0])).date().isoformat() if fin else None
+
+
+def quieto(sim, pedido, ahora, fecha=None):
     """True si el precio de sim pedido a la hora «pedido» (UTC) es el mismo que daría Yahoo ahora: su bolsa está fuera
-    de la ventana y se pidió después de que acabara la ventana de la última sesión. Ante la duda, False (se pide)."""
+    de la ventana y se pidió después de que acabara la ventana de la última sesión. Ante la duda, False (se pide).
+
+    16 nov 2026 (revisión): con «fecha» (el día de la última vela de lo guardado), además tiene que ser la de la última
+    sesión. Yahoo a veces no trae todavía la vela del día (de madrugada salía el cierre de anteayer, ver al_dia() en
+    precios.py): una pasada sola con ese fallo se habría quedado toda la noche o el fin de semana. Los festivos (sin
+    vela ese día) se piden como antes. Quien guarda tiene que pasar la fecha: vacía, se pide."""
     if not pedido or en_sesion(sim, ahora):
         return False
     fin = fin_ultima_sesion(sim, ahora)
-    return fin is not None and pedido >= fin
+    if fin is None or pedido < fin:
+        return False
+    return fecha is None or str(fecha)[:10] == dia_ultima_sesion(sim, ahora)
 
 
 def leer_hora(iso):

@@ -1204,7 +1204,7 @@ def bolsas_mapa(anterior, estado=None, ahora=None):
     for x in MAPA:
         pais, nombre = x[0], x[2]
         viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais), None)
-        if viejo and viejo[1].get("n") == nombre and not viejo[1].get("my") and H.quieto(viejo[0], H.leer_hora(estado.get(pais)), ahora):
+        if viejo and viejo[1].get("n") == nombre and not viejo[1].get("my") and H.quieto(viejo[0], H.leer_hora(estado.get(pais)), ahora, viejo[1].get("f") or ""):
             out[viejo[0]] = viejo[1]
         else:
             pedir.append(x)
@@ -1547,15 +1547,24 @@ def radar_precios(valores, fx, estado=None, ahora=None):
     """Precio y variación del día de todas las empresas del radar en pocas consultas, para que el
     potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos).
 
-    16 nov 2026: «estado» ({símbolo: [cuándo, último cierre, cierre anterior]}, de seguimiento.json) guarda lo que dio
-    Yahoo la última vez. Con su bolsa cerrada y pedido después del cierre (horario.quieto), no se vuelve a pedir: se usa lo
-    guardado, que es lo mismo que daría Yahoo. El precio en euros se rehace igual con el cambio de ahora."""
+    16 nov 2026: «estado» ({símbolo: [cuándo, último cierre, cierre anterior, día de la última vela]}, de
+    seguimiento.json) guarda lo que dio Yahoo la última vez. Con su bolsa cerrada, pedido después del cierre y con la vela
+    de la última sesión (horario.quieto), no se vuelve a pedir: se usa lo guardado, que es lo mismo que daría Yahoo. El
+    precio en euros se rehace igual con el cambio de ahora. Lo que no tenga esa forma se pide."""
     ahora = ahora or dt.datetime.now(dt.timezone.utc)
     estado = {} if estado is None else estado
     sims = [x["s"] for x in valores]
-    guardados = {s: estado[s] for s in sims if s in estado and H.quieto(s, H.leer_hora(estado[s][0]), ahora)}
+
+    def vale(e):
+        ok = isinstance(e, list) and len(e) >= 4 and all(isinstance(v, (int, float)) and v > 0 for v in e[1:3])
+        return ok and H.quieto(s, H.leer_hora(e[0]), ahora, e[3] or "")
+
+    guardados = {}
+    for s in sims:
+        if vale(estado.get(s)):
+            guardados[s] = estado[s]
     pedir = [s for s in dict.fromkeys(sims) if s not in guardados]
-    nuevos = {}
+    nuevos, dias = {}, {}
     # de 250 en 250 (5 nov 2026: 2.206 empresas en 94 s, frente a 135 s de 100 en 100)
     for i in range(0, len(pedir), 250):
         trozo = pedir[i:i + 250]
@@ -1569,11 +1578,12 @@ def radar_precios(valores, fx, estado=None, ahora=None):
                 c = c[c > 0]
                 if len(c) >= 2:
                     nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
+                    dias[sim] = pd.Timestamp(c.index[-1]).date().isoformat()
         except Exception:  # noqa: BLE001
             traceback.print_exc()
     marca = ahora.replace(microsecond=0).isoformat()
     for sim, (p, ant) in nuevos.items():
-        estado[sim] = [marca, p, ant]
+        estado[sim] = [marca, p, ant, dias.get(sim) or ""]
     for sim, e in guardados.items():
         nuevos[sim] = (e[1], e[2])
     if guardados:
@@ -1855,7 +1865,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     estado_merc = seguimiento.setdefault("mercados", {})
     for sim, nombre, grupo in MERCADOS:
         viejo = prev_merc.get(sim) or {}
-        if viejo.get("historico") and viejo.get("nombre") == nombre and viejo.get("grupo") == grupo and H.quieto(sim, H.leer_hora(estado_merc.get(sim)), ahora_dt):
+        if viejo.get("historico") and viejo.get("nombre") == nombre and viejo.get("grupo") == grupo and H.quieto(sim, H.leer_hora(estado_merc.get(sim)), ahora_dt, viejo.get("fecha") or ""):
             salida["mercados"][sim] = viejo
             continue
         try:
@@ -1878,7 +1888,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     estado_extra = seguimiento.setdefault("extra", {})
     for sim, nombre in EXTRA:
         viejo = prev_extra.get(sim) or {}
-        if viejo.get("nombre") == nombre and viejo.get("precio") is not None and H.quieto(sim, H.leer_hora(estado_extra.get(sim)), ahora_dt):
+        if viejo.get("nombre") == nombre and viejo.get("precio") is not None and H.quieto(sim, H.leer_hora(estado_extra.get(sim)), ahora_dt, viejo.get("fecha") or ""):
             salida["extra"][sim] = viejo
             continue
         try:

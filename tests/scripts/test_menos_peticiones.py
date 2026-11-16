@@ -106,7 +106,7 @@ class RadarPrecios(unittest.TestCase):
         fx = {"USD": pd.Series([1.10]), "GBP": pd.Series([0.85])}
         ahora = t("2026-11-16T18:07")  # Madrid cerrada desde las 17:45 UTC; Nueva York abierta
         valores = [{"s": "AAPL", "m": "USD", "obj": 300.0}, {"s": "SAN.MC", "m": "EUR"}, {"s": "NUEVA.MC", "m": "EUR"}]
-        estado = {"SAN.MC": ["2026-11-16T17:47:00+00:00", 9.5, 9.0], "AAPL": ["2026-11-16T17:47:00+00:00", 200.0, 190.0]}
+        estado = {"SAN.MC": ["2026-11-16T17:47:00+00:00", 9.5, 9.0, "2026-11-16"], "AAPL": ["2026-11-16T17:47:00+00:00", 200.0, 190.0, "2026-11-13"]}
         n = P.radar_precios(valores, fx, estado, ahora)
         self.assertEqual(n, 3)
         # solo se pide lo que tiene la bolsa abierta y lo que no se había pedido nunca
@@ -118,7 +118,7 @@ class RadarPrecios(unittest.TestCase):
         self.assertEqual(aapl["pe"], P.num(12.0 / 1.10, 4))
         self.assertEqual(aapl["pot"], P.num((300.0 / 12.0 - 1) * 100, 1))
         # lo pedido queda apuntado con su hora; lo guardado no cambia de hora
-        self.assertEqual(estado["NUEVA.MC"], ["2026-11-16T18:07:00+00:00", 12.0, 11.0])
+        self.assertEqual(estado["NUEVA.MC"], ["2026-11-16T18:07:00+00:00", 12.0, 11.0, "2026-11-16"])
         self.assertEqual(estado["SAN.MC"][0], "2026-11-16T17:47:00+00:00")
 
     def test_sin_estado_se_pide_todo_como_antes(self):
@@ -129,10 +129,34 @@ class RadarPrecios(unittest.TestCase):
     def test_el_euro_se_rehace_con_el_cambio_de_ahora(self):
         # con Nueva York cerrada el precio en dólares no cambia, pero el euro sí: pe sale con el cambio de esta pasada
         valores = [{"s": "AAPL", "m": "USD"}]
-        estado = {"AAPL": ["2026-11-16T06:07:00+00:00", 200.0, 190.0]}
+        estado = {"AAPL": ["2026-11-16T06:07:00+00:00", 200.0, 190.0, "2026-11-13"]}
         P.radar_precios(valores, {"USD": pd.Series([1.25])}, estado, t("2026-11-16T09:07"))
         self.assertEqual(self.pedidos, [])
         self.assertEqual(valores[0]["pe"], P.num(200.0 / 1.25, 4))
+
+    def test_revision_lo_guardado_sin_la_vela_de_la_ultima_sesion_se_pide(self):
+        # 16 nov 2026 (revisión): si Yahoo no traía aún la vela del día cuando se guardó (el cierre de anteayer), no vale
+        # para toda la noche: se vuelve a pedir. Igual lo guardado sin día (la forma de antes) o con otra forma
+        ahora = t("2026-11-16T23:07")
+        valores = [{"s": s, "m": "EUR"} for s in ("SAN.MC", "BBVA.MC", "ITX.MC", "IBE.MC", "REP.MC")]
+        estado = {"SAN.MC": ["2026-11-16T17:47:00+00:00", 9.5, 9.0, "2026-11-13"],
+                  "BBVA.MC": ["2026-11-16T17:47:00+00:00", 9.5, 9.0],
+                  "ITX.MC": ["2026-11-16T17:47:00+00:00", None, 9.0, "2026-11-16"],
+                  "IBE.MC": "roto",
+                  "REP.MC": ["2026-11-16T17:47:00+00:00", 14.0, 13.5, "2026-11-16"]}
+        P.radar_precios(valores, {}, estado, ahora)
+        self.assertEqual(sorted(s for tr in self.pedidos for s in tr), ["BBVA.MC", "IBE.MC", "ITX.MC", "SAN.MC"])
+        self.assertEqual(valores[4]["p"], 14.0)
+        # lo pedido se guarda con el día de su última vela
+        self.assertEqual(estado["SAN.MC"][3], "2026-11-16")
+        self.assertEqual(estado["SAN.MC"][1:3], [12.0, 11.0])
+
+    def test_revision_festivo_se_pide(self):
+        # 26 nov 2026, Acción de Gracias: la última vela de AAPL es del 25; esa noche se sigue pidiendo, como antes
+        self.assertFalse(H.quieto("AAPL", t("2026-11-26T22:30"), t("2026-11-27T03:00"), "2026-11-25"))
+        self.assertTrue(H.quieto("AAPL", t("2026-11-25T22:30"), t("2026-11-26T03:00"), "2026-11-25"))
+        self.assertEqual(H.dia_ultima_sesion("AAPL", t("2026-11-16T03:00")), "2026-11-13")
+        self.assertEqual(H.dia_ultima_sesion("^N225", t("2026-11-16T23:00")), "2026-11-16")
 
 
 if __name__ == "__main__":
@@ -209,6 +233,11 @@ class MapaConLaBolsaCerrada(unittest.TestCase):
         self.assertIn("SA", self.pedidos)  # el Golfo abre en domingo: siempre se pide
         self.assertEqual(len(self.pedidos), len(P.MAPA) - 1)
         self.assertEqual(estado["SA"], "2026-11-14T04:17:00+00:00")
+
+    def test_revision_sin_la_vela_del_viernes_se_pide(self):
+        anterior = {"mapa": {"^SSMI": {"n": "SMI", "p": "CH", "f": "2026-11-12", "v": 0.5, "m": 1.0, "y": 9.0}}}
+        P.bolsas_mapa(anterior, {"CH": "2026-11-13T18:07:00+00:00"}, t("2026-11-14T04:17"))
+        self.assertIn("CH", self.pedidos)
 
     def test_con_la_bolsa_abierta_se_pide(self):
         anterior = {"mapa": {"^SSMI": {"n": "SMI", "p": "CH", "f": "2026-11-16", "v": 0.5}}}
