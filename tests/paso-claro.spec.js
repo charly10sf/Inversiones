@@ -32,7 +32,7 @@ async function abrirPaso(page) {
   await page.evaluate(() => { location.hash = 'ruta'; });
   await expect(page.locator('#panelPaso .pp-mes').first()).toBeVisible({ timeout: 20_000 });
 }
-const perdida = (page, id) => page.evaluate((id) => { const P = pasosRuta0(S.M); const x = [...P.mes, ...P.seis].find((y) => y.id.startsWith('perdida:' + id + ':')); return x && { t: x.t.replace(/<[^>]+>/g, ''), pasos: x.pasos.map((p) => p.replace(/<[^>]+>/g, '')), imp: x.imp, lim: x.lim, libre: x.libre, cuando: x.cuando, uds: x.uds, hoy: hoyIso(), librePrev: libreRecompra(S.inst[x.ref.f.inst.id], hoyIso()) }; }, id);
+const perdida = (page, id) => page.evaluate((id) => { const P = pasosRuta0(S.M); const x = [...P.mes, ...P.seis].find((y) => y.id.startsWith('perdida:' + id + ':')); return x && { t: x.t.replace(/<[^>]+>/g, ''), pasos: x.pasos.map((p) => p.replace(/<[^>]+>/g, '')), imp: x.imp, lim: x.lim, libre: x.recompra, cuando: x.cuando, uds: x.uds, hoy: hoyIso(), librePrev: libreRecompra(S.inst[x.ref.f.inst.id], hoyIso()) }; }, id);
 
 test('vender con pérdidas: cantidad, pasos numerados, día límite, recompra con fecha y lo que cambia en la renta', async ({ page }) => {
   test.skip(new Date().getMonth() < 6, 'de enero a junio el Paso a paso no propone vender con pérdidas');
@@ -79,4 +79,81 @@ test('vender con pérdidas el resto de una posición: la cantidad es lo que qued
   });
   expect(r.sinPlan.uds).toBeCloseTo(652.53, 2);
   if (r.x) { expect(r.x.resto).toBe(true); expect(r.x.uds).toBeCloseTo(r.queda, 6); }
+});
+
+test('el mismo molde en cada tarjeta de «Haz esto»: dónde, cuándo con su día y qué pasa después; la venta, en pasos', async ({ page }) => {
+  await fundador(page); await abrirPaso(page);
+  const tarjetas = page.locator('.pp-rcol ol.tareas > .tarea.pp-paso');
+  const n = await tarjetas.count();
+  expect(n).toBeGreaterThan(2);
+  for (let i = 0; i < n; i++) await expect(tarjetas.nth(i).locator('.pp-molde .pp-mk').filter({ hasText: 'Cuándo' })).toHaveCount(1);
+  const venta = page.locator('.tarea.pp-paso[data-id^="venta:"]').first();
+  const m = venta.locator('.pp-molde');
+  await expect(m).toContainText('Dónde'); await expect(m).toContainText('Trade Republic');
+  await expect(m).toContainText(/(lun|mar|mié|jue|vie) \d+ (ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)/);
+  await expect(m).toContainText('Después');
+  await venta.locator('.pp-fila').click();
+  await expect(venta.locator('.t-pasos li').first()).toContainText('pulsa Vender');
+  await expect(venta.locator('.t-pasos li').nth(1)).toContainText('acciones');
+  // sin el «cuándo» repetido en la cabecera de la tarjeta
+  await expect(venta.locator('.t-meta .t-cuando')).toHaveCount(0);
+});
+
+test('«¿Lo hago o no?»: las opciones aparte; sí las pasa a «Haz esto», no las aparta, y las dos cosas se deshacen', async ({ page }) => {
+  test.skip(new Date().getMonth() < 6 || new Date() < new Date(new Date().getFullYear(), 10, 1), 'la venta con pérdidas sale en el mes desde noviembre');
+  await fundador(page); await abrirPaso(page);
+  await expect(page.locator('#panelPaso')).not.toContainText('Para decidir tú');
+  await expect(page.locator('#panelPaso h3.rh').filter({ hasText: '¿Lo hago o no?' })).toBeVisible();
+  const id = await page.evaluate(() => mesRuta(S.M).decidir.find((x) => /^perdida:p8:/.test(x.id)).id);
+  const antes = await page.evaluate(() => pendientesMes(mesRuta(S.M)));
+  const op = page.locator(`.tarea.pp-paso[data-id="${id}"]`);
+  await expect(op.locator('.pp-sino button')).toHaveText(['Sí, lo hago', 'No']);
+  await expect(op.locator('.t-hecho')).toHaveCount(0);
+  // sí: pasa a «Haz esto», con su número, y cuenta como pendiente
+  await op.locator('.pp-sino [data-v="si"]').click();
+  const hecha = page.locator(`ol.tareas > .tarea.pp-paso[data-id="${id}"]`);
+  await expect(hecha).toBeVisible();
+  await expect(hecha.locator('.pp-decid')).toHaveText('Dijiste que sí');
+  expect(await page.evaluate(() => pendientesMes(mesRuta(S.M)))).toBe(antes + 1);
+  expect(await page.evaluate((id) => S.cartera.ruta.decide[id].v, id)).toBe('si');
+  // al final no: vuelve a las opciones
+  await hecha.locator('.pp-fila').click();
+  await hecha.locator('[data-pp-dec][data-v=""]').click();
+  await expect(page.locator(`ul.tareas > .tarea.pp-paso[data-id="${id}"] .pp-sino`)).toBeVisible();
+  // no: se aparta, con una línea para recuperarla
+  await page.locator(`.tarea.pp-paso[data-id="${id}"] .pp-sino [data-v="no"]`).click();
+  await expect(page.locator(`.tarea.pp-paso[data-id="${id}"]`)).toHaveCount(0);
+  await expect(page.locator('.pp-desc')).toContainText('dijiste que no');
+  expect(await page.evaluate(() => pendientesMes(mesRuta(S.M)))).toBe(antes);
+  await page.locator('.pp-desc [data-pp-dec]').first().click();
+  await expect(page.locator(`.tarea.pp-paso[data-id="${id}"] .pp-sino`)).toBeVisible();
+});
+
+test('la confianza va en palabras y las fechas dicen qué hacer ese día', async ({ page }) => {
+  await fundador(page);
+  await page.evaluate(() => { const f = S.M.filas.find((y) => y.inst.id === 'bat'); f.p.proximos_resultados = sumarDias(hoyIso(), 9); cacheDe(S.M, '__ruta').delete('r'); cacheDe(S.M, '__mes').delete('m'); });
+  await abrirPaso(page);
+  const chips = await page.locator('#panelPaso .pp-conf-s').allTextContents();
+  expect(chips.length).toBeGreaterThan(0);
+  for (const c of chips) expect(['Muy fiable', 'Fiable a medias', 'Poco fiable']).toContain(c.trim());
+  await expect(page.locator('#panelPaso .pp-med')).toHaveCount(0);
+  const venta = page.locator('.tarea.pp-paso[data-id^="venta:"]').first();
+  await venta.locator('.pp-fila').click();
+  await expect(venta.locator('.pp-conf')).toContainText(/Fiable a medias|Muy fiable|Poco fiable/);
+  // los resultados de BAT: qué hacer ese día, con el día y la hora del cierre
+  const res = page.locator('.rfecha').filter({ hasText: 'Resultados de BAT' });
+  await expect(res.locator('.rf-que')).toContainText('Qué hacer ese día');
+  await expect(res.locator('.rf-que')).toContainText('al cerrar la bolsa (17:30)');
+  await expect(res.locator('.rf-que')).toContainText(/no hagas nada/);
+});
+
+test('en inglés, el molde y las opciones salen traducidos', async ({ page, context }) => {
+  await context.addInitScript(() => { try { localStorage.setItem('inv-idioma', JSON.stringify('en')); } catch (e) {} });
+  await fundador(page); await abrirPaso(page);
+  const venta = page.locator('.tarea.pp-paso[data-id^="venta:"]').first();
+  await expect(venta.locator('.pp-molde')).toContainText('Where');
+  await expect(venta.locator('.pp-molde')).toContainText('When');
+  await expect(venta.locator('.pp-molde')).toContainText('Then');
+  await expect(venta.locator('.pp-conf-s')).toHaveText(/^(Very reliable|Fairly reliable|Not very reliable)$/);
+  if (await page.locator('.pp-sino').count()) await expect(page.locator('.pp-sino button').first()).toHaveText('Yes, do it');
 });

@@ -72,10 +72,10 @@ test('«Tu mes» en Hoy: los pasos de «Haz esto» con su confianza, y lo de dec
   const der = page.locator('#vista .toca .iac-der');
   await expect(der).toBeVisible();
   await expect(der.locator('h3')).toHaveText('Tu mes');
-  await expect(der.locator('li .pp-med').first()).toBeAttached();
+  await expect(der.locator('li .pp-conf-s').first()).toHaveText(/^(Muy fiable|Fiable a medias|Poco fiable)$/);
   const r = await page.evaluate(() => { const R = mesRuta(S.M); return { primero: R.hacer.find((x) => !x.hecho).t.replace(/<[^>]+>/g, ''), decidir: R.decidir.length }; });
   await expect(der.locator('li b').first()).toHaveText(r.primero.replace(/ €/g, '\u00a0€'));
-  if (r.decidir) await expect(der.locator('.iac-pie')).toHaveText(`y ${r.decidir} para decidir tú`);
+  if (r.decidir) await expect(der.locator('.iac-pie')).toHaveText(r.decidir === 1 ? 'y una opción: ¿lo haces o no?' : `y ${r.decidir} opciones: ¿lo haces o no?`);
 });
 
 test('marcar un paso hecho baja el número del botón y llena el aro', async ({ page }) => {

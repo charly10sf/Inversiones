@@ -37,10 +37,14 @@ function opcionDe(o) {
 // con «!otras && !rcm», quien no tiene otras ventas ni dividendos no podía quitar nunca el aviso, el rango ni el paso)
 function fiscalSinApuntar(anio) { try { const d = datosFiscales(anio); return !(d.otras != null || d.rcm != null); } catch (e) { return true; } }
 const CONF_N = { alta: 3, media: 2, baja: 1 };
+// 16 nov: la confianza, en palabras (las tres barritas no se entendían) y con lo que quiere decir
+const CONF_TXT = { alta: 'Muy fiable', media: 'Fiable a medias', baja: 'Poco fiable' };
+const CONF_POR = { alta: 'sale de tus datos y de precios al día', media: 'depende de analistas, de la IA o de la prensa', baja: 'algún dato es flojo o las señales se contradicen' };
+const confChip = (c) => (c ? `<span class="pp-conf-s" data-c="${c}" title="${CONF_TXT[c]}: ${CONF_POR[c]}">${CONF_TXT[c]}</span>` : '');
 const sinRed = () => navigator.onLine === false;
 /* el mes del Paso a paso, ya repartido: lo que haces, lo que decides tú, lo apartado, las fechas y lo que va solo */
 function mesRuta(M) {
-  const vacio = { hacer: [], decidir: [], apartados: [], fechas: [], solos: [], espera: null, flujo: { sale: [], va: [] }, hac: 0, avisos: [], datosN: 0, P: { mes: [], seis: [], anio: [], largo: [] } };
+  const vacio = { hacer: [], decidir: [], descartados: [], apartados: [], fechas: [], solos: [], espera: null, flujo: { sale: [], va: [] }, hac: 0, avisos: [], datosN: 0, P: { mes: [], seis: [], anio: [], largo: [] } };
   if (!M || !pasoVisible()) return vacio;
   // el cálculo está en el trozo «paso» (en estándar no se baja nunca); hasta que llega, nada, y al llegar se repinta
   if (typeof window.PASO_MES !== 'function') {
@@ -60,7 +64,7 @@ function mesRuta(M) {
   }
   // se pinta en cada pintar() (el botón de arriba): se guarda mientras no cambie lo que lo decide
   const r = S.cartera.ruta || {}, ia = iaActual();
-  const k = JSON.stringify([hoyIso(), sinRed(), r.hechos, r.ops, r.caida, r.pospuestos, S.cartera.perfil, S.cartera.fiscal, S.cartera.aportaciones, S.cartera.efectivo, S.precios && S.precios.radar_generado, ia && ia.fecha, S.escaneo && S.escaneo.generado]);
+  const k = JSON.stringify([hoyIso(), sinRed(), r.hechos, r.ops, r.caida, r.pospuestos, r.decide, S.cartera.perfil, S.cartera.fiscal, S.cartera.aportaciones, S.cartera.efectivo, S.precios && S.precios.radar_generado, ia && ia.fecha, S.escaneo && S.escaneo.generado]);
   const c = cacheDe(M, '__mes'), y = c.get('m');
   if (y && y.k === k) return y.v;
   const v = window.PASO_MES(M); c.set('m', { v, k });
