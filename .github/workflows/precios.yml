@@ -104,6 +104,7 @@ jobs:
             git show origin/datos:banco.json > anterior/banco.json || true
             git show origin/datos:banco-muestra.json > anterior/banco-muestra.json || true
             git show origin/datos:peticiones.json > anterior/peticiones.json || true
+            git show origin/datos:seguimiento.json > anterior/seguimiento.json || true
           fi
           # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
           if git fetch --depth=1 origin catalogo 2>/dev/null; then
@@ -139,6 +140,8 @@ jobs:
           PY
 
       - name: Descargar precios
+        env:
+          PETICIONES_DETALLE: ${{ inputs.ensayo && '1' || '' }}
         run: |
           mkdir -p salida
           python scripts/precios.py instrumentos.json anterior salida

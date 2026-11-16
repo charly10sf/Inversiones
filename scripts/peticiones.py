@@ -11,6 +11,7 @@ import collections
 import contextlib
 import datetime as dt
 import json
+import os
 import threading
 import urllib.parse
 
@@ -19,6 +20,9 @@ _FUENTE = ["otros"]
 # (fuente, sitio, tipo, respuesta) -> n
 _CUENTA = collections.Counter()
 _ACTIVO = [False]
+# con PETICIONES_DETALLE=1 (solo en los ensayos), las primeras direcciones de cada fuente, para ver qué pide cada cosa
+_DETALLE = collections.defaultdict(list)
+_MAX_DETALLE = 12
 
 
 @contextlib.contextmanager
@@ -64,10 +68,13 @@ def sitio_y_tipo(url):
     return "otro", host or "?"
 
 
-def apuntar(url, respuesta):
+def apuntar(url, respuesta, params=None):
     sitio, tipo = sitio_y_tipo(url)
     with _CANDADO:
         _CUENTA[(_FUENTE[0], sitio, tipo, str(respuesta))] += 1
+        if os.environ.get("PETICIONES_DETALLE") and len(_DETALLE[_FUENTE[0]]) < _MAX_DETALLE:
+            p = {k: v for k, v in (params or {}).items() if k != "crumb"}
+            _DETALLE[_FUENTE[0]].append(f"{respuesta} {str(url).split('?')[0]} {p}")
 
 
 def _codigo(r):
@@ -93,7 +100,7 @@ def activar():
             except Exception as e:  # noqa: BLE001
                 apuntar(url, "error:" + type(e).__name__)
                 raise
-            apuntar(url, _codigo(r))
+            apuntar(url, _codigo(r), k.get("params"))
             return r
         cr.Session.request = request
     except Exception:  # noqa: BLE001
@@ -190,3 +197,5 @@ def imprimir(programa):
     for f, e in sorted(r["fuentes"].items(), key=lambda kv: -sum(v for k, v in kv[1].items() if not isinstance(v, dict))):
         sitios = {k: v for k, v in e.items() if not isinstance(v, dict)}
         print(f"  {f:22s} {sitios} {e['tipos']}" + (f" fallos {e['respuestas']}" if e["respuestas"] else ""))
+        for x in _DETALLE.get(f, []):
+            print(f"      {x[:220]}")
