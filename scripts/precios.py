@@ -25,6 +25,7 @@ anterior/ tiene los archivos de la ejecución anterior (si existen).
   quede en blanco. Los instrumentos que fallan quedan con "estado": "antiguo".
 - No lee ni escribe cantidades: la cartera va cifrada y este script no la toca.
 """
+import concurrent.futures as cf
 import datetime as dt
 import email.utils
 import json
@@ -1598,14 +1599,18 @@ def radar_precios(valores, fx, estado=None, ahora=None):
     # el 16 nov a las 0:35 de allí: NOKIA.HE con close null y regularMarketPrice 7,21) y el radar enseñaba el cierre de la
     # víspera como de hoy. Como en mercados y el mapa (al_dia), se completa con el último precio de los metadatos: una
     # petición más, solo para lo que viene así.
-    for sim, c in sin_cierre:
+    def completar(par):
+        sim, c = par
         try:
             t = yf.Ticker(sim)
             t.history(period="5d", interval="1d", auto_adjust=False)
-            c2 = al_dia(c, t.history_metadata or {})
+            return sim, al_dia(c, t.history_metadata or {})
         except Exception:  # noqa: BLE001
             traceback.print_exc()
-            c2 = c
+            return sim, c
+    with cf.ThreadPoolExecutor(max_workers=8) as ex:
+        completadas = list(ex.map(completar, sin_cierre))
+    for sim, c2 in completadas:
         if len(c2) >= 2:
             nuevos[sim] = (float(c2.iloc[-1]), float(c2.iloc[-2]))
             dias[sim] = pd.Timestamp(c2.index[-1]).date().isoformat()
@@ -1615,7 +1620,9 @@ def radar_precios(valores, fx, estado=None, ahora=None):
         print(f"radar precios: {repetidas} con la vela de un día repetida (se deja la última)")
     marca = ahora.replace(microsecond=0).isoformat()
     for sim, (p, ant) in nuevos.items():
-        estado[sim] = [marca, p, ant, dias.get(sim) or ""]
+        # 17 nov 2026 (revisión): un último cierre igual al anterior no se da por bueno para toda la noche (si es otra
+        # forma de la vela repetida, se vería 0 % hasta abrir): se guarda sin día y se vuelve a pedir, como en main
+        estado[sim] = [marca, p, ant, (dias.get(sim) or "") if p != ant else ""]
     for sim, e in guardados.items():
         nuevos[sim] = (e[1], e[2])
     if guardados:

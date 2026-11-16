@@ -193,6 +193,15 @@ class RadarPrecios(unittest.TestCase):
         self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
         self.assertEqual(estado["ACS.MC"][1:], [91.05, 93.05, "2026-11-16"])
 
+    def test_revision_cierre_igual_al_anterior_se_vuelve_a_pedir(self):
+        dias = pd.bdate_range(end="2026-11-16", periods=5)
+        cols = pd.MultiIndex.from_product([["Close"], ["MDLZ"]])
+        P.yf.download = lambda trozo, **k: pd.DataFrame([[60.0], [61.0], [62.0], [63.0], [63.0]], index=dias, columns=cols)
+        valores, estado = [{"s": "MDLZ", "m": "USD"}], {}
+        P.radar_precios(valores, {}, estado, t("2026-11-16T22:53"))
+        self.assertEqual(estado["MDLZ"][3], "")
+        self.assertFalse(H.quieto("MDLZ", H.leer_hora(estado["MDLZ"][0]), t("2026-11-17T03:00"), estado["MDLZ"][3]))
+
     def test_revision_festivo_se_pide(self):
         # 26 nov 2026, Acción de Gracias: la última vela de AAPL es del 25; esa noche se sigue pidiendo, como antes
         self.assertFalse(H.quieto("AAPL", t("2026-11-26T22:30"), t("2026-11-27T03:00"), "2026-11-25"))
