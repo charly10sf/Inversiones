@@ -1564,7 +1564,7 @@ def radar_precios(valores, fx, estado=None, ahora=None):
         if vale(estado.get(s)):
             guardados[s] = estado[s]
     pedir = [s for s in dict.fromkeys(sims) if s not in guardados]
-    nuevos, dias, sin_cierre = {}, {}, []
+    nuevos, dias, sin_cierre, repetidas = {}, {}, [], 0
     # de 250 en 250 (5 nov 2026: 2.206 empresas en 94 s, frente a 135 s de 100 en 100)
     for i in range(0, len(pedir), 250):
         trozo = pedir[i:i + 250]
@@ -1577,6 +1577,13 @@ def radar_precios(valores, fx, estado=None, ahora=None):
                     continue
                 c = cierre[sim].dropna()
                 c = c[c > 0]
+                # 17 nov 2026 (revisión): a veces la vela del día sale dos veces (el 16 nov a las 22:53 UTC, 64 del radar:
+                # ACS.MC 91,05 y 91,05), y salía una variación de 0 %. Con lo guardado se habría quedado así toda la
+                # noche: se deja la última de cada día
+                dup = c.index.normalize().duplicated(keep="last")
+                if dup.any():
+                    repetidas += 1
+                    c = c[~dup]
                 if apertura is not None and sim in apertura and len(c):
                     o = apertura[sim].dropna()
                     if len(o) and o.index[-1] > c.index[-1]:
@@ -1604,6 +1611,8 @@ def radar_precios(valores, fx, estado=None, ahora=None):
             dias[sim] = pd.Timestamp(c2.index[-1]).date().isoformat()
     if sin_cierre:
         print(f"radar precios: {len(sin_cierre)} con la vela del día sin cierre, completadas con su último precio")
+    if repetidas:
+        print(f"radar precios: {repetidas} con la vela de un día repetida (se deja la última)")
     marca = ahora.replace(microsecond=0).isoformat()
     for sim, (p, ant) in nuevos.items():
         estado[sim] = [marca, p, ant, dias.get(sim) or ""]

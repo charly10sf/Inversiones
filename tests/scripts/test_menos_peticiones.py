@@ -182,6 +182,17 @@ class RadarPrecios(unittest.TestCase):
         self.assertEqual(estado["NOKIA.HE"][1:], [7.21, 7.294, dias[-1].date().isoformat()])
         self.assertEqual(valores[1]["p"], 9.4)
 
+    def test_revision_vela_repetida_no_da_cero(self):
+        # 16 nov 2026, 22:53 UTC: Yahoo dio dos veces la vela del lunes (ACS.MC 91,05 y 91,05) y salía 0 %; con lo
+        # guardado se habría quedado así toda la noche
+        dias = list(pd.bdate_range(end="2026-11-16", periods=4)) + [pd.Timestamp("2026-11-16")]
+        cols = pd.MultiIndex.from_product([["Close"], ["ACS.MC"]])
+        P.yf.download = lambda trozo, **k: pd.DataFrame([[92.0], [93.5], [93.05], [91.05], [91.05]], index=dias, columns=cols)
+        valores, estado = [{"s": "ACS.MC", "m": "EUR"}], {}
+        P.radar_precios(valores, {}, estado, t("2026-11-16T22:53"))
+        self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
+        self.assertEqual(estado["ACS.MC"][1:], [91.05, 93.05, "2026-11-16"])
+
     def test_revision_festivo_se_pide(self):
         # 26 nov 2026, Acción de Gracias: la última vela de AAPL es del 25; esa noche se sigue pidiendo, como antes
         self.assertFalse(H.quieto("AAPL", t("2026-11-26T22:30"), t("2026-11-27T03:00"), "2026-11-25"))
