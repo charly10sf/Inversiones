@@ -1,6 +1,39 @@
 {
  "versiones": [
   {
+   "v": "0.9c",
+   "f": "2026-11-16",
+   "h": "15:50",
+   "t": "Paso a paso, más claro",
+   "commits": [
+    {
+     "cuando": "2026-11-16 13:31",
+     "asunto": "Paso a paso (fundador): vender con pérdidas con cantidad, pasos numerados, día límite y fecha de recompra",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 13:49",
+     "asunto": "Paso a paso (fundador): el mismo molde en cada tarjeta, «¿Lo hago o no?», la confianza en palabras y qué hacer cada fecha",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 14:06",
+     "asunto": "Paso a paso: el «?» de las opciones no es un botón (accesibilidad: no se trata como zona táctil)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 14:53",
+     "asunto": "Paso a paso: cuánto vender y cuánto comprar, a la vista; el cómo, plegado",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-16 15:50",
+     "asunto": "Versión 0.9c: novedades",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9b",
    "f": "2026-11-16",
    "h": "10:00",

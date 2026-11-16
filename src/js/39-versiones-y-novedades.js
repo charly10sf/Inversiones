@@ -10,6 +10,11 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9c', f: '2026-11-16', h: '15:50', t: 'Paso a paso, más claro', arreglos: [
+    { t: 'En el Paso a paso, vender con pérdidas dice cuántas acciones y cuántos euros, hasta qué día, desde cuándo puedes volver a comprar y lo que cambia en la renta.', solo: 'dueno' },
+    { t: 'Cada paso dice cuánto vender o comprar (acciones o participaciones y euros), dónde, cuándo, con su día, y qué pasa después. El cómo, paso a paso, va plegado.', solo: 'dueno' },
+    { t: 'Las opciones van aparte, con «¿Lo hago o no?». La confianza va en palabras («Muy fiable», «Fiable a medias», «Poco fiable») y las fechas dicen qué hacer ese día.', solo: 'dueno' },
+  ] },
   { v: '0.9b', f: '2026-11-16', h: '10:00', t: 'Diseño y modo, a mano', arreglos: [
     'En Más, arriba del todo, «A tu gusto»: cambia entre Mármol y Marfil y entre Básico y Avanzado sin buscarlo. En Tú está justo debajo de tu cuenta.',
     'En Hoy, la ⓘ de la cifra del periodo ya no se queda sola en otra línea: va al lado.',
