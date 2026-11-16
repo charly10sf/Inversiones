@@ -1063,6 +1063,9 @@ def procesar(inst, fx, prev=None):
         out.update({k: prev[k] for k in CLAVES_LENTAS if k in prev})
         out["lento"] = prev["lento"]
         return out
+    # 16 nov 2026: en las acciones, los votos de los analistas en el mismo quoteSummary de t.info (el PEG sí se usa); en lo
+    # demás, sin la petición del PEG (solo sale en las acciones)
+    juntar_votos(t, sin_peg=inst.get("tipo") != "Acción")
     info = info_de(t)
     if inst.get("tipo") == "Acción":
         out.update(datos_accion(t, info, moneda, fx, float(s.iloc[-1])))
