@@ -3,7 +3,7 @@
 de la rama. Dice cada diferencia, separando lo que es de una bolsa abierta (el precio se mueve entre una petición y otra)
 de lo que es de una bolsa cerrada (ahí tiene que salir igual).
 
-Uso: python scripts/equivalencia.py dir_main dir_rama
+Uso: python scripts/equivalencia.py dir_main dir_rama (lo usa el ensayo «equivalencia» de precios.yml)
 """
 import datetime as dt
 import json

@@ -328,7 +328,8 @@ class EnsayoDeLasLecturas(unittest.TestCase):
     def test_la_action_no_hace_la_pasada_ni_publica_con_solo_comparar(self):
         yml = (RAIZ / ".github/workflows/precios.yml").read_text(encoding="utf-8")
         precios, comparar = yml.split("\n  comparar:\n")
-        self.assertIn("if: ${{ !(inputs.ensayo && inputs.solo_comparar) }}", precios.split("jobs:")[1][:400])
+        # 16 nov 2026: tampoco con «equivalencia» (que hace sus propias pasadas sin publicar)
+        self.assertIn("if: ${{ !(inputs.ensayo && inputs.solo_comparar) && !inputs.equivalencia }}", precios.split("jobs:")[1][:400])
         self.assertNotIn("git push", comparar)                            # la comparación no publica nada
         self.assertIn("git archive FETCH_HEAD radar.json radar-mas.json precios.json noticias-cache.json escaneo.json", comparar)
         self.assertIn("for e in main main2; do python scripts/ensayo_comparar.py --lecturas /tmp/main/scripts", comparar)
