@@ -252,3 +252,16 @@ class ZonasHorariasGuardadas(unittest.TestCase):
             yml = (RAIZ / ".github" / "workflows" / flujo).read_text(encoding="utf-8")
             self.assertIn("path: ~/.cache/py-yfinance/tkr-tz.db", yml, flujo)
             self.assertIn("uses: actions/cache@v4", yml, flujo)
+
+
+class EnsayoEquivalencia(unittest.TestCase):
+    def test_revision_compara_lo_lento_y_puede_seguir_desde_horas_antes(self):
+        # 16 nov 2026 (revisión): la equivalencia solo miraba 12 minutos después; con seguimiento_de, la rama sigue desde
+        # la primera pasada de otra equivalencia (horas antes). Y las dos pasadas piden lo lento y radar-mas
+        yml = (RAIZ / ".github" / "workflows" / "precios.yml").read_text(encoding="utf-8")
+        trabajo = yml.split("\n  equivalencia:\n", 1)[1]
+        self.assertIn("seguimiento_de:", yml.split("jobs:")[0])
+        self.assertIn('gh run download "${{ inputs.seguimiento_de }}" -n equivalencia', trabajo)
+        self.assertIn("actions: read", trabajo)
+        self.assertIn('("anterior/radar-mas.json", lambda d: d.update(precios=viejo))', trabajo)
+        self.assertIn("v.update(lento=viejo)", trabajo)

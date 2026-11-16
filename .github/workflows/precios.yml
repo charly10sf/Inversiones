@@ -58,6 +58,10 @@ on:
         description: "Solo con equivalencia: minutos entre la primera pasada y las dos que se comparan"
         type: string
         default: "20"
+      seguimiento_de:
+        description: "Solo con equivalencia: número de una equivalencia anterior. La rama sigue desde el seguimiento.json de su primera pasada (horas antes), sin hacer una ahora ni esperar: así se ve si lo de después del cierre sigue igual horas después"
+        type: string
+        default: ""
   push:
     branches: [main]
     paths:
@@ -409,6 +413,9 @@ jobs:
     if: ${{ inputs.equivalencia }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
 
@@ -439,14 +446,39 @@ jobs:
           done
           git archive origin/main scripts | tar -x -C main
           git show origin/main:instrumentos.json > main/instrumentos.json
+          # 16 nov 2026 (revisión): lo lento de los instrumentos (analistas y fundamentales, cada 2 horas) y los precios de
+          # radar-mas (cada hora), como si fueran viejos, para que las dos pasadas los pidan y se comparen también
+          python - <<'PY'
+          import json
+          viejo = "2000-01-01T00:00:00+00:00"
+          for ruta, f in (("anterior/precios.json", lambda d: [v.update(lento=viejo) for v in (d.get("instrumentos") or {}).values() if v.get("lento")]),
+                          ("anterior/radar-mas.json", lambda d: d.update(precios=viejo))):
+              try:
+                  d = json.load(open(ruta))
+              except Exception as e:
+                  print("sin", ruta, e); continue
+              f(d); json.dump(d, open(ruta, "w"))
+          PY
+
+      - name: Seguimiento de una equivalencia anterior
+        if: ${{ inputs.seguimiento_de != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p previa primera
+          gh run download "${{ inputs.seguimiento_de }}" -n equivalencia -D previa -R "${{ github.repository }}"
+          cp previa/primera/seguimiento.json primera/seguimiento.json
+          python -c "import json; d = json.load(open('primera/seguimiento.json')); print('seguimiento de', d.get('generado'), len(d.get('precios') or {}), 'precios')"
 
       - name: Primera pasada con la rama
+        if: ${{ inputs.seguimiento_de == '' }}
         run: |
           mkdir -p primera
           python scripts/precios.py instrumentos.json anterior primera > primera.log 2>&1 || true
           grep -E "^peticiones|radar precios|instrumentos al día" primera.log || true
 
       - name: Esperar
+        if: ${{ inputs.seguimiento_de == '' }}
         run: sleep $(( ${{ inputs.espera_equivalencia || '20' }} * 60 ))
 
       - name: Main y rama a la vez
