@@ -275,9 +275,10 @@ function restoEnPerdidas(M, planes) {
   const conAporte = new Set(aportacionesActivas().map(({ a }) => a.instrumento));
   return M.filas.filter((f) => !conAporte.has(f.inst.id)).map((f) => {
     const g = f.valor - f.coste, pl = (planes || []).find((x) => x.f && x.f.pos && x.f.pos.id === f.pos.id);
-    if (!pl) return { f, g };
+    if (!pl) return { f, g, uds: f.uds };
     const queda = f.uds ? Math.max(0, +pl.queda || 0) / f.uds : 0;
-    return { f, g: g * queda, resto: true };
+    // uds: lo que queda por vender después de la venta que ya propone Toisón (lo usa el Paso a paso para dar la cantidad)
+    return { f, g: g * queda, resto: true, uds: Math.max(0, +pl.queda || 0) };
   }).filter((x) => x.g < -50);
 }
 /* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */

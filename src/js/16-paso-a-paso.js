@@ -117,13 +117,7 @@ function pasosRuta0(M) {
   const ganPrevR = sum(planes.filter((pl) => esRCMVenta(pl.f.inst)), (pl) => pl.ganancia), ganPrevG = ganPrevista - ganPrevR;
   const perdidas = restoEnPerdidas(M, planes);
   if (perdidas.length && new Date().getMonth() >= 6) {
-    for (const x of perdidas) {
-      const esR = esRCMVenta(x.f.inst), base = esR ? fa.rcmT + ganPrevR : fa.gp + ganPrevG;
-      const ahorro = fiscalAnio(anio, ganPrevG, ganPrevR).cuota - fiscalAnio(anio, ganPrevG + (esR ? 0 : x.g), ganPrevR + (esR ? x.g : 0)).cuota;
-      if (ahorro < 15) continue;
-      const cripto = x.f.inst.clase === 'Cripto' && !esR;
-      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Opción: vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, véndelo (reembolso, no traspaso: con un traspaso la pérdida no cuenta) y compra otro fondo parecido de otra gestora' : esR ? ' y, si quieres seguir dentro, compra otro ETC parecido de otro emisor, no el mismo' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'el año' : 'los dos meses'} anterior${reglaRecompra(x.f.inst).plazo === 'un año' ? '' : 'es'}). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría en mi renta vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.` : `¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>`, ref: { f: x.f, x, ahorro, ganPrevG, ganPrevR } });
-    }
+    for (const x of perdidas) { const o = pasoPerdida(x, { anio, hoy, fa, planes, ganPrevista, ganPrevG, ganPrevR }); if (o) add('seis', o); }
   }
   // 7. colchón que rinde poco
   for (const f of M.filas.filter((f) => f.inst.clase === 'Renta fija' && /^Fondo/.test(f.inst.tipo || ''))) {
@@ -185,6 +179,63 @@ function pasosRuta0(M) {
     P[k].sort((a, b) => (a.hecho - b.hecho) || ((b.urgente ? 1 : 0) - (a.urgente ? 1 : 0)) || ((a.auto ? 1 : 0) - (b.auto ? 1 : 0)) || String(a.d || '9').localeCompare(String(b.d || '9')));
   }
   return P;
+}
+/* 16 nov · vender con pérdidas para pagar menos (solo fundador, como todo el Paso a paso): la cantidad exacta, cómo en pasos
+   numerados (bróker, orden, día límite, qué hacer con el dinero), desde qué día se puede volver a comprar y lo que cambia en
+   la renta. Cada cosa con lo suyo: un fondo se reembolsa (un traspaso no deja la pérdida), la cripto no cierra y en un ETC
+   la recompra es de dos meses */
+const diaSemCorto = (s) => { const d = deIso(s); return L(`${DIAS_SEM[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}`, `${DIAS_EN[d.getDay()].slice(0, 3)}, ${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}`); };
+const laborableAntes = (s) => { let d = s; while (deIso(d).getDay() % 6 === 0) d = sumarDias(d, -1); return d; };
+// el horario de su bolsa, en hora de España: sin sufijo en Yahoo es EEUU
+const horarioBolsa = (inst) => (String((inst && inst.yahoo) || '.').includes('.') ? L('de 9:00 a 17:30', 'from 9:00 to 17:30, Spanish time') : L('de 15:30 a 22:00, hora de España', 'from 15:30 to 22:00, Spanish time'));
+// hasta qué día: un fondo tarda uno o dos días en hacer el reembolso (el 18 dic), una acción o un ETC antes de las sesiones
+// cortas de Nochebuena y Nochevieja (el 23) y la cripto no cierra (el 30). Si ya ha pasado, lo último que queda del año
+function diaLimitePerdida(inst, anio, hoy) {
+  const cripto = inst.clase === 'Cripto' && !esRCMVenta(inst), fondo = /^Fondo/.test(inst.tipo || '');
+  const pref = cripto ? `${anio}-12-30` : laborableAntes(`${anio}-12-${fondo ? 18 : 23}`);
+  if (pref >= hoy) return pref;
+  const ult = cripto ? `${anio}-12-31` : laborableAntes(`${anio}-12-30`);
+  return ult >= hoy ? ult : hoy;
+}
+function pasoPerdida(x, c) {
+  const { anio, hoy, fa, planes, ganPrevista, ganPrevG, ganPrevR } = c;
+  const f = x.f, inst = f.inst, esR = esRCMVenta(inst), base = esR ? fa.rcmT + ganPrevR : fa.gp + ganPrevG;
+  const cuota = fiscalAnio(anio, ganPrevG, ganPrevR).cuota, ahorro = cuota - fiscalAnio(anio, ganPrevG + (esR ? 0 : x.g), ganPrevR + (esR ? x.g : 0)).cuota;
+  if (ahorro < 15) return null;
+  const cripto = inst.clase === 'Cripto' && !esR, fondo = /^Fondo/.test(inst.tipo || ''), accion = inst.tipo === 'Acción';
+  const uds = x.uds != null ? x.uds : f.uds, valor = uds * (f.precio || 0), n = oc(fmtNum(uds, esEntero(uds) ? 0 : cripto ? 4 : 2));
+  const ud = accion ? L('acciones', 'shares') : fondo ? L('participaciones', 'units') : L('unidades', 'units');
+  const nom = esc(inst.corto), bro = esc(f.pos.plataforma || L('tu bróker', 'your broker')), cobras = eur(valor, 0);
+  const lim = diaLimitePerdida(inst, anio, hoy), libre = libreRecompra(inst, hoy), queda = Math.max(0, cuota - ahorro), rr = reglaRecompra(inst) || {};
+  const libreL = libre ? L(fechaLarga(libre), `${fechaCortaL(libre)} ${libre.slice(0, 4)}`) : '';
+  const busca = inst.isin ? L(`busca ${nom} (ISIN ${esc(inst.isin)})`, `search for ${nom} (ISIN ${esc(inst.isin)})`) : L(`busca ${nom}`, `search for ${nom}`);
+  const pasos = fondo ? [
+    L(`En ${bro}, abre ${nom} y pide un <b>reembolso</b>, no un traspaso: con un traspaso la pérdida no cuenta.`, `In ${bro}, open ${nom} and ask for a <b>redemption</b>, not a transfer: with a transfer the loss doesn't count.`),
+    L(`Reembolso ${x.resto ? 'parcial' : 'total'}: <b>${n} ${ud}</b>, unos ${cobras}. Sale al valor liquidativo de uno o dos días después: la cifra final puede moverse un poco.`, `${x.resto ? 'Partial' : 'Full'} redemption: <b>${n} ${ud}</b>, about ${cobras}. It goes out at the net asset value of one or two days later, so the final figure may move a little.`),
+    L(`Pídelo como tarde el <b>${diaSemCorto(lim)}</b>, para que se haga antes del 31 de diciembre.`, `Request it by <b>${diaSemCorto(lim)}</b> at the latest, so it's done before 31 December.`),
+    L('Con el dinero: otro fondo parecido de otra gestora, o déjalo en efectivo.', 'With the money: a similar fund from another manager, or leave it in cash.'),
+    L(`No vuelvas a comprar este fondo hasta el <b>${libreL}</b> si lo vendes hoy (un año y un día después del día en que vendas).`, `Don't buy this fund again until <b>${libreL}</b> if you sell today (one year and one day after the day you sell).`),
+  ] : cripto ? [
+    L(`Abre ${bro}, entra en ${nom} y pulsa Vender.`, `Open ${bro}, go to ${nom} and tap Sell.`),
+    L(`<b>${n} ${ud}</b> con orden limitada a <b>${precioFmt(f.precio)}</b>, el precio de ahora. Cobras unos ${cobras}.`, `<b>${n} ${ud}</b> with a limit order at <b>${precioFmt(f.precio)}</b>, today's price. You get about ${cobras}.`),
+    L(`Cualquier día y a cualquier hora (la cripto no cierra), como tarde el <b>${diaSemCorto(lim)}</b>.`, `Any day, any time (crypto never closes), by <b>${diaSemCorto(lim)}</b> at the latest.`),
+    L('Con el dinero: otra cripto distinta, o déjalo en efectivo.', 'With the money: a different crypto, or leave it in cash.'),
+    L(`Puedes volver a comprar ${nom} cuando quieras: en cripto no se aplica la regla de los dos meses. Si quieres ir a lo seguro, espera hasta el <b>${fechaLarga(sumarDias(sumarMeses(hoy, 12), 1))}</b> (hay quien defiende un año).`, `You can buy ${nom} back whenever you like: the two-month rule doesn't apply to crypto. To be safe, wait until <b>${fechaCortaL(sumarDias(sumarMeses(hoy, 12), 1))} ${+anio + 1}</b> (some argue a one-year rule applies).`),
+  ] : [
+    L(`Abre ${bro}, ${busca} y pulsa Vender.`, `Open ${bro}, ${busca} and tap Sell.`),
+    L(`<b>${n} ${ud}</b> con orden limitada a <b>${precioFmt(f.precio)}</b>, el precio de ahora: unos ${cobras}. Si al cerrar la bolsa no se ha vendido, ponla un poco más baja al día siguiente.`, `<b>${n} ${ud}</b> with a limit order at <b>${precioFmt(f.precio)}</b>, today's price: about ${cobras}. If it hasn't sold by the close, set it a little lower the next day.`),
+    L(`Con la bolsa abierta (${horarioBolsa(inst)}), como tarde el <b>${diaSemCorto(lim)}</b>.`, `While the market is open (${horarioBolsa(inst)}), by <b>${diaSemCorto(lim)}</b> at the latest.`),
+    esR ? L('Con el dinero: otro ETC parecido de otro emisor, no el mismo; o déjalo en efectivo.', 'With the money: a similar ETC from another issuer, not the same one; or leave it in cash.') : L('Con el dinero: otra empresa o un ETF parecido, no la misma; o déjalo en efectivo.', 'With the money: another company or a similar ETF, not the same one; or leave it in cash.'),
+    L(`No vuelvas a comprar ${nom} hasta el <b>${libreL}</b> si vendes hoy (${rr.plazo || 'dos meses'} y un día después del día en que vendas).`, `Don't buy ${nom} again until <b>${libreL}</b> if you sell today (${rr.plazo === 'un año' ? 'one year' : 'two months'} and one day after the day you sell).`),
+  ];
+  const renta = L(`Lo que pagas por tus ganancias en la renta de ${anio} baja de ${eur(cuota, 0)} a ${eur(queda, 0)}: ${eur(ahorro, 0)} menos.`, `What you pay on your gains in your ${anio} tax return drops from ${eur(cuota, 0)} to ${eur(queda, 0)}: ${eur(ahorro, 0)} less.`);
+  const recompra = cripto ? L(' En cripto Hacienda no fija un plazo para volver a comprar.', ' For crypto the tax office sets no waiting period to buy back.') : L(` Si vuelves a comprar ${nom} antes del ${libreL}, esa rebaja no cuenta este año.`, ` If you buy ${nom} back before ${libreL}, that saving doesn't count this year.`);
+  return { id: `perdida:${f.pos.id}:${anio}`, d: lim, cuando: L(`hasta el ${diaSemCorto(lim)}`, `by ${diaSemCorto(lim)}`), opcion: true,
+    t: x.resto ? L(`Vender las ${n} ${ud} que te quedan de ${nom} (unos ${cobras})`, `Sell the remaining ${n} ${ud} of ${nom} (about ${cobras})`) : L(`Vender tus ${n} ${ud} de ${nom} (unos ${cobras})`, `Sell your ${n} ${ud} of ${nom} (about ${cobras})`),
+    pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`,
+    pasos, como: `<ol class="t-pasos">${pasos.map((p) => `<li>${p} </li>`).join('')}</ol>`, imp: renta + recompra,
+    donde: fondo ? L(`${bro}: reembolso, no traspaso`, `${bro}: redemption, not transfer`) : bro, uds, valor, cuota, queda, lim, libre,
+    acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría en mi renta vender ${inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.` : `¿Me compensa vender ${inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>`, ref: { f, x, ahorro, ganPrevG, ganPrevR } };
 }
 const ESPERA_IA = /^\s*(?:(?:este|el) mes|esta semana|este trimestre|de momento|por ahora|ahora mismo|hoy)[,:]?\s+nada\b|^\s*nada que (?:hacer|tocar|mover)\b|^\s*no (?:hagas|toques|muevas) nada\b|^\s*(?:esperar?|aguanta)\b/i;
 /* norma antiaplicación (art. 33.5 de la ley del IRPF; para los ETC, art. 25.2.b): si vendes con pérdidas y recompras lo mismo dentro del
