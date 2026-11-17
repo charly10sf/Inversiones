@@ -58,6 +58,10 @@ on:
         description: "Solo con equivalencia: minutos entre la primera pasada y las dos que se comparan"
         type: string
         default: "20"
+      depurar:
+        description: "Solo con equivalencia: símbolos del radar (A,B) de los que enseñar lo que da Yahoo"
+        type: string
+        default: ""
       seguimiento_de:
         description: "Solo con equivalencia: número de una equivalencia anterior. La rama sigue desde el seguimiento.json de su primera pasada (horas antes), sin hacer una ahora ni esperar: así se ve si lo de después del cierre sigue igual horas después"
         type: string
@@ -413,6 +417,8 @@ jobs:
     if: ${{ inputs.equivalencia }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      RADAR_DEPURAR: ${{ inputs.depurar }}
     permissions:
       contents: read
       actions: read

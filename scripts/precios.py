@@ -30,6 +30,7 @@ import datetime as dt
 import email.utils
 import json
 import math
+import os
 import re
 import unicodedata
 import sys
@@ -1544,6 +1545,10 @@ def radar(fx, previo, extra=(), todas=False):
     return out
 
 
+# 17 nov 2026 (revisión): solo en los ensayos, enseña lo que da Yahoo de estos símbolos (RADAR_DEPURAR=A,B)
+DEPURAR = set(filter(None, (os.environ.get("RADAR_DEPURAR") or "").split(",")))
+
+
 def radar_precios(valores, fx, estado=None, ahora=None):
     """Precio y variación del día de todas las empresas del radar en pocas consultas, para que el
     potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos).
@@ -1576,6 +1581,12 @@ def radar_precios(valores, fx, estado=None, ahora=None):
             for sim in trozo:
                 if sim not in cierre:
                     continue
+                if sim in DEPURAR:
+                    try:
+                        print(f"DEPURAR {sim} tz={yf.cache.get_tz_cache().lookup(sim)}")
+                        print(df.xs(sim, axis=1, level=1).tail(4).to_string())
+                    except Exception as e:  # noqa: BLE001
+                        print(f"DEPURAR {sim} {e}")
                 c = cierre[sim].dropna()
                 c = c[c > 0]
                 # 17 nov 2026 (revisión): a veces la vela del día sale dos veces (el 16 nov a las 22:53 UTC, 64 del radar:
@@ -1614,6 +1625,8 @@ def radar_precios(valores, fx, estado=None, ahora=None):
             t.history(period="5d", interval="1d", auto_adjust=False)
             meta = t.history_metadata or {}
             p, ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+            if sim in DEPURAR:
+                print(f"DEPURAR {sim} meta {p} {ts} {meta.get('exchangeTimezoneName')} dia {dia}")
             if not p or p <= 0 or not ts:
                 return sim, None
             cuando = pd.Timestamp(ts, unit="s", tz="UTC") if isinstance(ts, (int, float)) else pd.Timestamp(ts)
