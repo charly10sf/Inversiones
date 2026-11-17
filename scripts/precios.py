@@ -1637,6 +1637,10 @@ def radar_precios(valores, fx, estado=None, ahora=None):
             antes = c[c.index.normalize() < dia]
             if not len(antes) or abs(float(p) / float(antes.iloc[-1]) - 1) > 0.5:
                 return sim, None
+            # el 17 nov a la 1:30 de Madrid, a ACS.MC, ABI.BR o AAF.L Yahoo les daba como último precio justo el cierre
+            # anterior (91,05 de ACS, el del viernes): no es el del día, y saldría 0 %. Entonces, lo de siempre
+            if abs(float(p) / float(antes.iloc[-1]) - 1) < 1e-6:
+                return sim, None
             return sim, (float(p), float(antes.iloc[-1]), dia.date().isoformat())
         except Exception:  # noqa: BLE001
             traceback.print_exc()

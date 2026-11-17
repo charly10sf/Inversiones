@@ -185,6 +185,19 @@ class RadarPrecios(unittest.TestCase):
         self.assertTrue(H.quieto("NOKIA.HE", t("2026-11-16T22:35"), t("2026-11-17T03:00"), estado["NOKIA.HE"][3]))
         self.assertEqual(valores[1]["p"], 9.4)
 
+    def test_revision_ultimo_precio_igual_al_cierre_anterior_no_completa(self):
+        # 17 nov 2026, 0:30 UTC: ACS.MC con la vela del lunes sin cierre y como último precio el del viernes (91,05):
+        # se queda lo de siempre (como main) y no vale para la noche
+        dias = pd.bdate_range(end="2026-11-16", periods=4)
+        filas = [[92.95, 91.05], [93.05, 93.9], [91.05, 93.6], [float("nan"), 91.2]]
+        meta = {"regularMarketPrice": 91.05, "exchangeTimezoneName": "Europe/Madrid",
+                "regularMarketTime": int(pd.Timestamp("2026-11-16T16:35:15Z").timestamp())}
+        valores, estado, tickers = self._con_ticker(meta, filas, ["ACS.MC"], dias, t("2026-11-17T00:30"))
+        self.assertEqual(tickers, ["ACS.MC"])
+        self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
+        self.assertEqual(estado["ACS.MC"][3], "2026-11-13")
+        self.assertFalse(H.quieto("ACS.MC", t("2026-11-17T00:30"), t("2026-11-17T03:00"), estado["ACS.MC"][3]))
+
     def test_revision_vela_de_un_dia_nuevo_sin_cierre_no_repite_el_precio(self):
         # pasada la medianoche, una vela del martes sin cierre y el último precio del lunes: el lunes sigue siendo el
         # último cierre y el viernes el anterior (ACS.MC salía con 0 %)
