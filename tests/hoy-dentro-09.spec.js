@@ -87,7 +87,9 @@ test('Rendimiento: el marcador cuadra con la gráfica y con el índice', async (
   // al pasar el ratón o el dedo, la fecha y los dos datos
   // si la gráfica se repinta o baja de sitio (sale un aviso encima) justo después de mover el ratón, la nueva no se entera:
   // se vuelve a medir y a mover
+  // (17 nov: de noche la hoja «¿Qué se ha mejorado?» salía encima de la gráfica y el ratón no llegaba: se quita antes)
   await expect(async () => {
+    await quitarCapas(page);
     const box = await page.locator('#grafEvo svg').boundingBox();
     await page.mouse.move(box.x + box.width * 0.4 + 3, box.y + box.height * 0.5);
     await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.5);
