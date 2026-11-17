@@ -196,6 +196,11 @@ class RadarPrecios(unittest.TestCase):
         valores, estado, _ = self._con_ticker(meta, [[f[0], f[1]] for f in filas], ["ACS.MC"], pd.DatetimeIndex(dias), t("2026-11-16T23:13"))
         self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
         self.assertEqual(estado["ACS.MC"][1:], [91.05, 93.05, "2026-11-16"])
+        # y con el último precio con la hora del martes (como lo dio Yahoo), igual: esa vela no es la que falta
+        meta["regularMarketTime"] = int(pd.Timestamp("2026-11-16T23:05:00Z").timestamp())
+        valores, estado, tickers = self._con_ticker(meta, [[f[0], f[1]] for f in filas], ["ACS.MC"], pd.DatetimeIndex(dias), t("2026-11-16T23:13"))
+        self.assertEqual(tickers, [])
+        self.assertEqual(valores[0]["v"], P.num((91.05 / 93.05 - 1) * 100, 2))
 
     def test_revision_cierre_casi_igual_al_anterior_se_vuelve_a_pedir(self):
         dias = pd.bdate_range(end="2026-11-16", periods=5)

@@ -1585,10 +1585,15 @@ def radar_precios(valores, fx, estado=None, ahora=None):
                 if dup.any():
                     repetidas += 1
                     c = c[~dup]
-                if apertura is not None and sim in apertura and len(c):
+                # solo la vela de la última sesión de su bolsa (con la bolsa cerrada y en la tabla de horario.py); una vela
+                # de un día después sin cierre (ACS.MC el 17 nov a las 0:50 de Madrid, con la hora del martes y el precio
+                # del lunes) no es la que falta: se queda lo de siempre
+                ultima = None if H.bolsa_de(sim) is None or H.en_sesion(sim, ahora) else H.dia_ultima_sesion(sim, ahora)
+                if ultima and apertura is not None and sim in apertura and len(c):
                     o = apertura[sim].dropna()
-                    if len(o) and o.index[-1].normalize() > c.index[-1].normalize():
-                        sin_cierre.append((sim, c, o.index[-1].normalize()))
+                    o = o[o.index.normalize() <= pd.Timestamp(ultima)]
+                    if len(o) and o.index[-1].normalize() == pd.Timestamp(ultima) and c.index[-1].normalize() < pd.Timestamp(ultima):
+                        sin_cierre.append((sim, c, pd.Timestamp(ultima)))
                         continue
                 if len(c) >= 2:
                     nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
