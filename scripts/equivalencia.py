@@ -70,7 +70,10 @@ def explicada(nombre, ruta, x, y, a, b, seg):
     va = {v.get("s"): v for v in a.get("valores") or []}.get(sim) or {}
     vb = {v.get("s"): v for v in b.get("valores") or []}.get(sim) or {}
     e = seg.get(sim)
-    if isinstance(e, list) and len(e) >= 4 and va.get("p") is not None and va.get("p") != vb.get("p") \
+    # (también cuando el último cierre es igual al anterior: ACS.MC, 91,05 el viernes y el lunes; main enseña el viernes
+    # con la variación del jueves al viernes y solo cambia la variación)
+    if isinstance(e, list) and len(e) >= 4 and va.get("p") is not None \
+            and (va.get("p") != vb.get("p") or va.get("v") != vb.get("v")) \
             and abs(float(va["p"]) - float(e[2])) <= 1e-6 * max(1.0, abs(float(e[2]))):
         return "main sin la vela"
     if va.get("p") == vb.get("p") and isinstance(x, (int, float)) and isinstance(y, (int, float)) and y \

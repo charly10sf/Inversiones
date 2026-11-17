@@ -373,6 +373,11 @@ class EquivalenciaExplicadas(unittest.TestCase):
         a["valores"][2]["pe"], b["valores"][2]["pe"], b["valores"][2]["p"] = 9.0, 9.001, 9.0
         self.assertEqual(E.explicada("radar.json", "/valores[SAN.MC]/pe", 9.0, 9.001, a, b, seg), "cambio del euro")
         b["valores"][2]["p"] = 9.1
+        # el lunes cerró igual que el viernes: mismo precio, main con la variación de jueves a viernes
+        a2 = {"valores": [{"s": "ACS.MC", "p": 91.05, "v": -2.15}]}
+        b2 = {"valores": [{"s": "ACS.MC", "p": 91.05, "v": 0.0}]}
+        seg2 = {"ACS.MC": ["2026-11-16T18:52:39+00:00", 91.05, 91.0500030517578, "2026-11-16"]}
+        self.assertEqual(E.explicada("radar.json", "/valores[ACS.MC]/v", -2.15, 0.0, a2, b2, seg2), "main sin la vela")
         # una diferencia de precio de verdad no se explica
         self.assertIsNone(E.explicada("radar.json", "/valores[SAN.MC]/p", 9.0, 9.1, a, b, seg))
         self.assertIsNone(E.explicada("precios.json", "/mercados/^IBEX/precio", 1, 2, a, b, seg))
