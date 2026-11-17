@@ -60,7 +60,8 @@ function htmlConvs() {
 /* ---------- el panel ---------- */
 function sugerencias(M) {
   const s = [], anio = new Date().getFullYear();
-  // 0.5, modo público: preguntas que GrowIA sí contesta (explicar, comparar, calcular). 0.8.2: también en el fundador con Claude
+  // 0.5, modo público: preguntas que GrowIA sí contesta (explicar, comparar, calcular). 0.8.2: también en el fundador con Claude;
+  // 17 nov: en el fundador, solo si el Worker no le da las reglas del fundador (preguntasDelEstandar)
   if (preguntasDelEstandar()) {
     const f0 = [...M.filas].sort((a, b) => (b.valor || 0) - (a.valor || 0))[0];
     if (f0) s.push(`¿Qué ha pasado con ${f0.inst.corto} este mes y qué dicen los analistas?`);
@@ -73,7 +74,9 @@ function sugerencias(M) {
   }
   const pl = M.filas.map((f) => planVenta(f, M)).filter(Boolean)[0];
   if (pl) { const res = pl.f.p && pl.f.p.proximos_resultados; s.push(`¿Qué supondría vender ya ${pl.f.inst.corto} o esperar${res && res >= hoyIso() ? ` a sus resultados del ${fechaCorta(res)}` : ''}?`); }
-  s.push('Este mes me sobran 500 €: ¿qué opciones tengo?');
+  // 17 nov: en el fundador, la IA va sin freno: preguntas para que diga qué hacer
+  s.unshift('¿Qué compro, vendo o mantengo este mes?');
+  s.push('Este mes me sobran 500 €: ¿en qué los invierto?');
   const top = M.filas.filter((f) => f.inst.tipo === 'Acción' && f.plPct > 40).sort((a, b) => b.plPct - a.plPct)[0];
   s.push(top ? `Búscame otra jugada como la de ${top.inst.corto}, bien contrastada` : 'Búscame una acción con un motor claro y bien contrastada');
   s.push(`¿Cuánto voy a pagar en la renta de ${anio}?`);

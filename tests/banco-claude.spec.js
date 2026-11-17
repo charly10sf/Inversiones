@@ -178,6 +178,8 @@ test.describe('el banco, con Claude de verdad', () => {
       await page.evaluate((modo) => {
         const a = modo === 'estandar' ? 'publico' : 'privado';
         S.acceso = a; LS.set('inv-acceso', { a, uid: FB.user.uid, t: Date.now() }); LS.del('inv-claude-pausa');
+        // 17 nov: el banco mira las reglas del estándar; un fundador que no está en la lista del Worker va con ellas
+        LS.set('inv-ia-fundador-no', { uid: FB.user.uid, hasta: Date.now() + 36e5 });
         S.M = calcular(); AS.conv = []; AS.api = []; AS.foto = null; AS.cargando = false; window.__herr = [];
         if (typeof cerrarAsesor === 'function') cerrarAsesor();
       }, q.modo);

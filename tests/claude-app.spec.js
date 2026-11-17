@@ -334,33 +334,79 @@ test('una pausa por la red no frena tu pregunta; si se corta del todo, lo dice a
   await expect(page.locator('#asCuerpo .as-error').last()).toContainText('Se ha cortado la conexión con la IA', { timeout: 30_000 });
 });
 
-// 0.8.2 (opción B): el fundador también va con Claude, pero con las reglas del estándar; con Gemini, el asesor de siempre
+// 17 nov (Carlos: «en el modo fundador no quiero que esté capada»): el fundador va con Claude y con sus reglas, sin freno,
+// si el Worker lo deja (su lista); si dice que no (403 «reglas»), se repite con las del estándar y se recuerda unas horas
 const fundador = (page) => page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); });
-test('en modo fundador contesta Claude con las reglas del estándar', async ({ page, context }) => {
+test('en modo fundador contesta Claude con las reglas del fundador: recomienda sin freno', async ({ page, context }) => {
   await preparada(page);
   await fundador(page);
   const g = await gemini(context);
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Según las reglas que escribiste, esto supondría vender 10 acciones.' }]) }));
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Vende 10 acciones de Repsol y mete lo que saques en el S&P 500.' }]), cabeceras: { 'X-Reglas': 'fundador' } }));
   await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Según las reglas que escribiste', { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).toContainText('Vende 10 acciones de Repsol', { timeout: 20_000 });
   expect(g.n).toBe(0);
   expect(w.peticiones.length).toBe(1);
-  const sis = w.peticiones[0].cuerpo.system.map((b) => b.text).join('\n');
-  // el prompt del estándar (sin recomendaciones) y la nota del Paso a paso del fundador; nada del asesor de siempre
-  expect(sis).toContain('Lo que no haces');
-  expect(sis).toContain('Su Paso a paso lo calcula Toisón con reglas fijas');
-  expect(sis).not.toContain('Primero la respuesta o la recomendación concreta');
-  expect(sis).not.toContain('Nada de avisos de que no eres asesor');
-  expect(sis).not.toContain('## Planes de venta que propone Toisón');
-  expect(sis).not.toContain('Las ideas de compra que mejor encajan');
-  expect(sis).not.toMatch(/^- (Comprar|Evitar) /m);
-  // la respuesta queda marcada como hecha con las reglas del estándar y con su modelo, sin ningún aviso debajo
-  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(true);
+  const c = w.peticiones[0].cuerpo;
+  expect(c.reglas).toBe('fundador');
+  const sis = c.system.map((b) => b.text).join('\n');
+  // la nota del fundador y el asesor de siempre, con los planes de venta y las ideas de compra; nada del estándar
+  expect(sis).toContain('te ha pedido recomendaciones directas sobre su propia cartera');
+  expect(sis).toContain('Primero la respuesta o la recomendación concreta');
+  expect(sis).not.toContain('No das asesoramiento personalizado');
+  expect(sis).not.toContain('Lo que no haces');
+  expect(sis).not.toContain('Su Paso a paso lo calcula Toisón con reglas fijas');
+  // marcada como hecha sin las reglas del estándar, y el vigía de frases de consejo no la mira
+  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(false);
+  expect(await page.evaluate(() => AS.conv.at(-1).consejo || null)).toBeNull();
   expect(await page.evaluate(() => AS.conv.at(-1).modelo)).toBe('claude-haiku-5-5');
   await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
+  // las preguntas que propone la app son las del fundador
+  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(false);
   // 0.8.2b: quien tuviera elegido «solo Gemini» pasa a Claude
   await page.evaluate(() => { LS.set('inv-ia-motor', 'gemini'); AS.cargando = false; });
   expect(await page.evaluate(() => [motorElegido(), modeloClaudeParaIA('pregunta')])).toEqual(['auto', 'claude-haiku-5-5']);
+});
+test('en modo fundador, si el Worker no da las reglas del fundador a la cuenta, contesta con las del estándar sin apartar a Claude', async ({ page, context }) => {
+  await preparada(page);
+  await fundador(page);
+  await gemini(context);
+  const w = await worker(context, (c) => (c.reglas === 'fundador' ? { json: { error: 'reglas' }, estado: 403 } : { sse: stream([{ tipo: 'texto', texto: 'Según las reglas que escribiste, esto supondría vender 10 acciones.' }]) }));
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('Según las reglas que escribiste', { timeout: 20_000 });
+  expect(w.peticiones.length).toBe(2);
+  const [p1, p2] = w.peticiones.map((p) => p.cuerpo);
+  expect(p1.reglas).toBe('fundador');
+  expect(p2.reglas).toBeUndefined();
+  // la misma pregunta para el Worker (lo rechazado no contó)
+  expect(p2.pregunta).toBe(p1.pregunta);
+  const sis = p2.system.map((b) => b.text).join('\n');
+  expect(sis).toContain('Lo que no haces');
+  expect(sis).toContain('Su Paso a paso lo calcula Toisón con reglas fijas');
+  expect(sis).not.toContain('Primero la respuesta o la recomendación concreta');
+  expect(sis).not.toContain('## Planes de venta que propone Toisón');
+  expect(sis).not.toContain('Las ideas de compra que mejor encajan');
+  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(true);
+  expect(await page.evaluate(() => !!claudePausado())).toBe(false);
+  await expect(page.locator('#asCuerpo .as-error')).toHaveCount(0);
+  // se recuerda: la pregunta siguiente ya va con las del estándar, sin pedir las del fundador
+  expect(await page.evaluate(() => [iaSinFreno(), preguntasDelEstandar()])).toEqual([false, true]);
+  await page.evaluate(() => { AS.cargando = false; return preguntarAsesor('¿Y la otra?'); });
+  await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(3);
+  expect(w.peticiones[2].cuerpo.reglas).toBeUndefined();
+});
+test('el estándar nunca pide las reglas del fundador', async ({ page, context }) => {
+  await preparada(page);
+  await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]) }));
+  expect(await page.evaluate(() => iaSinFreno())).toBe(false);
+  // tampoco con un «no» viejo borrado ni con el modo provisional de fundador
+  await page.evaluate(() => { LS.del('inv-ia-fundador-no'); LS.set('inv-acceso', { a: 'privado', uid: null, t: Date.now(), provisional: true }); });
+  expect(await page.evaluate(() => iaSinFreno())).toBe(false);
+  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); });
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
+  expect(w.peticiones[0].cuerpo.reglas).toBeUndefined();
+  expect(w.peticiones[0].cuerpo.system.map((b) => b.text).join('\n')).toContain('No das asesoramiento personalizado');
 });
 
 test('con el modo todavía provisional (dispositivo sin leer la cuenta) no se usa Claude ni sale nada', async ({ page, context }) => {
@@ -540,9 +586,9 @@ test('con Claude en la cuenta, Importar lee con Claude (Sonnet) y una captura va
   expect(c.messages[0].content[0].type).toBe('image');
 });
 
-// 0.8.2 · opción B en la revisión de la cartera: con Claude, el fundador recibe la del estándar (sin comprar ni vender),
-// queda marcada como hecha con esas reglas y no se rehace en bucle por «otro modo»
-test('en modo fundador, la revisión con Claude va con las reglas del estándar y no se rehace por el modo', async ({ page, context }) => {
+// 17 nov · la revisión de la cartera en el fundador: con las reglas del fundador (comprar, vender, ideas del radar), queda
+// marcada así y no se rehace en bucle por «otro modo»
+test('en modo fundador, la revisión con Claude va con las reglas del fundador y no se rehace por el modo', async ({ page, context }) => {
   await preparada(page);
   await fundador(page);
   await page.evaluate(() => LS.set('inv-claude-ok', true));
@@ -553,16 +599,19 @@ test('en modo fundador, la revisión con Claude va con las reglas del estándar 
   await page.evaluate(() => generarAnalisisIA('la pides tú'));
   await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
   const c = w.peticiones[0].cuerpo;
-  expect(JSON.stringify(c.messages[0].content)).toContain('No me digas que compre, venda, mantenga ni traspase');
+  expect(c.reglas).toBe('fundador');
+  expect(c.tarea).toBe('revision');
+  expect(JSON.stringify(c.messages[0].content)).toContain('Haz la revisión de hoy de mi cartera');
+  expect(JSON.stringify(c.messages[0].content)).not.toContain('No me digas que compre, venda, mantenga ni traspase');
   const sis = c.system.map((b) => b.text).join('\n');
-  expect(sis).toContain('Lo que no haces');
-  expect(sis).not.toContain('Las ideas de compra que mejor encajan');
-  expect(await page.evaluate(() => ({ p: S.iaPropio.json.publico, m: S.iaPropio.json.modo }))).toEqual({ p: true, m: 'privado' });
-  // sigue en el fundador: no hay «otro modo» y no se vuelve a pedir
+  expect(sis).not.toContain('Lo que no haces');
+  expect(await page.evaluate(() => ({ p: S.iaPropio.json.publico, m: S.iaPropio.json.modo }))).toEqual({ p: false, m: 'privado' });
   const n = w.peticiones.length;
   await page.evaluate(() => { IA.ultimoIntento = 0; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); });
   await page.waitForTimeout(800);
   expect(w.peticiones.length).toBe(n);
+  // y si la cuenta pasa al estándar, esa revisión no se enseña
+  expect(await page.evaluate(() => { S.acceso = 'publico'; return iaActual(); })).toBeNull();
 });
 
 // 0.8.2 · arriba del panel, siempre: que es una IA, cuál, que puede equivocarse y qué hace y qué no

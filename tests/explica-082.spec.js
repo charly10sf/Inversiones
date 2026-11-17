@@ -65,22 +65,26 @@ test('las fichas de idea dicen quién las hace y cuándo, que son iguales para t
   expect(s).toBeTruthy();
 });
 
-test('con Claude, también en el fundador, las preguntas que propone la app son las del estándar', async ({ page }) => {
+// 17 nov: en el fundador, la IA va sin freno y las preguntas que propone la app son las del fundador; si el Worker no le da
+// esas reglas a la cuenta (se recuerda unas horas), las del estándar
+test('en el fundador, las preguntas que propone la app son las del fundador; sin sus reglas en el Worker, las del estándar', async ({ page }) => {
   await dentro(page);
   await page.waitForFunction(() => radarVals().length, null, { timeout: 45_000 });
-  // 0.8.2b: solo contesta Claude, así que en el fundador también son las del estándar
-  await page.evaluate(() => { S.acceso = 'privado'; LS.del('inv-claude-sondeo'); });
-  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(true);
+  await page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user && FB.user.uid, t: Date.now() }); LS.del('inv-claude-sondeo'); LS.del('inv-ia-fundador-no'); });
+  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(false);
   await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
   const b = page.locator('.ideas-top3 .idea [data-accion="asesor"]').first();
   await expect(b).toBeAttached({ timeout: 30_000 });
-  const q = await b.getAttribute('data-q');
-  expect(q).toContain('¿Qué hace');
-  expect(q).not.toContain('cuánto meter');
-  // y las sugerencias del panel, sin «¿qué opciones tengo?» de compra
+  expect(await b.getAttribute('data-q')).toContain('cuánto meter');
   await page.evaluate(() => abrirAsesor());
   await page.waitForFunction(() => typeof sugerencias === 'function', null, { timeout: 15_000 });
-  expect((await page.evaluate(() => sugerencias(S.M || calcular()))).join(' ')).not.toMatch(/me sobran 500|Búscame otra jugada/);
+  expect((await page.evaluate(() => sugerencias(S.M || calcular()))).join(' ')).toContain('¿Qué compro, vendo o mantengo este mes?');
+  // sin las reglas del fundador en el Worker: las del estándar
+  await page.evaluate(() => { cerrarAsesor(); LS.set('inv-ia-fundador-no', { uid: FB.user && FB.user.uid, hasta: Date.now() + 36e5 }); pintar(); });
+  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(true);
+  await expect.poll(() => b.getAttribute('data-q'), { timeout: 15_000 }).toContain('¿Qué hace');
+  expect(await b.getAttribute('data-q')).not.toContain('cuánto meter');
+  expect((await page.evaluate(() => sugerencias(S.M || calcular()))).join(' ')).not.toMatch(/me sobran 500|Búscame otra jugada|Qué compro/);
 });
 
 test('en el estándar, ordenar las posiciones no dice «comprar» ni «vender»', async ({ page }) => {

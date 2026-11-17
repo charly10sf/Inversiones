@@ -401,6 +401,48 @@ test('el Worker pone delante la nota de que la IA de Toisón es una IA y no da c
   });
 });
 
+// 17 nov: las reglas del fundador (recomendaciones directas), solo para los correos de CLAUDE_FUNDADOR_EMAILS o, sin ella, de
+// BANCO_EMAILS (el dueño); a cualquier otro que las pida, 403 «reglas» sin llegar a Claude ni gastar pregunta
+test('17 nov: las reglas del fundador solo para la lista del Worker; al resto, «reglas» sin gastar nada', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, BANCO_EMAILS: 'dueno@prueba.com' };
+    const sis = { ...PEDIDO, system: [{ type: 'text', text: 'de la app' }] };
+    // el dueño (BANCO_EMAILS), sin CLAUDE_FUNDADOR_EMAILS: con la nota del fundador
+    let r = await pedir('uid-f1', { ...sis, reglas: 'fundador' }, env, { email: 'dueno@prueba.com' });
+    expect(r.status).toBe(200);
+    expect(r.headers.get('X-Reglas')).toBe('fundador');
+    expect(r.headers.get('Access-Control-Expose-Headers')).toContain('X-Reglas');
+    const v = vistas.at(-1).cuerpo;
+    expect(v.system[0].text).toMatch(/^La IA de Toisón es una IA/);
+    expect(v.system[0].text).toContain('acceso de fundador');
+    expect(v.system[0].text).not.toContain('No da asesoramiento personalizado');
+    expect(v.system[1].text).toBe('de la app');
+    // «reglas» no se reenvía a Claude
+    expect(v.reglas).toBeUndefined();
+    // un amigo de CLAUDE_EMAILS que no está en la lista del fundador: no, y no llega a Claude
+    const n = vistas.length;
+    r = await pedir('uid-f2', { ...sis, reglas: 'fundador' }, env, { email: 'amigo@prueba.com' });
+    expect(r.status).toBe(403);
+    expect(await r.json()).toEqual({ error: 'reglas' });
+    expect(vistas.length).toBe(n);
+    // sin pedirlas, el de siempre, también el dueño
+    r = await pedir('uid-f3', sis, env, { email: 'dueno@prueba.com' });
+    expect(r.headers.get('X-Reglas')).toBe('estandar');
+    expect(vistas.at(-1).cuerpo.system[0].text).toContain('No da asesoramiento personalizado');
+    // con CLAUDE_FUNDADOR_EMAILS, esa lista manda (mayúsculas y espacios dan igual) y el dueño ya no entra solo por serlo
+    const env2 = { ...env, CLAUDE_FUNDADOR_EMAILS: ' Amigo@Prueba.com ;  otra@prueba.com' };
+    expect((await pedir('uid-f4', { ...sis, reglas: 'fundador' }, env2, { email: 'amigo@prueba.com' })).status).toBe(200);
+    expect(vistas.at(-1).cuerpo.system[0].text).toContain('acceso de fundador');
+    expect((await pedir('uid-f5', { ...sis, reglas: 'fundador' }, env2, { email: 'dueno@prueba.com' })).status).toBe(403);
+    // con el correo sin verificar no hay ni Claude; un valor de «reglas» que no existe, 400
+    expect((await pedir('uid-f6', { ...sis, reglas: 'fundador' }, env, { email: 'dueno@prueba.com', verificado: false })).status).toBe(403);
+    r = await pedir('uid-f7', { ...sis, reglas: 'todo' }, env, { email: 'dueno@prueba.com' });
+    expect(r.status).toBe(400);
+    expect(await r.json()).toEqual({ error: 'peticion', motivo: 'reglas' });
+    // sin BANCO_EMAILS ni CLAUDE_FUNDADOR_EMAILS, nadie
+    expect((await pedir('uid-f8', { ...sis, reglas: 'fundador' }, ENV, { email: 'amigo@prueba.com' })).status).toBe(403);
+  });
+});
 test('/salud dice si Claude está listo, sin enseñar la clave', async () => {
   const salud = async (env) => worker.fetch(new Request('https://w.prueba/salud'), env, { waitUntil() {} }).then((r) => r.text());
   expect(JSON.parse(await salud({ ...ENV, CUOTAS: undefined }))).toMatchObject({ claude: true, cuotas: false });

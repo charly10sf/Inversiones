@@ -621,6 +621,12 @@ const CLAUDE_MAX_ENTRADA = 120000, CLAUDE_MAX_PDF = 2, CLAUDE_MAX_IMAGENES = 12,
 // las reglas de uso, puestas por el Worker y no por la app: quien llame a /claude con su propio «system» no se las salta
 // 0.8: «GrowIA» pasa a «la IA de Toisón», como en la app (NOTA_CLAUDE de 55-asesor-contexto.js)
 const CLAUDE_NOTA = 'La IA de Toisón es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
+// 17 nov (Carlos: «en el modo fundador no quiero que esté capada»): con el acceso de fundador, la IA da recomendaciones
+// directas sobre la cartera de quien pregunta. Lo decide el Worker, no la app: solo los correos de CLAUDE_FUNDADOR_EMAILS
+// (o, si ese secreto no está, los de BANCO_EMAILS, que es el dueño) y solo si la app lo pide («reglas: 'fundador'»). A
+// cualquier otro que lo pida se le dice que no (403 «reglas») antes de contar nada, y la app repite con la nota de siempre
+const CLAUDE_NOTA_FUNDADOR = 'La IA de Toisón es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. Esta persona tiene el acceso de fundador y ha pedido recomendaciones directas sobre su propia cartera: puede decirle qué comprar, vender, mantener o traspasar, cuánto y cuándo, diciendo en qué se apoya, con qué confianza y qué riesgos concretos tiene. Las decisiones y el dinero son suyos.';
+const fundadorIA = (u, env) => !!u && u.verificado && !!u.email && lista(env.CLAUDE_FUNDADOR_EMAILS || env.BANCO_EMAILS).includes(String(u.email).toLowerCase());
 const rafagas = new Map();
 const puedeClaude = (u) => !!u && u.verificado && !!u.email;
 // 0.8.2b: el tope alto, para los de CLAUDE_EMAILS; el resto, el reducido
@@ -791,6 +797,10 @@ async function claude(req, env, cors, res, ctx) {
   let c;
   try { c = JSON.parse(texto); } catch (e) { return res({ error: 'json' }, 400); }
   if (!c || typeof c !== 'object' || Array.isArray(c)) return res({ error: 'json' }, 400);
+  // 17 nov: las reglas del fundador, solo para quien está en la lista (antes de contar nada: lo rechazado no gasta)
+  if (c.reglas !== undefined && c.reglas !== 'fundador') return res({ error: 'peticion', motivo: 'reglas' }, 400);
+  const conFundador = c.reglas === 'fundador';
+  if (conFundador && !fundadorIA(u, env)) return res({ error: 'reglas' }, 403);
   const modelos = lista(env.CLAUDE_MODELOS).length ? lista(env.CLAUDE_MODELOS) : CLAUDE_MODELOS;
   if (!modelos.includes(String(c.model || '').toLowerCase())) return res({ error: 'peticion', motivo: 'modelo' }, 400);
   // revisión aparte de la sesión 4: el que se comprueba es el que se manda
@@ -817,7 +827,7 @@ async function claude(req, env, cors, res, ctx) {
   const pdfs = contarBloques(cuerpo.messages, 'document'), imgs = contarBloques(cuerpo.messages, 'image');
   if (pdfs > (Number(env.CLAUDE_MAX_PDF) || CLAUDE_MAX_PDF) || imgs > (Number(env.CLAUDE_MAX_IMAGENES) || CLAUDE_MAX_IMAGENES)) return res({ error: 'peticion', motivo: 'adjuntos' }, 400);
   if (cuerpo.system !== undefined && typeof cuerpo.system !== 'string' && !Array.isArray(cuerpo.system)) return res({ error: 'peticion', motivo: 'system' }, 400);
-  cuerpo.system = [{ type: 'text', text: CLAUDE_NOTA }, ...(typeof cuerpo.system === 'string' ? (cuerpo.system ? [{ type: 'text', text: cuerpo.system }] : []) : cuerpo.system || [])];
+  cuerpo.system = [{ type: 'text', text: conFundador ? CLAUDE_NOTA_FUNDADOR : CLAUDE_NOTA }, ...(typeof cuerpo.system === 'string' ? (cuerpo.system ? [{ type: 'text', text: cuerpo.system }] : []) : cuerpo.system || [])];
   const idPreg = typeof c.pregunta === 'string' && /^[a-z0-9]{8,64}$/i.test(c.pregunta) ? c.pregunta : null;
   // 0.8.2d: una tarea (revisión, noticia, importar) va con su contador; cualquier otro valor, como una pregunta. Una tarea
   // tiene que llevar su id (la app siempre lo manda): sin él no se sabría cuándo empieza una nueva y no contaría
@@ -933,7 +943,7 @@ async function claude(req, env, cors, res, ctx) {
       const p = leerUso(b, enDirecto).then(({ uso, completo }) => cerrarTecho(completo ? costeUso(modelo, uso) : reserva));
       if (ctx && ctx.waitUntil) ctx.waitUntil(p);
     } else cerrarTecho(0);
-    const extra = { 'X-Nivel': nivel, ...(quedan != null ? { 'X-Quedan': String(quedan) } : {}), ...(quedanFondo != null ? { 'X-Quedan-Fondo': String(quedanFondo) } : {}), ...(quedanTareas != null ? { 'X-Quedan-Tareas': String(quedanTareas) } : {}), ...(quedanRevisiones != null ? { 'X-Quedan-Revisiones': String(quedanRevisiones) } : {}) };
+    const extra = { 'X-Nivel': nivel, 'X-Reglas': conFundador ? 'fundador' : 'estandar', ...(quedan != null ? { 'X-Quedan': String(quedan) } : {}), ...(quedanFondo != null ? { 'X-Quedan-Fondo': String(quedanFondo) } : {}), ...(quedanTareas != null ? { 'X-Quedan-Tareas': String(quedanTareas) } : {}), ...(quedanRevisiones != null ? { 'X-Quedan-Revisiones': String(quedanRevisiones) } : {}) };
     return new Response(cuerpoApp, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', ...extra, 'Access-Control-Expose-Headers': Object.keys(extra).join(', ') } });
   }
   // lo que no ha llegado a contestar Claude no gasta del techo
