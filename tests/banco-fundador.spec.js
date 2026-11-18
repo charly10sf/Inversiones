@@ -150,7 +150,7 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
     const foto = await page.evaluate(() => {
       window.__herr = [];
       const orig = ejecutarHerramienta;
-      const corta = (x) => { try { const s = JSON.stringify(x); return s.length > 2500 ? s.slice(0, 2500) + '…' : s; } catch (e) { return String(x); } };
+      const corta = (x) => { try { const s = JSON.stringify(x); return s.length > 5000 ? s.slice(0, 5000) + '…' : s; } catch (e) { return String(x); } };
       window.ejecutarHerramienta = (n, a, est) => { const out = orig(n, a, est); window.__herr.push({ n, a, est, res: corta(out) }); return out; };
       S.M = calcular();
       return contextoAsesor(S.M, 'chat', false);
@@ -167,6 +167,9 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
       if (gasto.dolares >= TOPE) { console.log(`tope de ${TOPE} $ alcanzado: no se pregunta ${q.id} ni las siguientes`); break; }
       await page.evaluate(() => {
         S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); LS.del('inv-claude-pausa'); LS.del('inv-ia-fundador-no');
+        // la app recarga los precios durante la pasada: el fondo atascado se repone antes de cada pregunta (19 nov: en la
+        // primera pasada se pisó y la foto de casi todas llevaba el precio de verdad, no el atascado)
+        if (window.__viejoNB && S.precios.instrumentos['nb-short']) S.precios.instrumentos['nb-short'] = { ...S.precios.instrumentos['nb-short'], fecha: window.__viejoNB };
         S.M = calcular(); AS.conv = []; AS.api = []; AS.foto = null; AS.cargando = false; window.__herr = [];
         if (typeof cerrarAsesor === 'function') cerrarAsesor();
       });
@@ -182,11 +185,12 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
       const r = await page.evaluate(() => {
         const t = AS.conv[AS.conv.length - 1];
         const texto = t.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n');
-        return { texto, error: t.error || null, modelo: t.modelo || null, estandar: t.estandar, herramientas: [...window.__herr], fuentes: (t.citas || []).map((c) => c.u).slice(0, 10) };
+        const fo = String(AS.foto || ''), i = fo.indexOf('Neuberger Berman'), nb = i >= 0 ? fo.slice(i, i + 900) : '';
+        return { texto, error: t.error || null, modelo: t.modelo || null, estandar: t.estandar, herramientas: [...window.__herr], fuentes: (t.citas || []).map((c) => c.u).slice(0, 10), nb_atascado: /atascado/.test(nb) };
       });
       const mal = revisarFundador(q, r);
       if (r.estandar !== false) mal.push('no ha ido con las reglas del fundador');
-      resultados.push({ id: q.id, tema: q.tema, q: q.q, ...(q.sigue ? { sigue: q.sigue, primera: (primera || '').slice(0, 6000) } : {}), comprueba: q.comprueba, mal, segundos: Math.round((Date.now() - t0) / 1000), dolares: Math.round((gasto.dolares - d0) * 10000) / 10000, modelo: r.modelo, herramientas: r.herramientas, fuentes: r.fuentes, respuesta: r.texto.slice(0, 12000) });
+      resultados.push({ id: q.id, tema: q.tema, q: q.q, ...(q.sigue ? { sigue: q.sigue, primera: (primera || '').slice(0, 6000) } : {}), comprueba: q.comprueba, mal, segundos: Math.round((Date.now() - t0) / 1000), dolares: Math.round((gasto.dolares - d0) * 10000) / 10000, modelo: r.modelo, nb_atascado_en_su_foto: r.nb_atascado, herramientas: r.herramientas, fuentes: r.fuentes, respuesta: r.texto.slice(0, 12000) });
       console.log(`${mal.length ? '✘' : '✓'} ${q.id} (${Math.round((gasto.dolares - d0) * 1000) / 1000} $)${mal.length ? ': ' + mal.join('; ') : ''}`);
       guardar(true);
       await page.waitForTimeout(1500);
