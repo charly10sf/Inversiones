@@ -53,3 +53,40 @@ test('simular_venta: una cripto con pérdidas no lleva regla de recompra y una v
   if (r.phau.ganancia_o_perdida > 0) expect(r.phau.regla_de_recompra).toBeUndefined();
 });
 
+test('la foto dice que la pérdida de una venta apuntada no resta este año si hubo recompra', async ({ page }) => {
+  await conCartera(page);
+  const t = await page.evaluate(() => {
+    const hoy = hoyIso(), f0 = sumarDias(hoy, -10);
+    (S.cartera.movimientos = S.cartera.movimientos || []).push({ id: 'm-x', fecha: f0, tipo: 'venta', instrumento: 'ishares-us', plataforma: 'MyInvestor', uds: 50, precio: 12, importe: 600, coste_vendido: 1090, resultado: -490 });
+    S.M = calcular();
+    return contextoAsesor(S.M, 'chat', false);
+  });
+  expect(t).toMatch(/resultado [^;\n]*490[^;\n]*; de esa pérdida, [^;\n]+ no restan este año por la regla de recompra/);
+});
+
+test('la foto marca el fondo con el valor liquidativo atascado (y no el que va con su día de retraso)', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    const viejo = habilAntes(habilAntes(habilAntes(hoyIso())));
+    S.precios.instrumentos['nb-short'] = { ...S.precios.instrumentos['nb-short'], fecha: viejo };
+    S.M = calcular();
+    const t = contextoAsesor(S.M, 'chat', false);
+    const trozo = (id) => { const i = t.indexOf(`### ${S.inst[id].corto}`); return t.slice(i, t.indexOf('\n###', i + 4)); };
+    return { nb: trozo('nb-short'), em: trozo('vanguard-em') };
+  });
+  expect(r.nb).toContain('valor liquidativo atascado');
+  expect(r.em).not.toContain('atascado');
+});
+
+test('sin freno, el Paso a paso entra en la foto con su motivo y sus impuestos; con las del estándar, igual que antes', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    S.M = calcular();
+    const P = pasosRuta(S.M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
+    const conPq = PLAZOS.flatMap(([k]) => P[k]).filter((x) => x.fuente === 'web' && x.pq).map((x) => limpio(x.pq).slice(0, 40));
+    return { fund: contextoAsesor(S.M, 'chat', false), conPq };
+  });
+  expect(r.fund).toContain('## Su Paso a paso en Toisón');
+  expect(r.fund).toContain('si recomiendas algo distinto, dilo y explica por qué');
+  for (const pq of r.conPq) expect(r.fund).toContain(pq);
+});
