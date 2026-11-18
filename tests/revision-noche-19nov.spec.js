@@ -53,6 +53,47 @@ test('simular_venta: una cripto con pérdidas no lleva regla de recompra y una v
   if (r.phau.ganancia_o_perdida > 0) expect(r.phau.regla_de_recompra).toBeUndefined();
 });
 
+test('simular_venta: una venta con ganancias no lleva regla de recompra; un ETC con pérdidas, la de dos meses', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    const p0 = S.precios.instrumentos.phau.precio;
+    S.precios.instrumentos.phau = { ...S.precios.instrumentos.phau, precio: 400 };
+    S.M = calcular();
+    const gana = ejecutarHerramienta('simular_venta', { posicion: buscarFila('phau').pos.id, porcentaje: 10 }, false);
+    S.precios.instrumentos.phau = { ...S.precios.instrumentos.phau, precio: 100 };
+    S.M = calcular();
+    const pierde = ejecutarHerramienta('simular_venta', { posicion: buscarFila('phau').pos.id, porcentaje: 10 }, false);
+    S.precios.instrumentos.phau = { ...S.precios.instrumentos.phau, precio: p0 };
+    return { gana, pierde };
+  });
+  expect(r.gana.ganancia_o_perdida).toBeGreaterThan(0);
+  expect(r.gana.regla_de_recompra).toBeUndefined();
+  expect(r.pierde.ganancia_o_perdida).toBeLessThan(0);
+  expect(r.pierde.regla_de_recompra.plazo).toBe('dos meses');
+  expect(r.pierde.tributa_como).toMatch(/capital mobiliario/);
+});
+
+test('simular_venta del fondo entero: aplaza lo que comprará la aportación automática y libera la pérdida aplazada de una venta anterior', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    (S.cartera.movimientos = S.cartera.movimientos || []).push({ id: 'm-y', fecha: sumarDias(hoyIso(), -60), tipo: 'venta', instrumento: 'ishares-us', plataforma: 'MyInvestor', uds: 80, precio: 12.6, importe: 1008, coste_vendido: 1658, resultado: -650 });
+    S.M = calcular();
+    const f = buscarFila('ishares-us');
+    const v = ejecutarHerramienta('simular_venta', { posicion: f.pos.id }, false);
+    const foto = contextoAsesor(S.M, 'chat', false);
+    return { v, linea: foto.split('\n').find((l) => l.startsWith('Si vendiera hoy cada posición entera')), aplazadaAntes: perdidaAplazada(S.cartera.movimientos.at(-1)) };
+  });
+  const rr = r.v.regla_de_recompra;
+  expect(r.aplazadaAntes.importe).toBeLessThan(0);
+  // vendiéndolo todo no queda nada de antes: solo lo que comprará la aportación en un año (unos 7.200 €, una parte)
+  expect(rr.por_compras_de_antes).toBeUndefined();
+  expect(rr.por_la_aportacion_automatica_de_los_proximos_meses).toBeLessThan(0);
+  expect(-rr.perdida_que_no_resta_este_anio).toBeLessThan(-r.v.ganancia_o_perdida * 0.5);
+  // y los 650 € de la venta anterior vuelven a restar
+  expect(rr.perdida_aplazada_de_ventas_anteriores_que_vuelve_a_restar).toBeCloseTo(r.aplazadaAntes.importe, 1);
+  expect(r.linea).toMatch(/S&P 500 −[\d.]+ € \(con su aportación automática activa, unos [\d.]+ € de esa pérdida no restarían este año/);
+});
+
 test('la foto dice que la pérdida de una venta apuntada no resta este año si hubo recompra', async ({ page }) => {
   await conCartera(page);
   const t = await page.evaluate(() => {
@@ -69,6 +110,8 @@ test('la foto marca el fondo con el valor liquidativo atascado (y no el que va c
   const r = await page.evaluate(() => {
     const viejo = habilAntes(habilAntes(habilAntes(hoyIso())));
     S.precios.instrumentos['nb-short'] = { ...S.precios.instrumentos['nb-short'], fecha: viejo };
+    // (revisión aparte M5: el de emergentes, con su día normal de retraso, fijo: no dependa de los datos ni de los festivos)
+    S.precios.instrumentos['vanguard-em'] = { ...S.precios.instrumentos['vanguard-em'], fecha: habilAntes(hoyIso()) };
     S.M = calcular();
     const t = contextoAsesor(S.M, 'chat', false);
     const trozo = (id) => { const i = t.indexOf(`### ${S.inst[id].corto}`); return t.slice(i, t.indexOf('\n###', i + 4)); };
@@ -99,7 +142,7 @@ test('la foto: vender todo un fondo con aportación automática avisa de la reco
     return contextoAsesor(S.M, 'chat', false);
   });
   const linea = t.split('\n').find((l) => l.startsWith('Si vendiera hoy cada posición entera'));
-  expect(linea).toMatch(/S&P 500 −[\d.]+ € \(con su aportación automática activa, esa pérdida no restaría este año/);
+  expect(linea).toMatch(/S&P 500 −[\d.]+ € \(con su aportación automática activa, unos [\d.]+ € de esa pérdida no restarían este año/);
   expect(t).not.toMatch(/&amp;|&nbsp;|&lt;|&gt;/);
   expect(t).not.toContain('## Análisis de partida publicado ()');
   expect(t).toContain('## Sus reglas de inversión');
@@ -152,10 +195,16 @@ test('sin freno, las instrucciones llevan las cuentas que se confundían en el b
 test('la foto no cambia de un minuto a otro (va en la caché de Claude): hora al cuarto de hora y la de los datos, fija', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-18T22:31:10') });
   await conCartera(page);
-  const a = await page.evaluate(() => { S.M = calcular(); return contextoAsesor(S.M, 'chat', false).split('\n').slice(0, 2).join('\n'); });
+  // la foto entera y sin el directo (revisión aparte I3: sin él decía «Precios: hace 2 h», y el escaneo, «(hace 17 h)»)
+  await page.evaluate(async () => { await cargarEscaneo().catch(() => {}); await cargarFichas().catch(() => {}); LIVE.yahoo = 'off'; LIVE.bitvavo = 'off'; });
+  const foto = () => page.evaluate(() => { LIVE.yahoo = 'off'; LIVE.bitvavo = 'off'; S.M = calcular(); return contextoAsesor(S.M, 'chat', false); });
+  // antes, que termine de cargar lo que se baja después de abrir (el radar entero pasa de unas 900 a unas 2.800 empresas)
+  for (let k = 0; k < 3; k++) { await page.clock.runFor(20_000); await page.waitForTimeout(1500); }
+  const a = await foto();
   await page.clock.runFor(4 * 60_000);
-  const b = await page.evaluate(() => { S.M = calcular(); return contextoAsesor(S.M, 'chat', false).split('\n').slice(0, 2).join('\n'); });
-  expect(a).toMatch(/hacia las 22:30/);
-  expect(a).not.toMatch(/\bhace\b/);
+  await page.waitForTimeout(1500);
+  const b = await foto();
+  expect(a.split('\n')[0]).toMatch(/hacia las 22:30/);
+  expect(a).not.toMatch(/\bhace \d+ (min|h)\b|ahora mismo/);
   expect(b).toBe(a);
 });

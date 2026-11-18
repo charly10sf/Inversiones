@@ -20,6 +20,9 @@ function buscarRadar(q) {
 }
 
 /* ---------- la foto de la cartera que recibe la IA ---------- */
+// 19 nov (revisión de noche): en la foto, las horas fijas y no «hace 2 h» (la foto va en la caché de Claude y no debe cambiar
+// de un minuto a otro)
+const fechaFijaIA = (g0) => { const g = g0 ? new Date(g0) : null; return g && !isNaN(g) ? `el ${diaConSemana(iso(g))} a las ${g.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'sin fecha'; };
 function fichaTexto(f, corto = false, est = esPublico()) {
   const i = f.inst, p = f.p || {}, a = p.analistas || {}, fu = p.fundamentales || {}, r = p.rent || {}, t = p.tecnico || {};
   const L = [];
@@ -84,7 +87,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     const horaQ = cuarto.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     const gen = S.precios && S.precios.generado ? new Date(S.precios.generado) : null;
     L.push(`# Su cartera, foto del ${DIAS[ahora.getDay()]} ${fechaLarga(hoyIso())}, hacia las ${horaQ}`);
-    L.push(`Precios: ${estadoDirecto().txt.toLowerCase()}. Datos de Toisón ${gen && !isNaN(gen) ? `del ${diaConSemana(iso(gen))} a las ${gen.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'sin fecha'}.`);
+    // sin el directo, estadoDirecto dice «hace 2 h»: aquí, un texto fijo (la hora de los datos va detrás)
+    const edo = estadoDirecto(), edTxt = edo.cls === 'off' ? 'sin conexión en directo, los de los datos de Toisón' : edo.txt.toLowerCase();
+    L.push(`Precios: ${edTxt}. Datos de Toisón ${gen && !isNaN(gen) ? `del ${diaConSemana(iso(gen))} a las ${gen.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'sin fecha'}.`);
     L.push('', '## Resumen');
     L.push(`Patrimonio ${E2(M.total)}. Coste de lo que tiene ${E2(M.invertido)}. Ganancia latente ${eurP(M.pl)} (${P1(M.plPct)}). Hoy ${eurP(M.dia)} (${P1(M.diaPct)}).`);
     L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
@@ -137,9 +142,10 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     L.push('', `## Impuestos de ${anio} (renta que se presenta entre abril y junio de ${anio + 1})`);
     L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length - fa.nRCM} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}.${fa.nRCM ? ` Ventas de ETC ${eurP(fa.rcmVentas)} (${fa.nRCM}; cuentan como rendimiento del capital mobiliario, no como ganancia patrimonial).` : ''} Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}.${fa.pendientesRcm ? ` Rendimientos negativos de años anteriores pendientes ${E2(fa.pendientesRcm)}.` : ''} Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.${fa.sobraRCM > 0 ? ` Rendimientos negativos de ETC que pasarían a años siguientes ${E2(fa.sobraRCM)} (saldo aparte: compensan rendimientos y solo hasta el 25 % de las ganancias).` : ''}`);
     if (fiscalSinApuntar(anio)) L.push('Aviso: no ha apuntado en Toisón sus dividendos ni ventas hechas fuera de ella, así que el impuesto calculado puede salir alto.');
-    // 19 nov (revisión de noche): con una aportación automática al mismo valor, la pérdida de venderlo todo no resta este año
+    // 19 nov (revisión de noche): con una aportación automática al mismo valor, parte de la pérdida de venderlo todo no resta
+    // este año (lo que comprará la aportación en el plazo; revisión aparte I1: antes decía que toda)
     const autoA = new Set(aportacionesActivas().filter(({ a }) => { const r0 = reglaRecompra(S.inst[a.instrumento]); return r0 && r0.meses; }).map(({ a }) => a.instrumento));
-    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : g < 0 && autoA.has(f.inst.id) ? ' (con su aportación automática activa, esa pérdida no restaría este año por la regla de recompra salvo que la pare)' : ''}`; }).join('; ') + '.');
+    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : g < 0 && autoA.has(f.inst.id) ? (() => { try { const rv = f.uds ? recompraDeVenta(f, f.uds, g) : null; return rv && rv.porFuturas ? ` (con su aportación automática activa, unos ${E0(rv.porFuturas)} de esa pérdida no restarían este año por la regla de recompra; si la para, sí)` : ''; } catch (e) { return ''; } })() : ''}`; }).join('; ') + '.');
     // en el modo estándar GrowFolio no propone ventas: ni la sección (un «ninguna pide vender» sería un «mantén»)
     const planes = pub ? [] : M.filas.map((f) => planVenta(f, M)).filter(Boolean);
     if (!pub) L.push('', '## Planes de venta que propone Toisón ahora');
@@ -185,7 +191,7 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length && !(chat && conFicha.has(id))) L.push(`${nombreInst(id)}:\n` + tit(N[id], chat ? 2 : 5));
     const inf = informeVisible();
     if (inf && (inf.resumen || (inf.mercado || []).length)) {
-      L.push('', `## Informe de prensa de la IA (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
+      L.push('', `## Informe de prensa de la IA (${fechaFijaIA(inf.generado)}, tras leer ${inf.noticias_leidas || 'las'} noticias; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
       for (const m of inf.mercado || []) L.push(`- Mercado${m.zona ? ` ${m.zona}` : ''} (${m.impacto}): ${m.t}. ${m.detalle || ''}${m.implica ? ` Para la cartera: ${m.implica}` : ''}`);
       for (const x of inf.macro || []) L.push(`- Macro: ${x.t}: ${x.dato}. ${x.lectura || ''}`);
       const suyas = new Set(M.filas.map((f) => f.inst.id));
@@ -196,7 +202,7 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     const esc0 = S.escaneo;
     if (esc0 && esc0.decision && !sinIdeas) {
       const d = esc0.decision;
-      L.push('', `## ${pub ? 'Lo que ha elegido la lectura automática de prensa de Toisón (otro modelo de IA, no tú)' : 'Lo que ha elegido la IA'} tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)}${pub ? '; igual para todos, no una recomendación para él' : ''})`, d.comentario || '');
+      L.push('', `## ${pub ? 'Lo que ha elegido la lectura automática de prensa de Toisón (otro modelo de IA, no tú)' : 'Lo que ha elegido la IA'} tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${fechaFijaIA(d.generado)}${pub ? '; igual para todos, no una recomendación para él' : ''})`, d.comentario || '');
       for (const i of d.ideas || []) L.push(`- ${pub ? 'Idea' : 'Comprar'} ${i.n || ''} (${i.s}), confianza ${i.confianza}: ${i.tesis || ''} Catalizador: ${i.catalizador || '—'}. Riesgo: ${i.riesgo || '—'}.${chat ? '' : ` Contraste: ${i.contraste || '—'}.`}`);
       for (const v of d.evitar || []) L.push(`- ${pub ? 'Con pegas' : 'Evitar'} ${v.n || ''} (${v.s}): ${v.motivo || ''}`);
     }
@@ -212,11 +218,13 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     // entra: Claude no la tiene que repetir ni defender
     const ia0 = iaActual(), ia = pub && ia0 && !ia0.publico ? null : ia0;
     // 19 nov (revisión de noche): sin titular ni resumen (S.ia con solo sus reglas) no entra un «Análisis de partida publicado ()» vacío
-    if (ia && (ia.titular || (ia.resumen || []).length)) {
+    // (revisión aparte M1: solo la cabecera y el texto del análisis dependen de que lo haya; los cambios de señal, no)
+    if (ia) {
+      const conTexto = !!(ia.titular || (ia.resumen || []).length);
       const v = valoresIA(M);
       const T = (t) => String(t || '').replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (mm, k, id) => { const x = id ? v[k] && v[k][id] : v[k]; return x != null && typeof x !== 'object' ? x : '—'; }).replace(/\*\*/g, '');
-      L.push('', `## ${ia.publicado ? 'Análisis de partida publicado' : 'Tu último análisis'} (${ia.fecha ? fechaLarga(String(ia.fecha).length > 10 ? iso(new Date(ia.fecha)) : String(ia.fecha).slice(0, 10)) : ''})`);
-      L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p));
+      if (conTexto) L.push('', `## ${ia.publicado ? 'Análisis de partida publicado' : 'Tu último análisis'} (${ia.fecha ? fechaLarga(String(ia.fecha).length > 10 ? iso(new Date(ia.fecha)) : String(ia.fecha).slice(0, 10)) : ''})`);
+      if (conTexto) { L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p)); }
       if (ia.mejorar) L.push('Qué mejorar: ' + ia.mejorar.map((x) => T(x.titulo)).join('; ') + '.');
       if (ia.riesgos) L.push('Riesgos: ' + ia.riesgos.map((x) => T(x.titulo)).join('; ') + '.');
       // lo que dijo de cada posición y su hoja de ruta: para que no cambie de opinión sin motivo
@@ -349,6 +357,54 @@ const HERRAMIENTAS = [
   { name: 'historico', description: 'Evolución de una de sus posiciones o de un índice entre dos fechas: precio inicial y final, cambio, máximo, mínimo y peor caída. Índices: Ibex 35, Euro Stoxx 50, DAX, S&P 500, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX, Bono EEUU 10 años.', input_schema: { type: 'object', properties: { activo: { type: 'string' }, desde: { type: 'string', description: 'AAAA-MM-DD' }, hasta: { type: 'string', description: 'AAAA-MM-DD, por defecto hoy' } }, required: ['activo', 'desde'] } },
 ];
 
+/* 19 nov (revisión de noche; revisión aparte I1 e I2) · la regla de recompra de una venta que se plantea (art. 33.5 LIRPF;
+   para los ETC, 25.2.b), con la misma cuenta que perdidaAplazada (22-impuestos.js) para las ya apuntadas: se aplaza la parte
+   de la pérdida que corresponde a lo recomprado dentro del plazo que sigue en la cartera. Cuenta:
+   - lo comprado en el plazo de antes que quedaría tras vender (FIFO por posición; los lotes «mezcla», no, como allí);
+   - lo que comprará su aportación automática en el plazo de después (al precio de hoy);
+   - y, al revés, la pérdida aplazada de ventas de este año ya apuntadas que vuelve a restar porque se venden las
+     participaciones recompradas que la bloqueaban.
+   Devuelve importes con signo: aplazada > 0 (pérdida que no resta), liberada < 0 (pérdida que vuelve a restar) */
+function recompraDeVenta(f, u, gan) {
+  const rr = reglaRecompra(f.inst);
+  if (!rr || !rr.meses) return null;
+  const hoy = hoyIso(), id = f.pos.instrumento;
+  // lo que sale de cada lote al vender u (FIFO), para saber qué queda y qué se lleva
+  const lotes = lotesDe(f.pos), sale = [];
+  let resto = u;
+  for (const l of lotes) { const x = Math.max(0, Math.min(resto, +l.u || 0)); sale.push({ l, x }); resto -= x; }
+  const quedan = sale.map(({ l, x }) => ({ ...l, u: (+l.u || 0) - x })).filter((l) => l.u > 1e-9);
+  const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === id).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
+  const auto = aportacionesActivas().some(({ a }) => a.instrumento === id);
+  let aplazada = 0, porAntes = 0, porFuturas = 0, primera = null;
+  if (gan < 0) {
+    const desde = sumarMeses(hoy, -rr.meses);
+    const dentro = [...quedan, ...otras].filter((l) => !l.mezcla && l.f >= desde && l.f <= hoy);
+    const uAntes = sum(dentro, (l) => +l.u || 0);
+    const hasta = sumarMeses(hoy, rr.meses);
+    const uFut = f.precio > 0 ? sum(aportacionesActivas().filter(({ a }) => a.instrumento === id), ({ a }) => fechasAportacion(a, hoy, hasta).length * (+a.importe || 0) / f.precio) : 0;
+    const pA = Math.min(1, uAntes / u), pF = Math.min(1 - pA, uFut / u);
+    porAntes = pA > 1e-6 ? -gan * pA : 0; porFuturas = pF > 1e-6 ? -gan * pF : 0;
+    aplazada = porAntes + porFuturas;
+    primera = dentro.map((l) => l.f).sort()[0] || null;
+  }
+  // las ventas de este año con la pérdida aplazada por lotes que ahora se venden
+  let liberada = 0;
+  const anio = String(new Date().getFullYear());
+  for (const v of S.cartera.movimientos || []) {
+    if (v.tipo !== 'venta' || v.instrumento !== id || !String(v.fecha).startsWith(anio) || !(v.resultado < 0) || !(+v.uds > 0)) continue;
+    const a = perdidaAplazada(v);
+    if (!a || !a.importe) continue;
+    const d0 = sumarMeses(v.fecha, -rr.meses), d1 = sumarMeses(v.fecha, rr.meses);
+    const enVentana = (l) => !l.mezcla && l.f >= d0 && l.f <= d1;
+    const total = sum([...lotes, ...otras].filter(enVentana), (l) => +l.u || 0);
+    const salen = sum(sale.filter(({ l }) => enVentana(l)), ({ x }) => x);
+    const parte = Math.min(1, Math.max(0, total - salen) / +v.uds);
+    liberada += v.resultado * (a.parte - parte);
+  }
+  if (!(gan < 0) && !liberada) return null;
+  return { rr, aplazada, porAntes, porFuturas, primera, liberada, auto };
+}
 function hSimularVenta(q) {
   const f = buscarFila(q.posicion);
   if (!f) return { error: `No encuentro "${q.posicion}" en su cartera. Tiene: ${S.M.filas.map((x) => `${x.inst.corto} (id "${x.pos.id}")`).join(', ')}.` };
@@ -361,27 +417,21 @@ function hSimularVenta(q) {
   const r = fifo(lotesDe(f.pos), u);
   const gan = neto - r.coste;
   const anio = new Date().getFullYear();
-  /* 19 nov (revisión de noche): la regla de recompra. Antes, una venta con pérdidas daba siempre su «ahorro en la renta»,
-     también con compras del mismo valor dentro del plazo (en un fondo con aportación automática, cada mes): esa parte de la
-     pérdida no resta este año (perdidaAplazada, la misma cuenta que hace Toisón cuando la venta ya está apuntada). Aquí,
-     lo comprado en el plazo de antes que seguiría en la cartera tras la venta; lo que compre después, en el aviso */
-  let aplazada = 0, recompra;
-  const rr = gan < 0 ? reglaRecompra(f.inst) : null;
-  if (rr && rr.meses) {
-    const hoy = hoyIso(), desde = sumarMeses(hoy, -rr.meses);
-    const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === f.pos.instrumento).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
-    const dentro = [...r.quedan, ...otras].filter((l) => !l.mezcla && l.f >= desde && l.f <= hoy);
-    const parte = Math.min(1, sum(dentro, (l) => +l.u || 0) / u);
-    if (parte > 1e-6) aplazada = -gan * parte;
-    const auto = aportacionesActivas().some(({ a }) => a.instrumento === f.inst.id);
+  /* 19 nov (revisión de noche): la regla de recompra (recompraDeVenta). Antes, una venta con pérdidas daba siempre su
+     «ahorro en la renta» con la pérdida entera, aunque hubiera compras del mismo valor dentro del plazo */
+  let aplazada = 0, liberada = 0, recompra;
+  const rv = recompraDeVenta(f, u, gan);
+  if (rv) {
+    aplazada = rv.aplazada; liberada = rv.liberada;
     recompra = {
-      plazo: rr.plazo,
-      ...(aplazada ? { perdida_que_no_resta_este_anio: R2(-aplazada), por_compras_desde: dentro.map((l) => l.f).sort()[0] } : {}),
+      plazo: rv.rr.plazo,
+      ...(aplazada ? { perdida_que_no_resta_este_anio: R2(-aplazada), ...(rv.porAntes ? { por_compras_de_antes: R2(-rv.porAntes), desde: rv.primera } : {}), ...(rv.porFuturas ? { por_la_aportacion_automatica_de_los_proximos_meses: R2(-rv.porFuturas) } : {}) } : {}),
+      ...(liberada ? { perdida_aplazada_de_ventas_anteriores_que_vuelve_a_restar: R2(liberada) } : {}),
       sin_recomprar_hasta: libreRecompra(f.inst),
-      nota: `${aplazada ? `Ha comprado ${f.inst.corto} en ${rr.plazo} antes: esa parte de la pérdida se aplaza hasta que venda lo recomprado y no resta este año (ya está descontada del ahorro). ` : ''}Si recompra ${f.inst.corto} antes de esa fecha, la pérdida de lo recomprado tampoco resta este año.${auto ? ' Tiene una aportación automática a este valor: cada compra de ese plazo aplazaría también la pérdida; para que cuente este año habría que pararla.' : ''}`,
+      nota: `${rv.porAntes ? `Ha comprado ${f.inst.corto} en ${rv.rr.plazo} antes y eso seguiría en su cartera: esa parte de la pérdida se aplaza hasta que venda lo recomprado y no resta este año. ` : ''}${rv.porFuturas ? `Su aportación automática compraría más en ${rv.rr.plazo}: esa parte tampoco restaría este año (ya está descontada); si para la aportación, sí restaría. ` : rv.auto ? 'Tiene una aportación automática a este valor: cada compra de ese plazo aplazaría también la pérdida. ' : ''}Si recompra ${f.inst.corto} antes de esa fecha, la pérdida de lo recomprado tampoco resta este año.${liberada ? ' Al vender participaciones que bloqueaban la pérdida de una venta anterior de este año, esa pérdida vuelve a restar (ya está sumada).' : ''}`,
     };
   }
-  const iv = impuestoDeVenta(gan + aplazada, anio, f.inst);
+  const iv = impuestoDeVenta(gan + aplazada + liberada, anio, f.inst);
   return {
     posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
     importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
