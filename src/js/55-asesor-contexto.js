@@ -132,7 +132,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     L.push('', `## Impuestos de ${anio} (renta que se presenta entre abril y junio de ${anio + 1})`);
     L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length - fa.nRCM} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}.${fa.nRCM ? ` Ventas de ETC ${eurP(fa.rcmVentas)} (${fa.nRCM}; cuentan como rendimiento del capital mobiliario, no como ganancia patrimonial).` : ''} Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}.${fa.pendientesRcm ? ` Rendimientos negativos de años anteriores pendientes ${E2(fa.pendientesRcm)}.` : ''} Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.${fa.sobraRCM > 0 ? ` Rendimientos negativos de ETC que pasarían a años siguientes ${E2(fa.sobraRCM)} (saldo aparte: compensan rendimientos y solo hasta el 25 % de las ganancias).` : ''}`);
     if (fiscalSinApuntar(anio)) L.push('Aviso: no ha apuntado en Toisón sus dividendos ni ventas hechas fuera de ella, así que el impuesto calculado puede salir alto.');
-    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : ''}`; }).join('; ') + '.');
+    // 19 nov (revisión de noche): con una aportación automática al mismo valor, la pérdida de venderlo todo no resta este año
+    const autoA = new Set(aportacionesActivas().filter(({ a }) => { const r0 = reglaRecompra(S.inst[a.instrumento]); return r0 && r0.meses; }).map(({ a }) => a.instrumento));
+    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : g < 0 && autoA.has(f.inst.id) ? ' (con su aportación automática activa, esa pérdida no restaría este año por la regla de recompra salvo que la pare)' : ''}`; }).join('; ') + '.');
     // en el modo estándar GrowFolio no propone ventas: ni la sección (un «ninguna pide vender» sería un «mantén»)
     const planes = pub ? [] : M.filas.map((f) => planVenta(f, M)).filter(Boolean);
     if (!pub) L.push('', '## Planes de venta que propone Toisón ahora');
@@ -204,7 +206,8 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     // con las reglas del estándar, una revisión hecha con el acceso completo (niveles, ideas de compra, su hoja de ruta) no
     // entra: Claude no la tiene que repetir ni defender
     const ia0 = iaActual(), ia = pub && ia0 && !ia0.publico ? null : ia0;
-    if (ia) {
+    // 19 nov (revisión de noche): sin titular ni resumen (S.ia con solo sus reglas) no entra un «Análisis de partida publicado ()» vacío
+    if (ia && (ia.titular || (ia.resumen || []).length)) {
       const v = valoresIA(M);
       const T = (t) => String(t || '').replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (mm, k, id) => { const x = id ? v[k] && v[k][id] : v[k]; return x != null && typeof x !== 'object' ? x : '—'; }).replace(/\*\*/g, '');
       L.push('', `## ${ia.publicado ? 'Análisis de partida publicado' : 'Tu último análisis'} (${ia.fecha ? fechaLarga(String(ia.fecha).length > 10 ? iso(new Date(ia.fecha)) : String(ia.fecha).slice(0, 10)) : ''})`);
@@ -222,7 +225,7 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
       if (cambiosW.length && !fund) L.push('Cambios de señal de Toisón en las dos últimas semanas: ' + cambiosW.join('; ') + '.');
     }
     try {
-      const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
+      const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
       const fr = S.ia && S.ia.reglas_fecha ? ` el ${fechaLarga(String(S.ia.reglas_fecha).slice(0, 10))}` : '';
       // 19 nov (revisión de noche): sin freno (el fundador con sus reglas), cada paso con su motivo y sus impuestos, como con
       // las del estándar; antes iba sin ellos y la IA no podía cuadrar su recomendación con la del Paso a paso ni explicar por qué no

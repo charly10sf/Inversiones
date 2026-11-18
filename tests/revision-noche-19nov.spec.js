@@ -90,3 +90,17 @@ test('sin freno, el Paso a paso entra en la foto con su motivo y sus impuestos; 
   expect(r.fund).toContain('si recomiendas algo distinto, dilo y explica por qué');
   for (const pq of r.conPq) expect(r.fund).toContain(pq);
 });
+
+test('la foto: vender todo un fondo con aportación automática avisa de la recompra; sin entidades HTML ni análisis vacío', async ({ page }) => {
+  await conCartera(page);
+  const t = await page.evaluate(() => {
+    S.ia = { reglas: ['No meto más del 20 % en acciones sueltas'] };
+    S.M = calcular();
+    return contextoAsesor(S.M, 'chat', false);
+  });
+  const linea = t.split('\n').find((l) => l.startsWith('Si vendiera hoy cada posición entera'));
+  expect(linea).toMatch(/S&P 500 −[\d.]+ € \(con su aportación automática activa, esa pérdida no restaría este año/);
+  expect(t).not.toMatch(/&amp;|&nbsp;|&lt;|&gt;/);
+  expect(t).not.toContain('## Análisis de partida publicado ()');
+  expect(t).toContain('## Sus reglas de inversión');
+});
