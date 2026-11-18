@@ -143,7 +143,7 @@ test('sin freno, si le escribe en inglés contesta en inglés; las instrucciones
 test('sin freno, las instrucciones llevan las cuentas que se confundían en el banco; el estándar no', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true) }));
-  for (const t of ['Cuentas que se confunden', 'ahorro_en_la_renta de simular_venta', 'el mismo ISIN', 'con_dinero_que_ya_tiene_pct', 'cada cifra de la lista es un pago', 'valor liquidativo está atascado']) {
+  for (const t of ['Cuentas que se confunden', 'ahorro_en_la_renta de simular_venta', 'el mismo ISIN', 'con_dinero_que_ya_tiene_pct', 'cada cifra de la lista es un pago', 'valor liquidativo está atascado', 'no se libera al pasar el plazo', 'No multipliques la pérdida por el tipo']) {
     expect(r.f).toContain(t);
     expect(r.e).not.toContain(t);
   }
