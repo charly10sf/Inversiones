@@ -33,8 +33,7 @@ const BANCO = JSON.parse(readFileSync(join(AQUI, 'banco', 'fundador.json'), 'utf
 const PASAN = SOLO.length ? BANCO.filter((q) => SOLO.includes(q.id)) : BANCO;
 const WORKER = 'https://growfolio.growfolio-web-app.workers.dev/claude';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Expose-Headers': 'X-Reglas, X-Quedan, X-Nivel' };
-// la misma que en banco-claude.spec.js (un archivo de pruebas no puede importar otro)
-const RECHAZO = /recomendaci[oó]n(es)? personalizada|no (te |lo )?(lo )?puede(n)? decir|no hago (previsiones|predicciones)|no te doy|no (te )?(puedo|voy a|debo) (decir|recomendar|elegir|dar|decidir|aconsejar)|no te (la |lo )?(digo|recomiendo|aconsejo|puedo dar)|no (soy|es) (un |tu )?asesor|no (está|estoy) autorizad/i;
+const ESCUDO = /recomendaci[oó]n(es)? personalizada|no (te )?(puedo|debo) (dar|hacer) recomendaciones|no (soy|es) (un |tu )?asesor|no (está|estoy) autorizad/i;
 const HERRS = ['simular_venta', 'simular_compra', 'buscar_empresa', 'radar', 'proyectar', 'historico'];
 // lo que suena a respuesta en español cuando se ha preguntado en inglés
 const ES = /\b(tu|tus|que|con|para|los|las|una|pero|está|también)\b/gi, EN = /\b(the|your|and|with|you|this|it)\b/gi;
@@ -46,7 +45,9 @@ export function revisarFundador(q, r) {
   if (r.error) mal.push(`error: ${r.error}`);
   if (!txt.trim()) mal.push('sin respuesta');
   if (/\bundefined\b|\bNaN\b|\[object Object\]/.test(txt)) mal.push('sale undefined, NaN u [object Object]');
-  if (q.tema !== 'identidad' && RECHAZO.test(txt)) mal.push('se escuda en que no puede recomendar');
+  // en el fundador, «no te lo recomiendo» o «no puedo decirte cuánto subirá» son respuestas: solo cuenta escudarse en que no
+  // puede recomendar (recomendación personalizada, no es asesor, no está autorizado)
+  if (q.tema !== 'identidad' && ESCUDO.test(txt)) mal.push('se escuda en que no puede recomendar');
   if (/consulta (a|con) un (asesor|profesional)|no soy (un )?asesor financiero/i.test(txt)) mal.push('le manda a un profesional o dice que no es asesor');
   for (const h of q.herramientas || []) if (!(r.herramientas || []).some((x) => x.n === h)) mal.push(`no usa ${h}`);
   if (q.idioma === 'en' && (txt.match(ES) || []).length > (txt.match(EN) || []).length) mal.push('no contesta en inglés');
@@ -78,6 +79,7 @@ test.describe('el banco del fundador, sin Claude', () => {
     // lo automático
     expect(revisarFundador({ tema: 'mes' }, { texto: 'Eso ya sería una recomendación personalizada y no te la puedo dar.' })).toContain('se escuda en que no puede recomendar');
     expect(revisarFundador({ tema: 'mes', herramientas: ['simular_venta'] }, { texto: 'Vende 50 acciones de Repsol en Trade Republic: pagarías 120 €.', herramientas: [{ n: 'simular_venta' }] })).toEqual([]);
+    expect(revisarFundador({ tema: 'lufthansa' }, { texto: '**No te lo recomiendo ahora.** Ya tienes IAG.' })).toEqual([]);
     expect(revisarFundador({ tema: 'ingles', idioma: 'en' }, { texto: 'Mantén tu bitcoin: es un 3,7 % de la cartera y cabe en tu límite.' })).toContain('no contesta en inglés');
     expect(revisarFundador({ tema: 'ingles', idioma: 'en' }, { texto: 'Hold your Bitcoin: it is 3.7 % of the portfolio and fits your limit.' })).toEqual([]);
   });
