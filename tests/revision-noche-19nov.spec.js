@@ -129,3 +129,10 @@ test('al pasar de sin freno a las reglas del estándar (el «no» del Worker) se
   expect(r.nSi).toBe(2);
   expect(r.ahora).toBe(false);
 });
+
+test('sin freno, si le escribe en inglés contesta en inglés; las instrucciones del estándar no cambian', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true) }));
+  expect(r.f).toContain('Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma.');
+  expect(r.e).not.toContain('contesta entero en ese idioma');
+});
