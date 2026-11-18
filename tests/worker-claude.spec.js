@@ -834,3 +834,49 @@ test('0.8.2d: una tarea rechazada por no ser lo que dice no deja nada apartado d
     }
   });
 });
+
+// 19 nov (revisión de noche): la frontera fundador/estándar, como si quisieras saltártela. Siempre las reglas del estándar a
+// quien no esté en la lista (CLAUDE_FUNDADOR_EMAILS o, sin ella, BANCO_EMAILS), y nada llega a Claude
+function tokenCon(campos, clave = fb.privateKey) {
+  const ahora = Math.floor(Date.now() / 1000);
+  const cab = b64u(JSON.stringify({ alg: 'RS256', kid: 'k-claude', typ: 'JWT' }));
+  const cue = b64u(JSON.stringify({ aud: PROYECTO, iss: `https://securetoken.google.com/${PROYECTO}`, sub: 'uid-salto', iat: ahora - 10, exp: ahora + 3600, email: 'carlos@gmail.com', email_verified: true, ...campos }));
+  return `${cab}.${cue}.${b64u(createSign('RSA-SHA256').update(`${cab}.${cue}`).sign(clave))}`;
+}
+const pedirCon = (tk, cuerpo, env) => worker.fetch(new Request('https://w.prueba/claude', { method: 'POST', body: JSON.stringify(cuerpo), headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json', Origin: 'https://charly10sf.github.io' } }), env, { waitUntil() {} });
+test('19 nov: nadie fuera de la lista se lleva las reglas del fundador (alias, puntos, sin verificar, token caducado o de otro)', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, BANCO_EMAILS: 'carlos@gmail.com' };
+    const F = { ...PEDIDO, reglas: 'fundador' };
+    // el dueño, sí
+    let r = await pedirCon(tokenCon({ sub: 'uid-s0' }), F, env);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('X-Reglas')).toBe('fundador');
+    const n = vistas.length;
+    // con «+etiqueta» o con puntos (el mismo buzón de Gmail, pero no el correo de la lista): no
+    for (const email of ['carlos+toison@gmail.com', 'c.arlos@gmail.com', 'carlos@googlemail.com', 'carlos@gmail.com.evil.com', 'xcarlos@gmail.com']) {
+      r = await pedirCon(tokenCon({ sub: 'uid-s1-' + email, email }), F, env);
+      expect(r.status, email).toBe(403);
+      expect(await r.json(), email).toEqual({ error: 'reglas' });
+    }
+    // sin verificar, ni Claude; con el token caducado, de otro proyecto o firmado con otra clave, ni sesión
+    r = await pedirCon(tokenCon({ sub: 'uid-s2', email_verified: false }), F, env);
+    expect(r.status).toBe(403);
+    expect((await r.json()).error).toBe('no-permitido');
+    const ahora = Math.floor(Date.now() / 1000);
+    expect((await pedirCon(tokenCon({ sub: 'uid-s3', iat: ahora - 7200, exp: ahora - 3600 }), F, env)).status).toBe(401);
+    expect((await pedirCon(tokenCon({ sub: 'uid-s4', aud: 'otro-proyecto' }), F, env)).status).toBe(401);
+    const otra = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    expect((await pedirCon(tokenCon({ sub: 'uid-s5' }, otra.privateKey), F, env)).status).toBe(401);
+    // «reglas» con otra forma («Fundador», un objeto), 400; nada de esto ha llegado a Claude
+    for (const reglas of ['Fundador', { fundador: true }, ['fundador']]) expect((await pedirCon(tokenCon({ sub: 'uid-s6' }), { ...PEDIDO, reglas }, env)).status).toBe(400);
+    expect(vistas.length).toBe(n);
+    // sin pedirlas, el dueño va con las del estándar
+    r = await pedirCon(tokenCon({ sub: 'uid-s7' }), PEDIDO, env);
+    expect(r.headers.get('X-Reglas')).toBe('estandar');
+    expect(vistas.at(-1).cuerpo.system[0].text).toContain('No da asesoramiento personalizado');
+    // y si la lista del fundador existe pero está vacía (solo espacios), nadie: ni siquiera el dueño
+    expect((await pedirCon(tokenCon({ sub: 'uid-s8' }), F, { ...env, CLAUDE_FUNDADOR_EMAILS: '  ' })).status).toBe(403);
+  });
+});
+
