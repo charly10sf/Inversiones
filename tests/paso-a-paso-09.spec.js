@@ -186,7 +186,10 @@ test('los casos de datos: falta un dato tuyo (rango), un dato viejo, sin conexi�
   const despues = await page.evaluate(() => (() => { const R = mesRuta(S.M); return [...R.hacer, ...R.decidir].find((x) => /^venta:/.test(x.id) && x.ref.pl.f.inst.id === 'repsol').conf; })());
   expect(CONF[despues]).toBe(CONF[antes] - 1);
   // la IA y el radar sin repasar
-  await page.evaluate(() => { S.precios.radar_generado = sumarDias(hoyIso(), -4) + 'T08:00:00Z'; cacheDe(S.M, '__mes').delete('m'); pintar(); });
+  // 19 nov (revisión de noche): también el análisis, de hace cuatro días. El aviso sale con el radar viejo y un paso que usa
+  // el radar o un análisis de hace más de dos días; sin esto, la prueba dependía de los datos del día (de que hubiera
+  // un paso con datos del radar o un ia.json, y de su fecha)
+  await page.evaluate(() => { const d = sumarDias(hoyIso(), -4); S.precios.radar_generado = d + 'T08:00:00Z'; S.ia = { ...(S.ia || { titular: 'Análisis de prueba', resumen: [] }), fecha: d }; if (S.iaPropio) S.iaPropio.fecha = d + 'T08:00:00Z'; cacheDe(S.M, '__mes').delete('m'); pintar(); });
   await expect(page.locator('.pp-aviso[data-k="iacaida"]')).toBeVisible();
   // sin conexión: lo último calculado, con su hora
   await context.setOffline(true);
