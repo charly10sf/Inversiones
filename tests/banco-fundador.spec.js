@@ -25,7 +25,9 @@ const AQUI = dirname(fileURLToPath(import.meta.url));
 const CLAVE = process.env.GF_BANCO_ANTHROPIC || '';
 const MOTOR = process.env.GF_BANCO_MOTOR === 'sonnet' ? 'sonnet' : 'haiku';
 const SOLO0 = String(process.env.GF_BANCO_SOLO || '');
-const ES_FUNDADOR = /^fundador\b/.test(SOLO0);
+// la misma forma que en el workflow (startsWith 'fundador'); cualquier otra cosa que empiece así es un error (revisión aparte M7)
+const ES_FUNDADOR = SOLO0.startsWith('fundador');
+if (ES_FUNDADOR && !/^fundador(:|$)/.test(SOLO0)) throw new Error(`GF_BANCO_SOLO mal escrito: «${SOLO0}» (vale «fundador» o «fundador:f01,f02»)`);
 const SOLO = ES_FUNDADOR ? SOLO0.replace(/^fundador:?/, '').split(',').map((x) => x.trim()).filter(Boolean) : [];
 const TOPE = Number(process.env.GF_BANCO_TOPE) > 0 ? Number(process.env.GF_BANCO_TOPE) : 3.5;
 const SALIDA = process.env.GF_BANCO_SALIDA || join(AQUI, '..', 'banco-fundador.json');
@@ -109,6 +111,7 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
   test(`banco del fundador con Claude (${MOTOR})`, async ({ page, context, errores }) => {
     const w = readFileSync(join(AQUI, '..', 'worker', 'src', 'index.js'), 'utf8');
     const NOTA_F = /const CLAUDE_NOTA_FUNDADOR = '([^']+)'/.exec(w)[1];
+    expect(NOTA_F.length > 200 && NOTA_F.endsWith('.'), 'la nota del fundador leída del Worker está entera').toBe(true);
     const CAMPOS = JSON.parse(/const CLAUDE_CAMPOS = (\[[^\]]+\])/.exec(w)[1].replace(/'/g, '"'));
     const PRECIOS = JSON.parse(/const PRECIOS_CLAUDE = (\{[^}]+\})/.exec(w)[1].replace(/'/g, '"'));
     const gasto = { peticiones: 0, entrada: 0, cache_lee: 0, cache_escribe: 0, salida: 0, dolares: 0 };

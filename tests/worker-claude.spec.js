@@ -876,7 +876,9 @@ test('19 nov: nadie fuera de la lista se lleva las reglas del fundador (alias, p
     expect(r.headers.get('X-Reglas')).toBe('estandar');
     expect(vistas.at(-1).cuerpo.system[0].text).toContain('No da asesoramiento personalizado');
     // y si la lista del fundador existe pero está vacía (solo espacios), nadie: ni siquiera el dueño
-    expect((await pedirCon(tokenCon({ sub: 'uid-s8' }), F, { ...env, CLAUDE_FUNDADOR_EMAILS: '  ' })).status).toBe(403);
+    r = await pedirCon(tokenCon({ sub: 'uid-s8' }), F, { ...env, CLAUDE_FUNDADOR_EMAILS: '  ' });
+    expect(r.status).toBe(403);
+    expect(await r.json()).toEqual({ error: 'reglas' });
   });
 });
 
