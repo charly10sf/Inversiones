@@ -145,3 +145,14 @@ test('sin freno, las instrucciones llevan las cuentas que se confundían en el b
     expect(r.e).not.toContain(t);
   }
 });
+
+test('la foto no cambia de un minuto a otro (va en la caché de Claude): hora al cuarto de hora y la de los datos, fija', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-18T22:31:10') });
+  await conCartera(page);
+  const a = await page.evaluate(() => { S.M = calcular(); return contextoAsesor(S.M, 'chat', false).split('\n').slice(0, 2).join('\n'); });
+  await page.clock.runFor(4 * 60_000);
+  const b = await page.evaluate(() => { S.M = calcular(); return contextoAsesor(S.M, 'chat', false).split('\n').slice(0, 2).join('\n'); });
+  expect(a).toMatch(/hacia las 22:30/);
+  expect(a).not.toMatch(/\bhace\b/);
+  expect(b).toBe(a);
+});

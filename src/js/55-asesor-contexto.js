@@ -76,10 +76,15 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
   try {
     const ahora = new Date(), anio = ahora.getFullYear();
     const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     const L = [];
-    L.push(`# Su cartera, foto del ${DIAS[ahora.getDay()]} ${fechaLarga(hoyIso())} a las ${hora}`);
-    L.push(`Precios: ${estadoDirecto().txt.toLowerCase()}. Datos de Toisón generados ${haceCuanto(S.precios && S.precios.generado)}.`);
+    // 19 nov (revisión de noche): la foto va en la caché de Claude y cambiaba cada minuto solo por la hora y por «hace 58 min»:
+    // cada pregunta nueva la volvía a escribir (en el banco del fundador, el 75 % de lo que costaba Sonnet). Ahora la hora va
+    // al cuarto de hora y la de los datos, fija
+    const cuarto = new Date(ahora); cuarto.setMinutes(Math.floor(ahora.getMinutes() / 15) * 15, 0, 0);
+    const horaQ = cuarto.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const gen = S.precios && S.precios.generado ? new Date(S.precios.generado) : null;
+    L.push(`# Su cartera, foto del ${DIAS[ahora.getDay()]} ${fechaLarga(hoyIso())}, hacia las ${horaQ}`);
+    L.push(`Precios: ${estadoDirecto().txt.toLowerCase()}. Datos de Toisón ${gen && !isNaN(gen) ? `del ${diaConSemana(iso(gen))} a las ${gen.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'sin fecha'}.`);
     L.push('', '## Resumen');
     L.push(`Patrimonio ${E2(M.total)}. Coste de lo que tiene ${E2(M.invertido)}. Ganancia latente ${eurP(M.pl)} (${P1(M.plPct)}). Hoy ${eurP(M.dia)} (${P1(M.diaPct)}).`);
     L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
