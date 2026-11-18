@@ -132,8 +132,11 @@ test('al pasar de sin freno a las reglas del estándar (el «no» del Worker) se
 
 test('sin freno, si le escribe en inglés contesta en inglés; las instrucciones del estándar no cambian', async ({ page }) => {
   await conCartera(page);
-  const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true) }));
+  const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true), nf: NOTA_CLAUDE_FUNDADOR, ne: NOTA_CLAUDE }));
   expect(r.f).toContain('Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma.');
+  // y delante de todo, en la nota del fundador (Haiku no lo hacía con la regla solo en las instrucciones)
+  expect(r.nf).toContain('Contesta en el idioma de su último mensaje');
+  expect(r.ne).not.toContain('Contesta en el idioma de su último mensaje');
   expect(r.e).not.toContain('contesta entero en ese idioma');
 });
 
