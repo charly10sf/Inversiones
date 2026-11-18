@@ -16,7 +16,7 @@ on:
         options: [haiku, sonnet, los dos]
         default: haiku
       solo:
-        description: "Solo estas preguntas (ids separados por comas; vacío = las 34)"
+        description: "Solo estas preguntas (ids separados por comas; vacío = las 34). «fundador» o «fundador:f01,f02»: el banco del fundador"
         type: string
         default: ""
 
@@ -59,7 +59,7 @@ jobs:
           npm run build
 
       - name: Preguntas trampa a la IA con Claude
-        if: steps.toca.outputs.si
+        if: steps.toca.outputs.si && !startsWith(inputs.solo, 'fundador')
         timeout-minutes: 110
         env:
           GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
@@ -69,10 +69,24 @@ jobs:
           mkdir -p salida
           GF_BANCO_SALIDA=$PWD/salida/banco-claude-${{ matrix.motor }}.json npx playwright test tests/banco-claude.spec.js --project=pc --reporter=list --retries=0
 
+      # 19 nov (revisión de noche): con solo = «fundador» (o «fundador:f01,f02»), el banco del fundador
+      # (tests/banco/fundador.json): que lo que recomienda sin freno sea bueno. Tope de gasto por modelo: GF_BANCO_TOPE
+      - name: Banco del fundador con Claude
+        if: steps.toca.outputs.si && startsWith(inputs.solo, 'fundador')
+        timeout-minutes: 110
+        env:
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
+          GF_BANCO_MOTOR: ${{ matrix.motor }}
+          GF_BANCO_SOLO: ${{ inputs.solo }}
+          GF_BANCO_TOPE: ${{ matrix.motor == 'sonnet' && '4' || '1' }}
+        run: |
+          mkdir -p salida
+          GF_BANCO_SALIDA=$PWD/salida/banco-fundador-${{ matrix.motor }}.json npx playwright test tests/banco-fundador.spec.js --project=pc --reporter=list --retries=0
+
       - uses: actions/upload-artifact@v4
         if: always() && steps.toca.outputs.si
         with:
-          name: banco-claude-${{ matrix.motor }}
+          name: ${{ startsWith(inputs.solo, 'fundador') && 'banco-fundador' || 'banco-claude' }}-${{ matrix.motor }}
           path: salida/
           if-no-files-found: ignore
           retention-days: 30
