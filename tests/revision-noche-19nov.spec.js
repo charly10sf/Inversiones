@@ -104,3 +104,28 @@ test('la foto: vender todo un fondo con aportación automática avisa de la reco
   expect(t).not.toContain('## Análisis de partida publicado ()');
   expect(t).toContain('## Sus reglas de inversión');
 });
+
+test('al pasar de sin freno a las reglas del estándar (el «no» del Worker) se repintan los botones «Pregúntale»', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(async () => {
+    S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); LS.del('inv-ia-fundador-no');
+    const antes = preguntasDelEstandar();
+    let n = 0; const orig = window.pintar; window.pintar = (...a) => { n++; return orig(...a); };
+    marcarSinFreno(false);
+    await new Promise((res) => setTimeout(res, 50));
+    const tras = preguntasDelEstandar(), nNo = n;
+    marcarSinFreno(false);   // otro «no» seguido: nada cambia, no se repinta
+    await new Promise((res) => setTimeout(res, 50));
+    const nOtra = n;
+    marcarSinFreno(true);
+    await new Promise((res) => setTimeout(res, 50));
+    window.pintar = orig;
+    return { antes, tras, nNo, nOtra, nSi: n, ahora: preguntasDelEstandar() };
+  });
+  expect(r.antes).toBe(false);
+  expect(r.tras).toBe(true);
+  expect(r.nNo).toBe(1);
+  expect(r.nOtra).toBe(1);
+  expect(r.nSi).toBe(2);
+  expect(r.ahora).toBe(false);
+});

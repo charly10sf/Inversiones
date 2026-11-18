@@ -849,7 +849,15 @@ function iaSinFreno() {
   return !(n && n.uid === uidActual() && n.hasta > Date.now());
 }
 // el sí lo da el Worker en cada respuesta (X-Reglas: fundador) y borra un «no» viejo; el no se recuerda 6 h
-function marcarSinFreno(si) { try { if (si) { if (LS.get(LS_SIN_FRENO_NO, null)) LS.del(LS_SIN_FRENO_NO); } else LS.set(LS_SIN_FRENO_NO, { uid: uidActual(), hasta: Date.now() + 6 * 36e5 }); } catch (e) {} }
+// 19 nov (revisión de noche; menor 3 de la 0.9d): al cambiar, se repinta, porque los botones «Pregúntale» del Paso a paso, la
+// ficha y las ideas llevan la pregunta del fundador o la del estándar según esto (el panel ya la elige al abrirse)
+function marcarSinFreno(si) {
+  try {
+    const antes = iaSinFreno();
+    if (si) { if (LS.get(LS_SIN_FRENO_NO, null)) LS.del(LS_SIN_FRENO_NO); } else LS.set(LS_SIN_FRENO_NO, { uid: uidActual(), hasta: Date.now() + 6 * 36e5 });
+    if (antes !== iaSinFreno()) setTimeout(() => { try { if (S.cartera && typeof pintar === 'function') pintar(); } catch (e) {} }, 0);
+  } catch (e) {}
+}
 /* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (el modo aún sin leer,
    sin cuenta o con el correo sin confirmar, o Claude apartado un rato). 0.8.2d: también en la cartera de prueba (Carlos,
    6 nov: «sí, con mis preguntas»): contesta con la cuenta de quien la abrió y sobre la cartera inventada */
