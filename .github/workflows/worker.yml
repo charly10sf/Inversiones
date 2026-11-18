@@ -95,7 +95,7 @@ jobs:
           poner ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY" "GrowIA con Claude"
           poner CLAUDE_EMAILS "$CLAUDE_EMAILS" "GrowIA con Claude"
           # 17 nov: quién tiene la IA sin freno del fundador. Sin este secreto, solo el dueño (BANCO_EMAILS); se pone solo si está
-          if [ -n "$CLAUDE_FUNDADOR_EMAILS" ]; then poner CLAUDE_FUNDADOR_EMAILS "$CLAUDE_FUNDADOR_EMAILS"; else echo "::notice::Sin CLAUDE_FUNDADOR_EMAILS: la IA del fundador sin freno, solo para BANCO_EMAILS (el dueño)"; fi
+          if [ -n "$CLAUDE_FUNDADOR_EMAILS" ]; then poner CLAUDE_FUNDADOR_EMAILS "$CLAUDE_FUNDADOR_EMAILS"; else npx --yes wrangler@4 secret delete CLAUDE_FUNDADOR_EMAILS --force > /dev/null 2>&1 || true; echo "::notice::Sin CLAUDE_FUNDADOR_EMAILS: la IA del fundador sin freno, solo para BANCO_EMAILS (el dueño)"; fi
           # 0.8.3: los correos propios (sin ellos, la app manda los de Firebase de siempre)
           poner RESEND_API_KEY "$RESEND_API_KEY" "los correos propios desde noreply@toison.es"
           poner FIREBASE_CORREO "$FIREBASE_CORREO" "los correos propios desde noreply@toison.es"

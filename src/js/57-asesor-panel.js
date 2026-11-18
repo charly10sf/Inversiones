@@ -86,14 +86,15 @@ function sugerencias(M) {
 }
 /* 0.9: seis funciones de un toque, además del chat (maqueta del 3 nov). Explican y calculan; lo que hagas lo decides tú */
 const FUNCIONES_IA = [
-  ['ok', 'Revisar mi cartera', 'Lo que va bien y lo que hay que vigilar', 'Revisa mi cartera punto por punto, con cifras: qué va bien, qué se sale de mis límites y metas, y qué riesgos hay que vigilar. Sin decirme qué comprar, vender o mantener: lo decido yo.'],
+  // 18 nov: en el fundador sin freno, la revisión acaba en qué hacer
+  ['ok', 'Revisar mi cartera', 'Lo que va bien y lo que hay que vigilar', () => (iaSinFreno() ? 'Revisa mi cartera punto por punto, con cifras: qué va bien, qué se sale de mis límites y metas, qué riesgos hay que vigilar y qué tendría que comprar, vender o mantener este mes.' : 'Revisa mi cartera punto por punto, con cifras: qué va bien, qué se sale de mis límites y metas, y qué riesgos hay que vigilar. Sin decirme qué comprar, vender o mantener: lo decido yo.')],
   ['info', 'Explícame una cifra', 'Recorta cualquier número de la app', null],
   ['analisis', '¿Y si…?', 'Una caída, aportar más, jubilarte antes', '¿Qué supondría para mi cartera que la bolsa cayera un 20 %? ¿Y aportar 200 € más al mes durante 10 años?'],
   ['calendario', 'Tu semana', 'Lo que ha pasado con lo tuyo', 'Resúmeme mi semana: qué ha pasado con lo que tengo, por qué, y qué viene la semana que viene.'],
   ['novedades', 'Noticias de lo tuyo', 'Leídas y resumidas', 'Lee las noticias de los últimos días de lo que tengo y dime en pocas líneas qué me afecta y por qué.'],
   ['fiscalidad', 'Tus números para la renta', 'El cálculo de la app, explicado', 'Explícame mis números para la renta de este año con los cálculos de la app: lo que llevo, lo que supondría y por qué.'],
 ];
-const htmlFuncionesIA = () => `<div class="as-funcs">${FUNCIONES_IA.map(([ic, t, s, q]) => `<button type="button" class="as-func" ${q ? `data-as-q="${esc(q)}"` : 'data-as="recorte"'}>${ICONOS_PL[ic] || ''}<b>${t}</b><small>${s}</small></button>`).join('')}</div>`;
+const htmlFuncionesIA = () => `<div class="as-funcs">${FUNCIONES_IA.map(([ic, t, s, q0]) => { const q = typeof q0 === 'function' ? q0() : q0; return `<button type="button" class="as-func" ${q ? `data-as-q="${esc(q)}"` : 'data-as="recorte"'}>${ICONOS_PL[ic] || ''}<b>${t}</b><small>${s}</small></button>`; }).join('')}</div>`;
 function htmlTurno(t, k) {
   if (t.rol === 'yo') return `<div class="as-yo">${t.mini || t.donde ? `<div class="as-yo-rec">${t.mini ? `<img src="${esc(t.mini)}" alt="Recorte de la pantalla">` : ''}<small>Recorte de ${esc(t.donde || 'la pantalla')}</small></div>` : ''}${esc(t.texto)}</div>`;
   const vivo = AS.cargando && k === AS.conv.length - 1;

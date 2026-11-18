@@ -776,7 +776,7 @@ const marcarClaudeOk = () => LS.set(LS_CLAUDE_OK, uidActual() || true);
 // 0.8.2 (revisión aparte del prompt): lo que se manda, dicho entero; si pulsas Cancelar, la IA no contesta
 const TXT_SI_CLAUDE = () => L('La IA contesta con Claude, de Anthropic. Tus preguntas, una foto de tu cartera con sus cifras, tu perfil (edad, ingresos, gastos y metas, si los has puesto), lo que cuentas de ti, las revisiones automáticas y los resúmenes de noticias pasarían por el servidor de Toisón, que no guarda tus preguntas ni tu cartera, hasta Anthropic, que lo procesa fuera de la Unión Europea, no lo usa para entrenar y lo borra pasado un plazo corto según su política.', "The AI answers with Claude, from Anthropic. Your questions, a snapshot of your portfolio with its figures, your profile (age, income, expenses and goals, if you've added them), what you tell it about yourself, automatic reviews and news summaries would go through Toisón's server, which does not store your questions or your portfolio, to Anthropic, which processes it outside the European Union, does not train on it and deletes it after a short period under its policy.")
   + L(' Si pulsas Cancelar, la IA no podrá contestar.', ' If you press Cancel, the AI cannot answer.')
-  + (esPublico() ? '' : L('\n\nCon el acceso de fundador, la IA te dice claro qué comprar, vender o mantener con tu cartera y tus reglas. Es una IA y se puede equivocar: el dinero y la decisión son tuyos.', '\n\nWith founder access, the AI tells you plainly what to buy, sell or hold with your portfolio and your rules. It is an AI and can be wrong: the money and the decision are yours.'))
+  + (esPublico() ? '' : L('\n\nCon el acceso de fundador, si tu cuenta lo tiene, la IA te dice claro qué comprar, vender o mantener con tu cartera y tus reglas. Es una IA y se puede equivocar: el dinero y la decisión son tuyos.', '\n\nWith founder access, if your account has it, the AI tells you plainly what to buy, sell or hold with your portfolio and your rules. It is an AI and can be wrong: the money and the decision are yours.'))
   + L('\n\n¿Usar Claude?', '\n\nUse Claude?');
 // para lo suelto (el resumen de una noticia): el mismo sí, pedido al momento si aún no lo has dado
 function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return false; if (confirm(TXT_SI_CLAUDE())) { marcarClaudeOk(); return true; } AS.claudeNo = true; return false; }
@@ -819,7 +819,8 @@ function iaSinFreno() {
   const n = LS.get(LS_SIN_FRENO_NO, null);
   return !(n && n.uid === uidActual() && n.hasta > Date.now());
 }
-function marcarSinFreno(si) { try { if (si) LS.del(LS_SIN_FRENO_NO); else LS.set(LS_SIN_FRENO_NO, { uid: uidActual(), hasta: Date.now() + 6 * 36e5 }); } catch (e) {} }
+// el sí lo da el Worker en cada respuesta (X-Reglas: fundador) y borra un «no» viejo; el no se recuerda 6 h
+function marcarSinFreno(si) { try { if (si) { if (LS.get(LS_SIN_FRENO_NO, null)) LS.del(LS_SIN_FRENO_NO); } else LS.set(LS_SIN_FRENO_NO, { uid: uidActual(), hasta: Date.now() + 6 * 36e5 }); } catch (e) {} }
 /* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (el modo aún sin leer,
    sin cuenta o con el correo sin confirmar, o Claude apartado un rato). 0.8.2d: también en la cartera de prueba (Carlos,
    6 nov: «sí, con mis preguntas»): contesta con la cuenta de quien la abrió y sobre la cartera inventada */
@@ -1140,6 +1141,10 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
     const token = await conTiempo(tokenCuenta(), 9000);
     const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) }, { repetible: true });
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
+    // 18 nov (revisión aparte): con las reglas del fundador, solo vale si el Worker dice que las ha puesto (X-Reglas). Un Worker
+    // de antes (o uno que no ha terminado de publicarse) las ignoraría y su nota chocaría con la de la app: se corta y la app
+    // repite con las del estándar, como con el 403 «reglas»
+    if (cuerpo.reglas === 'fundador') { if (r.headers.get('x-reglas') !== 'fundador') { try { r.body && r.body.cancel(); } catch (e) {} throw errorClaude(403, { error: 'reglas' }); } marcarSinFreno(true); }
     { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
     let buf = '';

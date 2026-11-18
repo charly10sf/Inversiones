@@ -336,12 +336,13 @@ test('una pausa por la red no frena tu pregunta; si se corta del todo, lo dice a
 
 // 17 nov (Carlos: «en el modo fundador no quiero que esté capada»): el fundador va con Claude y con sus reglas, sin freno,
 // si el Worker lo deja (su lista); si dice que no (403 «reglas»), se repite con las del estándar y se recuerda unas horas
+const CON_REGLAS = { 'X-Reglas': 'fundador', 'Access-Control-Expose-Headers': 'X-Reglas' };
 const fundador = (page) => page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); });
 test('en modo fundador contesta Claude con las reglas del fundador: recomienda sin freno', async ({ page, context }) => {
   await preparada(page);
   await fundador(page);
   const g = await gemini(context);
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Vende 10 acciones de Repsol y mete lo que saques en el S&P 500.' }]), cabeceras: { 'X-Reglas': 'fundador' } }));
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Vende 10 acciones de Repsol y mete lo que saques en el S&P 500.' }]), cabeceras: CON_REGLAS }));
   await preguntar(page);
   await expect(page.locator('#asCuerpo')).toContainText('Vende 10 acciones de Repsol', { timeout: 20_000 });
   expect(g.n).toBe(0);
@@ -393,6 +394,27 @@ test('en modo fundador, si el Worker no da las reglas del fundador a la cuenta, 
   await page.evaluate(() => { AS.cargando = false; return preguntarAsesor('¿Y la otra?'); });
   await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(3);
   expect(w.peticiones[2].cuerpo.reglas).toBeUndefined();
+});
+// 18 nov (revisión aparte): un Worker de antes ignora «reglas» y contesta sin X-Reglas; la app no se fía y repite con las del
+// estándar, como con el 403
+test('en modo fundador, si el Worker no confirma las reglas del fundador (X-Reglas), repite con las del estándar', async ({ page, context }) => {
+  await preparada(page);
+  await fundador(page);
+  await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Según las reglas que escribiste, esto supondría vender 10 acciones.' }]) }));
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('Según las reglas que escribiste', { timeout: 20_000 });
+  expect(w.peticiones.length).toBe(2);
+  expect(w.peticiones[0].cuerpo.reglas).toBe('fundador');
+  expect(w.peticiones[1].cuerpo.reglas).toBeUndefined();
+  expect(await page.evaluate(() => [AS.conv.at(-1).estandar, iaSinFreno(), !!claudePausado()])).toEqual([true, false, false]);
+  // si luego el Worker sí las da a esta cuenta, un «sí» borra el «no»
+  await page.evaluate(() => { LS.del('inv-ia-fundador-no'); marcarSinFreno(false); marcarSinFreno(true); });
+  expect(await page.evaluate(() => iaSinFreno())).toBe(true);
+  // el botón «Revisar mi cartera» del panel pide qué hacer solo sin freno
+  expect(await page.evaluate(() => htmlFuncionesIA())).toContain('qué tendría que comprar, vender o mantener este mes');
+  await page.evaluate(() => marcarSinFreno(false));
+  expect(await page.evaluate(() => htmlFuncionesIA())).toContain('Sin decirme qué comprar, vender o mantener');
 });
 test('el estándar nunca pide las reglas del fundador', async ({ page, context }) => {
   await preparada(page);
@@ -595,7 +617,7 @@ test('en modo fundador, la revisión con Claude va con las reglas del fundador y
   await gemini(context);
   const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
   const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]) }));
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]), cabeceras: CON_REGLAS }));
   await page.evaluate(() => generarAnalisisIA('la pides tú'));
   await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
   const c = w.peticiones[0].cuerpo;

@@ -176,7 +176,9 @@ test('tu semana y tus cobros: lo de siete días, los dividendos de 60 y lo que s
   expect(r.cambio).toBeCloseTo(r.mov.reduce((a, b) => a + b, 0), 4);
   expect([...r.mov].sort((a, b) => b - a)).toEqual(r.mov);
   const panel = page.locator('#panelAv');
-  await expect(panel.locator('.sm-lista').first().locator('.sm-ev')).toHaveCount(r.n || 0);
+  // 18 nov: con la semana vacía (pasa según el día), la primera lista es la de los cobros: se mira el aviso de semana tranquila
+  if (r.n) await expect(panel.locator('.sm-lista').first().locator('.sm-ev')).toHaveCount(r.n);
+  else await expect(panel).toContainText('Semana tranquila');
   await expect(page.locator('#vista h1.ts-tit')).toHaveText('Tu semana y tus cobros');
   await expect(page.locator('#vista .vista-volver')).toHaveAttribute('href', '#hoy');
   await expect(panel).toContainText('es una estimación');

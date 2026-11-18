@@ -179,7 +179,9 @@ test('los casos de datos: falta un dato tuyo (rango), un dato viejo, sin conexi�
   await expect(page.locator('.pp-aviso[data-k="faltadato"]')).toHaveCount(0);
   // un precio de hace una semana: aviso arriba y el paso baja un escalón
   const antes = await page.evaluate(() => (() => { const R = mesRuta(S.M); return [...R.hacer, ...R.decidir].find((x) => /^venta:/.test(x.id) && x.ref.pl.f.inst.id === 'repsol').conf; })());
-  await page.evaluate(() => { const f = S.M.filas.find((x) => x.inst.id === 'repsol'); f.p.fecha = sumarDias(hoyIso(), -9); cacheDe(S.M, '__mes').delete('m'); pintar(); });
+  // 17 nov 2026: tres días hábiles atrás (con 9 días de calendario, de martes a sábado salían 6 hábiles y el paso se
+  // apartaba entero, que es la comprobación de más de 5; la prueba solo pasaba en domingo y lunes)
+  await page.evaluate(() => { const f = S.M.filas.find((x) => x.inst.id === 'repsol'); let d = hoyIso(); while (habilesDesde(d) < 3) d = sumarDias(d, -1); f.p.fecha = d; cacheDe(S.M, '__mes').delete('m'); pintar(); });
   await expect(page.locator('.pp-aviso[data-k="viejo"]')).toBeVisible();
   const despues = await page.evaluate(() => (() => { const R = mesRuta(S.M); return [...R.hacer, ...R.decidir].find((x) => /^venta:/.test(x.id) && x.ref.pl.f.inst.id === 'repsol').conf; })());
   expect(CONF[despues]).toBe(CONF[antes] - 1);

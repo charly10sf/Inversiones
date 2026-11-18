@@ -1,6 +1,19 @@
 {
  "versiones": [
   {
+   "v": "0.9d",
+   "f": "2026-11-18",
+   "h": "07:15",
+   "t": "La IA del fundador, sin freno",
+   "commits": [
+    {
+     "cuando": "2026-11-18 00:12",
+     "asunto": "La IA del fundador, sin freno: recomendaciones directas si el Worker lo deja",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9c",
    "f": "2026-11-16",
    "h": "15:50",
