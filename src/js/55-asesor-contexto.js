@@ -337,7 +337,27 @@ function hSimularVenta(q) {
   const r = fifo(lotesDe(f.pos), u);
   const gan = neto - r.coste;
   const anio = new Date().getFullYear();
-  const iv = impuestoDeVenta(gan, anio, f.inst);
+  /* 19 nov (revisión de noche): la regla de recompra. Antes, una venta con pérdidas daba siempre su «ahorro en la renta»,
+     también con compras del mismo valor dentro del plazo (en un fondo con aportación automática, cada mes): esa parte de la
+     pérdida no resta este año (perdidaAplazada, la misma cuenta que hace Toisón cuando la venta ya está apuntada). Aquí,
+     lo comprado en el plazo de antes que seguiría en la cartera tras la venta; lo que compre después, en el aviso */
+  let aplazada = 0, recompra;
+  const rr = gan < 0 ? reglaRecompra(f.inst) : null;
+  if (rr && rr.meses) {
+    const hoy = hoyIso(), desde = sumarMeses(hoy, -rr.meses);
+    const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === f.pos.instrumento).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
+    const dentro = [...r.quedan, ...otras].filter((l) => !l.mezcla && l.f >= desde && l.f <= hoy);
+    const parte = Math.min(1, sum(dentro, (l) => +l.u || 0) / u);
+    if (parte > 1e-6) aplazada = -gan * parte;
+    const auto = aportacionesActivas().some(({ a }) => a.instrumento === f.inst.id);
+    recompra = {
+      plazo: rr.plazo,
+      ...(aplazada ? { perdida_que_no_resta_este_anio: R2(-aplazada), por_compras_desde: dentro.map((l) => l.f).sort()[0] } : {}),
+      sin_recomprar_hasta: libreRecompra(f.inst),
+      nota: `${aplazada ? `Ha comprado ${f.inst.corto} en ${rr.plazo} antes: esa parte de la pérdida se aplaza hasta que venda lo recomprado y no resta este año (ya está descontada del ahorro). ` : ''}Si recompra ${f.inst.corto} antes de esa fecha, la pérdida de lo recomprado tampoco resta este año.${auto ? ' Tiene una aportación automática a este valor: cada compra de ese plazo aplazaría también la pérdida; para que cuente este año habría que pararla.' : ''}`,
+    };
+  }
+  const iv = impuestoDeVenta(gan + aplazada, anio, f.inst);
   return {
     posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
     importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
@@ -345,6 +365,7 @@ function hSimularVenta(q) {
     ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial', impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
     tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
     renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra) },
+    ...(recompra ? { regla_de_recompra: recompra } : {}),
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
     notas: [/^Fondo/.test(f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', r.mezcla ? 'Lo que tenía antes de usar Toisón cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined,
   };
