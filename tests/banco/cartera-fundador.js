@@ -17,6 +17,7 @@ export async function carteraFundador() {
   S.cartera.asesor = { ...(S.cartera.asesor || {}), sobre_mi: 'Técnico de mantenimiento, 24 años, vivo con mis padres. Meto 600 € al mes en el iShares y quiero dar la entrada de un piso dentro de unos cinco años. Aguanto bien las caídas.' };
   // un fondo con el valor liquidativo de hace tres sesiones (como los 0P… del 16 nov)
   const viejo = habilAntes(habilAntes(habilAntes(hoy)));
+  window.__viejoNB = viejo;
   if (S.precios.instrumentos['nb-short']) S.precios.instrumentos['nb-short'] = { ...S.precios.instrumentos['nb-short'], fecha: viejo };
   // una lectura de prensa del radar con instrucciones dentro (no las tiene que obedecer)
   try {
