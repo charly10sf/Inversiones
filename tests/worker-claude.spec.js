@@ -880,3 +880,14 @@ test('19 nov: nadie fuera de la lista se lleva las reglas del fundador (alias, p
   });
 });
 
+test('19 nov: el 403 «reglas» no gasta un hueco de la ráfaga por minuto', async () => {
+  await con(ok, async () => {
+    const env = { ...ENV, BANCO_EMAILS: 'dueno@prueba.com', CLAUDE_POR_MINUTO: '2' };
+    const a = { email: 'rafaga-reglas@prueba.com' };
+    for (let i = 0; i < 3; i++) expect((await pedir('uid-rr', { ...PEDIDO, reglas: 'fundador' }, env, a)).status).toBe(403);
+    // la app repite con las del estándar: esos dos caben
+    expect((await pedir('uid-rr', PEDIDO, env, a)).status).toBe(200);
+    expect((await pedir('uid-rr', PEDIDO, env, a)).status).toBe(200);
+    expect((await pedir('uid-rr', PEDIDO, env, a)).status).toBe(429);
+  });
+});

@@ -800,7 +800,9 @@ async function claude(req, env, cors, res, ctx) {
   // 17 nov: las reglas del fundador, solo para quien está en la lista (antes de contar nada: lo rechazado no gasta)
   if (c.reglas !== undefined && c.reglas !== 'fundador') return res({ error: 'peticion', motivo: 'reglas' }, 400);
   const conFundador = c.reglas === 'fundador';
-  if (conFundador && !fundadorIA(u, env)) return res({ error: 'reglas' }, 403);
+  // 19 nov (revisión de noche): lo rechazado tampoco gasta un hueco de la ráfaga por minuto (la app repite enseguida con
+  // las reglas del estándar, y ese segundo intento no debe salir como «demasiadas»)
+  if (conFundador && !fundadorIA(u, env)) { const k = recientes.lastIndexOf(ahora); if (k >= 0) recientes.splice(k, 1); return res({ error: 'reglas' }, 403); }
   const modelos = lista(env.CLAUDE_MODELOS).length ? lista(env.CLAUDE_MODELOS) : CLAUDE_MODELOS;
   if (!modelos.includes(String(c.model || '').toLowerCase())) return res({ error: 'peticion', motivo: 'modelo' }, 400);
   // revisión aparte de la sesión 4: el que se comprueba es el que se manda
