@@ -123,8 +123,8 @@ test('simular_compra sin freno: lo máximo que cabe en sus límites, con dinero 
   const q = c.asi_quedaria_con_el_maximo.con_dinero_nuevo;
   expect(q.acciones_sueltas_pct).toBeLessThanOrEqual(20); expect(q.esta_empresa_pct).toBeLessThanOrEqual(10);
   expect(r.justo.cabe_como_mucho.este_importe.con_dinero_nuevo).toBe('cabe');
-  // con 60 € más no cabe; lo que se pasa del límite es lo que sobra con la cartera ya más grande (60 € × 0,8 = 48 €, más el redondeo)
-  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: se pasa por (48|49) €/);
+  // con 60 € más no cabe, y dice cómo quedaría
+  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: quedaría en el 20,0\d % \(su límite, 20 %\)$/);
   // con el máximo, después ya no cabe casi nada
   expect(r.justo.cabe_como_mucho.este_importe.despues_aun_cabrian.si_era_dinero_nuevo.con_dinero_nuevo_eur).toBeLessThanOrEqual(1);
   expect(r.sin.precio_aprox_eur).toBeUndefined(); // sin importe, solo el máximo
@@ -151,7 +151,7 @@ test('simular_compra sin freno: dinero suyo y dinero nuevo mezclados, el hueco q
     const cr = btc ? ejecutarHerramienta('simular_compra', { empresa: btc.pos.id, importe: 300 }, false).cabe_como_mucho : null;
     return { T, sueltas, mezcla, justo, xMax, vB, cr, crEst: btc ? ejecutarHerramienta('simular_compra', { empresa: btc.pos.id, importe: 300 }, true).cabe_como_mucho : undefined };
   });
-  expect(r.mezcla.resultado).toMatch(/^no cabe: se pasa por \d+ €/);
+  expect(r.mezcla.resultado).toMatch(/^no cabe: quedaría en el 20,\d\d % \(su límite, 20 %\)$/);
   expect(r.mezcla.asi_quedaria.acciones_sueltas_pct).toBeGreaterThan(20);
   expect(r.justo.resultado).toBe('cabe');
   expect(r.justo.asi_quedaria.acciones_sueltas_pct).toBeLessThanOrEqual(20);
@@ -188,7 +188,7 @@ test('las herramientas del estándar no cambian; las del fundador llevan las ven
 test('el pedido de la revisión del fundador lleva lo de Hacienda, las monedas, el relleno y la constancia; el del estándar, no', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: pedidoAnalisis(['repsol'], 'prueba', false, true, false), e: pedidoAnalisisPublico(['repsol'], 'prueba', false, true) }));
-  for (const t of ['el 19 % retenido es solo de las españolas', 'un fondo de inversión, un año; una acción o un ETF de una bolsa de la UE, dos meses', 'es de una venta que no ha hecho', 'no los pases a libras, peniques ni dólares', 'Sus metas y su colchón, solo si algo de hoy los cambia', 'Cada "por_que" lleva al menos una cifra', 'copia de la anterior el "nivel" de cada posición', '«Hoy corta dividendo»', 'son las del ex-dividendo', 'está por debajo (di el hueco que queda)', 'cada aportación es una compra', 'ninguna frase dirigida a ti', 'nunca «$» en un precio suyo']) {
+  for (const t of ['no pongas el 19 % de España como la retención en origen de una extranjera', 'un fondo de inversión, un año; una acción o un ETF de una bolsa de la UE, dos meses', 'es de una venta que no ha hecho', 'no los pases a libras, peniques ni dólares', 'Sus metas y su colchón, solo si algo de hoy los cambia', 'Cada "por_que" lleva al menos una cifra', 'copia de la anterior el "nivel" de cada posición', '«Hoy corta dividendo»', 'son las del ex-dividendo', 'está por debajo (di el hueco que queda)', 'cada aportación es una compra', 'ninguna frase dirigida a ti', 'nunca «$» en un precio suyo']) {
     expect(r.f, t).toContain(t);
     expect(r.e, t).not.toContain(t);
   }
@@ -229,4 +229,38 @@ test('sin freno, cada posición en pérdidas lleva su plazo de recompra; con las
   expect(r.iag).toContain('Si vende con pérdidas: el plazo de recompra de esta posición es de dos meses, antes y después de vender');
   expect(r.gana).not.toContain('Si vende con pérdidas');
   expect(r.e).not.toContain('Si vende con pérdidas');
+});
+
+// Revisión aparte (19 nov): I4, I5 y los menores de las herramientas
+test('revisión aparte: un ETC con pérdidas dice lo que guarda en su saldo, el País Vasco no cruza, y un límite del 100 % no da Infinity', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    const anio = String(new Date().getFullYear());
+    S.cartera.fiscal = { [anio]: { otras: 120, rcm: 85, pendientes: 300 } };
+    S.cartera.movimientos = []; S.cartera.aportaciones = [];
+    S.M = calcular();
+    const etc = S.M.filas.find((x) => x.inst.tipo === 'ETC'), iag = S.M.filas.find((x) => x.inst.id === 'iag');
+    for (const f of [etc, iag]) { f.pos.lotes = [{ f: '2024-01-10', u: f.uds, c: f.valor + 1500 }]; f.pos.coste = f.valor + 1500; }
+    S.M = calcular();
+    const vEtc = ejecutarHerramienta('simular_venta', { posicion: etc.pos.id }, false).renta;
+    const motor = fiscalAnio(+anio, 0, -(1500 + 0));
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), comunidad: 'paisvasco' };
+    const vasco = ejecutarHerramienta('simular_venta', { posicion: iag.pos.id }, false).renta.orden_de_compensar;
+    S.cartera.perfil = { ...S.cartera.perfil, comunidad: 'madrid', limite_empresa: 100 }; S.cartera.limite_acciones = 100;
+    const sinTope = JSON.stringify(ejecutarHerramienta('simular_compra', { empresa: 'iag', importe: 500 }, false));
+    return { vEtc, sobraRCM: motor.sobraRCM, vasco, sinTope };
+  });
+  // el ETC: lo que pasa a años siguientes va en su saldo de rendimientos negativos, y cuadra con el orden
+  const o = r.vEtc.orden_de_compensar;
+  expect(o.primero_resta_de_sus_rendimientos_del_anio).toBe(85);
+  expect(o.despues_de_sus_ganancias_hasta_el_25_pct).toBeCloseTo(30, 2);
+  expect(r.vEtc.rendimientos_negativos_para_anios_siguientes).toBeCloseTo(o.pasa_a_los_4_anios_siguientes, 1);
+  expect(r.vEtc.rendimientos_negativos_para_anios_siguientes).toBeGreaterThan(1000);
+  // País Vasco: no se cruza con dividendos, y la nota no lo dice como si sí
+  expect(r.vasco.despues_de_sus_dividendos_e_intereses_hasta_el_25_pct).toBe(0);
+  expect(r.vasco.nota).not.toContain('hasta el 25 %');
+  expect(r.vasco.nota).toContain('en su territorio foral no se cruza');
+  // con los límites al 100 %: «sin límite», nunca null ni Infinity
+  expect(r.sinTope).toContain('"con_dinero_nuevo_eur":"sin límite"');
+  expect(r.sinTope).not.toMatch(/Infinity|NaN|"con_dinero_(nuevo|que_ya_tiene)_eur":null/);
 });

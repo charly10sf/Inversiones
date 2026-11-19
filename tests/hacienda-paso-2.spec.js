@@ -151,3 +151,91 @@ test('(d) el mismo fondo en dos cuentas, las dos en pérdidas: el segundo paso h
   // y el ahorro de los dos pasos suma el de vender las dos (antes, el segundo paso no contaba lo liberado)
   expect(r.pa.ahorro + r.pb.ahorro).toBeCloseTo(r.juntas, 0);
 });
+
+// Revisión aparte de mejorar-ia-2 (19 nov): lo crítico y lo importante de Hacienda
+test('revisión aparte C1: una pérdida aplazada de una venta anterior no se libera dos veces al vender las dos cuentas', async ({ page }) => {
+  test.skip(new Date().getMonth() < 6, 'de enero a junio el Paso a paso no propone vender con pérdidas');
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso(), anio = new Date().getFullYear();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    // A (Trade Republic): 20 acciones compradas hace 30 días, pierde 100 €; aplazan entera la pérdida de 1.000 € de una venta de hace 40 días
+    pos.cantidad = 20; pos.lotes = [{ f: sumarDias(hoy, -30), u: 20, c: 20 * pr + 100 }]; pos.coste = pos.lotes[0].c;
+    // B (otra cuenta): lotes viejos, pierde 300 €
+    const otra = { id: 'p-otra', instrumento: 'iag', plataforma: 'Openbank', cantidad: 50, coste: 50 * pr + 300, fecha: '2024-02-01', lotes: [{ f: '2024-02-01', u: 50, c: 50 * pr + 300 }] };
+    S.cartera.posiciones.push(otra);
+    S.cartera.movimientos = [{ tipo: 'venta', instrumento: 'iag', fecha: sumarDias(hoy, -40), uds: 20, resultado: -1000, importe: 20 * pr }];
+    S.cartera.aportaciones = [];
+    S.M = calcular();
+    const xs = restoEnPerdidas(S.M, []);
+    const a = xs.find((y) => y.f.pos === pos), b = xs.find((y) => y.f.pos === otra);
+    const juntas = ejecutarHerramienta('simular_venta', { ventas: [{ posicion: pos.id }, { posicion: 'p-otra' }] }, false);
+    const alReves = ejecutarHerramienta('simular_venta', { ventas: [{ posicion: 'p-otra' }, { posicion: pos.id }] }, false);
+    const base = fiscalAnio(anio).cuota;
+    return { a: a && { g: a.g, cuenta: a.cuenta }, b: b && { g: b.g, cuenta: b.cuenta, libera: b.libera }, juntas: juntas.todas_juntas, alReves: alReves.todas_juntas, ahorroBien: base - fiscalAnio(anio, -1400 - 1).cuota, comA: juntas.ventas[0].comision + juntas.ventas[1].comision };
+  });
+  // en total, 100 + 300 + los 1.000 liberados: 1.400 € (antes, 2.400: cada cuenta liberaba los 1.000)
+  expect(r.a.cuenta + r.b.cuenta).toBeCloseTo(-1400, 0);
+  // la de Openbank va antes (pesa más): sola, 120 € de sus 300 no restan (las 20 de la otra cuenta son de hace 30 días); la
+  // segunda cuenta lo suyo (100), lo que libera de la primera (120) y los 1.000 de la venta anterior, una sola vez
+  expect(r.b.cuenta).toBeCloseTo(-180, 0);
+  expect(r.a.cuenta).toBeCloseTo(-1220, 0);
+  // y con la herramienta, en los dos órdenes (menos las comisiones de vender)
+  expect(r.juntas.cuenta_este_anio).toBeCloseTo(-1400 - r.comA, 0);
+  expect(r.alReves.cuenta_este_anio).toBeCloseTo(-1400 - r.comA, 0);
+  expect(r.juntas.ahorro_en_la_renta).toBeLessThan(r.ahorroBien + 5);
+});
+
+test('revisión aparte C2: si las compras recientes de la primera cuenta aplazarían la pérdida de la segunda, el segundo paso lo dice', async ({ page }) => {
+  test.skip(new Date().getMonth() < 6, 'de enero a junio el Paso a paso no propone vender con pérdidas');
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    const caso = (uRec) => {
+      // A (va antes en la cartera: pesa más): 100 acciones viejas y uRec de hace 3 semanas, pierde 300 €; B: 20 acciones viejas, pierde 400 €
+      pos.cantidad = 100 + uRec; pos.lotes = [{ f: '2024-03-01', u: 100, c: 100 * pr + 200 }, { f: sumarDias(hoy, -21), u: uRec, c: uRec * pr + 100 }]; pos.coste = pos.lotes[0].c + pos.lotes[1].c;
+      S.cartera.posiciones = S.cartera.posiciones.filter((p) => p.id !== 'p-otra');
+      const otra = { id: 'p-otra', instrumento: 'iag', plataforma: 'Openbank', cantidad: 20, coste: 20 * pr + 400, fecha: '2024-02-01', lotes: [{ f: '2024-02-01', u: 20, c: 20 * pr + 400 }] };
+      S.cartera.posiciones.push(otra);
+      S.cartera.movimientos = []; S.cartera.aportaciones = [];
+      S.M = calcular();
+      const xs = restoEnPerdidas(S.M, []);
+      const a = xs.find((y) => y.f.pos === pos), b = xs.find((y) => y.f.pos === otra);
+      const P = pasosRuta0(S.M), pb = [...P.mes, ...P.seis].find((y) => y.id.startsWith('perdida:p-otra:'));
+      return { plat: pos.plataforma, a: a && { cuenta: a.cuenta, noResta: a.noResta }, b: b && { g: b.g, cuenta: b.cuenta, depende: b.depende, dependeDe: b.dependeDe }, pq: pb && pb.pq.replace(/<[^>]+>/g, '') };
+    };
+    return { mitad: caso(10), todo: caso(20) };
+  });
+  // 10 de hace 3 semanas en A: vendiendo solo B, la mitad de sus 400 € (10 de 20) no restaría
+  expect(r.mitad.a.noResta).toBe(0);
+  expect(r.mitad.b.cuenta).toBeCloseTo(-400, 0);
+  expect(r.mitad.b.depende).toBeCloseTo(200, 0);
+  expect(r.mitad.b.dependeDe).toEqual([r.mitad.plat]);
+  expect(r.mitad.pq).toMatch(new RegExp(`De eso, unos 200\\s€ solo restan este año si vendes también lo de ${r.mitad.plat} \\(es otro paso de esta lista\\)`));
+  // 20 en A: sola, la pérdida de B quedaría aplazada entera; el paso lo dice con los 400 €
+  expect(r.todo.b.depende).toBeCloseTo(400, 0);
+  expect(r.todo.pq).toMatch(/De eso, unos 400\s€ solo restan este año si vendes también/);
+});
+
+test('revisión aparte I2: la venta con ganancia que libera una pérdida aplazada avisa de no recomprar dentro del plazo de aquella venta', async ({ page }) => {
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso(), anio = new Date().getFullYear();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    pos.cantidad = 200; pos.lotes = [{ f: sumarDias(hoy, -20), u: 200, c: 200 * pr * 0.9 }]; pos.coste = pos.lotes[0].c;
+    S.cartera.movimientos = [{ tipo: 'venta', instrumento: 'iag', fecha: sumarDias(hoy, -30), uds: 200, resultado: -3000, importe: 200 * pr }];
+    S.M = calcular();
+    const f = S.M.filas.find((x) => x.pos === pos);
+    const pl = planVenta0({ ...f, senal: { ...f.senal, nivel: 'vender' } }, S.M);
+    // el texto del paso de vender, como lo monta el Paso a paso
+    const P = (() => { const c = cacheDe(S.M, '__plan'); c.set(f, pl); f.senal = { ...f.senal, nivel: 'vender' }; return pasosRuta0(S.M); })();
+    const paso = [...P.mes, ...P.seis].find((y) => y.id.startsWith(`venta:${pos.id}:`));
+    return { html: htmlFiscalVenta(pl).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), imp: paso && String(paso.imp || '').replace(/<[^>]+>/g, '') };
+  });
+  expect(r.html).toContain('No vuelvas a comprar IAG hasta que pasen dos meses desde aquella venta');
+  if (r.imp) { expect(r.imp).not.toContain('puedes volver a comprarla cuando quieras'); expect(r.imp).toContain('No la recompres hasta que pasen dos meses desde aquella venta'); }
+});

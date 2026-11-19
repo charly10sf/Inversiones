@@ -148,7 +148,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
       /* 19 nov (mejorar-ia-2, parte D) · sin freno, el corte de dividendo de hoy a la vista: en el banco de la revisión (r7),
          la IA no relacionaba la bajada de IAG con su dividendo */
       if (!est) {
-        const hoyD = hoyIso(), cortan = D.meses.flatMap((m) => m.de).filter((x) => x.d === hoyD && x.bruto > 0.5);
+        // revisión aparte (I3): solo si su ex-dividendo anunciado es hoy (la lista también lleva fechas estimadas: la del año pasado más doce meses)
+        const hoyD = hoyIso(), anunciado = new Set(M.filas.filter((y) => y.p && y.p.ex_dividendo === hoyD).map((y) => y.inst.corto || y.inst.nombre));
+        const cortan = D.meses.flatMap((m) => m.de).filter((x) => x.d === hoyD && x.bruto > 0.5 && anunciado.has(x.n));
         if (cortan.length) L.push(`Hoy corta dividendo (ex-dividendo; importes aproximados, por todo lo que tiene): ${cortan.map((x) => { const f = M.filas.find((y) => (y.inst.corto || y.inst.nombre) === x.n); return `${x.n} ${E0(x.bruto)} brutos (${E0(x.neto)} netos)${f && f.valor > 0 ? `, un ${fmtNum((x.bruto / f.valor) * 100, 1)} % de su valor` : ''}`; }).join('; ')}. Esa parte de su bajada de hoy es el dividendo, que cobrará en unos días o semanas: no es una mala noticia.`);
       }
       const SO = solapamientos(M);
@@ -439,7 +441,7 @@ const herramientasPara = (fundador) => HERRAMIENTAS.map((h) => ({ name: h.name, 
    - y, al revés, la pérdida aplazada de ventas de este año ya apuntadas que vuelve a restar porque se venden las
      participaciones recompradas que la bloqueaban.
    Devuelve importes con signo: aplazada > 0 (pérdida que no resta), liberada < 0 (pérdida que vuelve a restar) */
-function recompraDeVenta(f, u, gan, fuera) {
+function recompraDeVenta(f, u, gan, fuera, previas) {
   const rr = reglaRecompra(f.inst);
   if (!rr || !rr.meses) return null;
   const hoy = hoyIso(), id = f.pos.instrumento;
@@ -449,7 +451,13 @@ function recompraDeVenta(f, u, gan, fuera) {
   for (const l of lotes) { const x = Math.max(0, Math.min(resto, +l.u || 0)); sale.push({ l, x }); resto -= x; }
   const quedan = sale.map(({ l, x }) => ({ ...l, u: (+l.u || 0) - x })).filter((l) => l.u > 1e-9);
   // fuera (mejorar-ia-2, parte B): posiciones del mismo valor en otras cuentas que se venden enteras a la vez: no quedan en la cartera
-  const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === id && !(fuera && fuera.has(p))).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
+  // previas (revisión aparte, C1): las ventas del mismo valor que van antes en la misma tanda, [{ pos, u }]. Lo que aplaza mira lo
+  // que QUEDA en la cartera (sin las de «fuera»); lo que libera de una venta anterior mira lo que HAY ahora y lo que ya se han
+  // llevado las previas: así una misma pérdida aplazada no se libera dos veces (antes, cada cuenta la liberaba entera)
+  const lotesDeP = (p) => { try { return lotesDe(p); } catch (e) { return []; } };
+  const delValor = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === id);
+  const otras = delValor.filter((p) => !(fuera && fuera.has(p))).flatMap(lotesDeP), otrasTodas = delValor.flatMap(lotesDeP);
+  const salePrev = (previas || []).filter((pv) => pv && pv.pos && pv.pos !== f.pos && pv.pos.instrumento === id).flatMap((pv) => { let r = +pv.u || 0; return lotesDeP(pv.pos).map((l) => { const x = Math.max(0, Math.min(r, +l.u || 0)); r -= x; return { l, x }; }); });
   const auto = aportacionesActivas().some(({ a }) => a.instrumento === id);
   let aplazada = 0, porAntes = 0, porFuturas = 0, primera = null;
   if (gan < 0) {
@@ -472,10 +480,11 @@ function recompraDeVenta(f, u, gan, fuera) {
     if (!a || !a.importe) continue;
     const d0 = sumarMeses(v.fecha, -rr.meses), d1 = sumarMeses(v.fecha, rr.meses);
     const enVentana = (l) => !l.mezcla && l.f >= d0 && l.f <= d1;
-    const total = sum([...lotes, ...otras].filter(enVentana), (l) => +l.u || 0);
-    const salen = sum(sale.filter(({ l }) => enVentana(l)), ({ x }) => x);
-    const parte = Math.min(1, Math.max(0, total - salen) / +v.uds);
-    liberada += v.resultado * (a.parte - parte);
+    const total = sum([...lotes, ...otrasTodas].filter(enVentana), (l) => +l.u || 0);
+    const salen = sum(sale.filter(({ l }) => enVentana(l)), ({ x }) => x), prev = sum(salePrev.filter(({ l }) => enVentana(l)), ({ x }) => x);
+    const antes = salePrev.length ? Math.min(1, Math.max(0, total - prev) / +v.uds) : a.parte;
+    const parte = Math.min(1, Math.max(0, total - prev - salen) / +v.uds);
+    liberada += v.resultado * Math.max(0, antes - parte);
   }
   if (!(gan < 0) && !liberada) return null;
   return { rr, aplazada, porAntes, porFuturas, primera, liberada, auto };
@@ -501,7 +510,9 @@ function ordenCompensar(a, b, cuenta, esR) {
     [esR ? 'despues_de_sus_ganancias_hasta_el_25_pct' : 'despues_de_sus_dividendos_e_intereses_hasta_el_25_pct']: R2(c2),
     pasa_a_los_4_anios_siguientes: R2(c3),
   };
-  let nota = `Orden: esta pérdida resta primero de sus ${suyo} (${E0(c1)} de ${E0(Math.max(0, suyoAntes))})${c2 > 0.5 ? `, después de sus ${otro} hasta el 25 % (${E0(c2)})` : otroAntes > 0.5 && P - c1 > 0.5 ? `, después de sus ${otro} hasta el 25 %` : ''}${c3 > 0.5 ? `, y ${E0(c3)} pasan a los 4 años siguientes` : ''}.`;
+  // revisión aparte (I5): el paso del 25 % solo si de verdad resta algo (en Álava, Bizkaia y Gipuzkoa no se cruza, y puede estar ya gastado)
+  const cruza = comunidadUsuario() !== 'paisvasco';
+  let nota = `Orden: esta pérdida resta primero de sus ${suyo} (${E0(c1)} de ${E0(Math.max(0, suyoAntes))})${c2 > 0.5 ? `, después de sus ${otro} hasta el 25 % (${E0(c2)})` : ''}${c3 > 0.5 ? `, y ${E0(c3)} pasan a los 4 años siguientes${c2 > 0.5 ? '' : !cruza ? ` (en su territorio foral no se cruza con sus ${otro})` : otroAntes > 0.5 ? ` (de sus ${otro} no resta nada más: el 25 % ya está usado)` : ''}` : ''}.`;
   if (pend > 0.5) {
     o.perdidas_de_anios_anteriores = { pendientes: R2(pend), se_usaban_sin_esta_venta: R2(uA), se_usan_con_esta_venta: R2(uB), quedan_para_despues: R2(pend - uB) };
     nota += ` Sus pérdidas de años anteriores (${E0(pend)}) van DESPUÉS de las de este año: sin esta venta se usaban ${E0(uA)}; con ella, ${E0(uB)}, y quedan ${E0(pend - uB)} para años siguientes. No digas que las de años anteriores «ya cubren» las ganancias del año: con esta venta las cubre esta pérdida y aquellas se guardan.`;
@@ -511,7 +522,7 @@ function ordenCompensar(a, b, cuenta, esR) {
 }
 /* una venta, sin el impuesto: lo que sale, lo que cuesta por FIFO y lo que cuenta este año con la regla de recompra.
    fuera: posiciones del mismo valor que se venden enteras a la vez (varias ventas juntas) */
-function calcVenta(q, fuera) {
+function calcVenta(q, fuera, previas) {
   const f = buscarFila(q.posicion);
   if (!f) return { error: `No encuentro "${q.posicion}" en su cartera. Tiene: ${S.M.filas.map((x) => `${x.inst.corto} (id "${x.pos.id}")`).join(', ')}.` };
   if (!f.uds || !f.precio) return { error: 'Esa posición no tiene unidades o precio.' };
@@ -525,7 +536,7 @@ function calcVenta(q, fuera) {
   /* 19 nov (revisión de noche): la regla de recompra (recompraDeVenta). Antes, una venta con pérdidas daba siempre su
      «ahorro en la renta» con la pérdida entera, aunque hubiera compras del mismo valor dentro del plazo */
   let aplazada = 0, liberada = 0, recompra;
-  const rv = recompraDeVenta(f, u, gan, fuera);
+  const rv = recompraDeVenta(f, u, gan, fuera, previas);
   if (rv) {
     aplazada = rv.aplazada; liberada = rv.liberada;
     recompra = {
@@ -569,6 +580,8 @@ function hSimularVenta(q, est = esPublico()) {
       /* 19 nov (mejorar-ia) · sin freno, las pérdidas de años anteriores que usa, a la vista: en el banco, Haiku decía «no tienes
          pérdidas que compensen» con 300 € pendientes (ya restadas en el impuesto) en 6 preguntas */
       ...(!est ? pendientesVenta(iv) : {}),
+      // revisión aparte (I4): lo de un ETC que se guarda va en su propio saldo (sobraRCM), no en perdidas_para_anios_siguientes
+      ...(!est && iv.despues.sobraRCM > 0.005 ? { rendimientos_negativos_para_anios_siguientes: R2(iv.despues.sobraRCM) } : {}),
       ...(orden ? { orden_de_compensar: orden } : {}) },
     ...(c.recompra ? { regla_de_recompra: c.recompra } : {}),
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
@@ -586,8 +599,10 @@ function hSimularVentas(q) {
   const rep = filas.find((f, k) => f && filas.indexOf(f) !== k);
   if (rep) return { error: `${rep.inst.corto} sale dos veces: pon cada posición una sola vez, con el total que vende.` };
   // el mismo valor en dos cuentas, vendidas enteras a la vez: ninguna queda en la cartera para la regla de recompra
-  const enteras = new Set(lista.map((v, k) => { const f = filas[k]; if (!f) return null; const pr = +v.precio > 0 ? +v.precio : f.precio; const u = +v.unidades > 0 ? +v.unidades : +v.importe > 0 ? v.importe / pr : +v.porcentaje > 0 ? (f.uds * v.porcentaje) / 100 : f.uds; return u >= f.uds - 1e-9 ? f.pos : null; }).filter(Boolean));
-  const cs = lista.map((v) => calcVenta(v || {}, enteras));
+  const us = lista.map((v, k) => { const f = filas[k]; if (!f) return 0; const pr = +v.precio > 0 ? +v.precio : f.precio; const u = +v.unidades > 0 ? +v.unidades : +v.importe > 0 ? v.importe / pr : +v.porcentaje > 0 ? (f.uds * v.porcentaje) / 100 : f.uds; return Math.min(u, f.uds); });
+  const enteras = new Set(filas.filter((f, k) => f && us[k] >= f.uds - 1e-9).map((f) => f.pos));
+  // cada una, con las del mismo valor que van antes en la lista (lo que liberan de una venta anterior, una sola vez)
+  const cs = lista.map((v, k) => calcVenta(v || {}, enteras, filas.slice(0, k).map((f, j) => (f && filas[k] && f.pos.instrumento === filas[k].pos.instrumento ? { pos: f.pos, u: us[j] } : null)).filter(Boolean)));
   const mal = cs.find((c) => c.error);
   if (mal) return mal;
   const anio = new Date().getFullYear();
@@ -602,7 +617,7 @@ function hSimularVentas(q) {
       impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
       tipo_efectivo_sobre_las_ganancias_pct: ganPos > 0 && iv.impuesto > 0 ? R2((iv.impuesto / ganPos) * 100, 1) : 0,
       queda_tras_apartar_el_impuesto: R2(sum(cs, (c) => c.neto) - Math.max(0, iv.impuesto)),
-      renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra), ...pendientesVenta(iv) },
+      renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra), ...(iv.despues.sobraRCM > 0.005 ? { rendimientos_negativos_para_anios_siguientes: R2(iv.despues.sobraRCM) } : {}), ...pendientesVenta(iv) },
       nota: 'El impuesto de varias ventas es este, el de todas a la vez (las pérdidas de unas restan de las ganancias de otras, y la escala va por tramos): no sumes los de cada una por separado. Las ventas de ETC (su oro) van con dividendos e intereses y solo se cruzan con las ganancias hasta el 25 %; eso ya está contado.',
     },
     ventas,
@@ -639,7 +654,9 @@ function hSimularCompra(q, est = esPublico()) {
     const T = M.total, accion = tipo === 'Acción' && !grupo;
     const Ls = lim / 100, Le = limiteDe(grupo || 'empresa') / 100;
     const vEmp = f ? (pesoLim(f, M) / 100) * T : 0;
-    const max = (L, v) => ({ nuevo: Math.max(0, Math.floor((L * T - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T - v)) });
+    // con un límite del 100 % no hay tope (y sin Infinity en lo que ve la IA: SIN dice «sin límite»)
+    const max = (L, v) => (L >= 1 ? { nuevo: Infinity, tiene: Infinity } : { nuevo: Math.max(0, Math.floor((L * T - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T - v)) });
+    const SIN = (x) => (Number.isFinite(x) ? x : 'sin límite');
     const s2 = accion ? max(Ls, sueltas) : { nuevo: Infinity, tiene: Infinity }, e2 = max(Le, vEmp);
     const nomLim = grupo === 'cripto' ? 'cripto' : grupo === 'oro' ? 'oro y materias primas' : 'esta_empresa';
     const tras = (x, nuevo) => ({ ...(accion ? { acciones_sueltas_pct: R2(((sueltas + x) / (T + nuevo)) * 100, 2) } : {}), [`${nomLim.replace(/ /g, '_')}_pct`]: R2(((vEmp + x) / (T + nuevo)) * 100, 2) });
@@ -647,16 +664,16 @@ function hSimularCompra(q, est = esPublico()) {
     // el importe que se mira: de él, cuánto es dinero nuevo (si lo dice); cabe si no pasa ningún límite con la cartera que queda
     const nuevoDe = q.dinero_nuevo != null && isFinite(+q.dinero_nuevo) ? Math.max(0, Math.min(imp, +q.dinero_nuevo)) : null;
     const cabeCon = (x, n) => (!accion || sueltas + x <= Ls * (T + n) + 1e-6) && vEmp + x <= Le * (T + n) + 1e-6;
-    const sobra = (x, n) => Math.max(accion ? sueltas + x - Ls * (T + n) : 0, vEmp + x - Le * (T + n));
-    const veredicto = (x, n) => (cabeCon(x, n) ? 'cabe' : `no cabe: se pasa por ${E0(Math.ceil(sobra(x, n)))}`);
+    // revisión aparte: «se pasa por N €» no era lo que había que bajar (con dinero nuevo la cartera también crece): ahora, cómo quedaría
+    const veredicto = (x, n) => { if (cabeCon(x, n)) return 'cabe'; const t = tras(x, n), k = accion && sueltas + x > Ls * (T + n) + 1e-6 ? 'acciones_sueltas_pct' : Object.keys(t).pop(); return `no cabe: quedaría en el ${fmtNum(t[k], 2)} % (su límite, ${fmtNum((k === 'acciones_sueltas_pct' ? Ls : Le) * 100, 0)} %)`; };
     // después de esta compra, lo que aún cabría (con dinero nuevo y con el que ya tiene)
-    const despues = (x, n) => { const T2 = T + n, m = (L, v) => ({ nuevo: Math.max(0, Math.floor((L * T2 - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T2 - v)) }); const a2 = accion ? m(Ls, sueltas + x) : { nuevo: Infinity, tiene: Infinity }, b2 = m(Le, vEmp + x); return { con_dinero_nuevo_eur: Math.min(a2.nuevo, b2.nuevo), con_dinero_que_ya_tiene_eur: Math.min(a2.tiene, b2.tiene) }; };
+    const despues = (x, n) => { const T2 = T + n, m = (L, v) => (L >= 1 ? { nuevo: Infinity, tiene: Infinity } : { nuevo: Math.max(0, Math.floor((L * T2 - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T2 - v)) }); const a2 = accion ? m(Ls, sueltas + x) : { nuevo: Infinity, tiene: Infinity }, b2 = m(Le, vEmp + x); return { con_dinero_nuevo_eur: SIN(Math.min(a2.nuevo, b2.nuevo)), con_dinero_que_ya_tiene_eur: SIN(Math.min(a2.tiene, b2.tiene)) }; };
     cabe = {
-      con_dinero_nuevo_eur: mN, con_dinero_que_ya_tiene_eur: mT,
+      con_dinero_nuevo_eur: SIN(mN), con_dinero_que_ya_tiene_eur: SIN(mT),
       lo_que_frena: (!accion ? `su límite de ${grupo === 'cripto' ? 'cripto' : 'oro'} (${fmtNum(Le * 100, 0)} %)` : s2.nuevo <= e2.nuevo ? `su límite de acciones sueltas (${fmtNum(lim, 0)} %)` : `su límite por empresa (${fmtNum(limiteDe('empresa'), 0)} %)`),
-      ...(accion ? { por_acciones_sueltas: { limite_pct: lim, ahora_pct: R2((sueltas / T) * 100, 2), con_dinero_nuevo_eur: s2.nuevo, con_dinero_que_ya_tiene_eur: s2.tiene } } : {}),
-      [accion ? 'por_empresa' : `por_su_limite_de_${grupo}`]: { limite_pct: Le * 100, ahora_pct: R2((vEmp / T) * 100, 2), con_dinero_nuevo_eur: e2.nuevo, con_dinero_que_ya_tiene_eur: e2.tiene },
-      asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, mN), con_dinero_que_ya_tiene: tras(mT, 0) },
+      ...(accion ? { por_acciones_sueltas: { limite_pct: lim, ahora_pct: R2((sueltas / T) * 100, 2), con_dinero_nuevo_eur: SIN(s2.nuevo), con_dinero_que_ya_tiene_eur: SIN(s2.tiene) } } : {}),
+      [accion ? 'por_empresa' : `por_su_limite_de_${grupo}`]: { limite_pct: Le * 100, ahora_pct: R2((vEmp / T) * 100, 2), con_dinero_nuevo_eur: SIN(e2.nuevo), con_dinero_que_ya_tiene_eur: SIN(e2.tiene) },
+      ...(Number.isFinite(mN) && Number.isFinite(mT) ? { asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, mN), con_dinero_que_ya_tiene: tras(mT, 0) } } : {}),
       ...(imp > 0 ? { este_importe: nuevoDe != null
         ? { de_los_que_son_dinero_nuevo: R2(nuevoDe), resultado: veredicto(imp, nuevoDe), asi_quedaria: tras(imp, nuevoDe), ...(cabeCon(imp, nuevoDe) ? { despues_aun_cabrian: despues(imp, nuevoDe) } : {}) }
         : { con_dinero_nuevo: veredicto(imp, imp), con_dinero_que_ya_tiene: veredicto(imp, 0), asi_quedaria: { con_dinero_nuevo: tras(imp, imp), con_dinero_que_ya_tiene: tras(imp, 0) }, despues_aun_cabrian: { si_era_dinero_nuevo: cabeCon(imp, imp) ? despues(imp, imp) : 'no cabe', si_era_dinero_que_ya_tiene: cabeCon(imp, 0) ? despues(imp, 0) : 'no cabe' } } } : {}),
@@ -823,7 +840,10 @@ async function conversar(o) {
         est = true;
         if (o.turno) { o.turno.estandar = true; o.turno.partes.length = 0; o.turno.citas.length = 0; o.turno.resultados.length = 0; }
         if (typeof o.preparar === 'function') Object.assign(o, o.preparar(true));
-        return await conversarClaude({ ...o, claudeModelo: modelo, idPregunta, reglas: null });
+        // (revisión aparte) sin las reglas del fundador ya no vale el «segun» por defecto: el modelo que toque con las del estándar
+        // (antes, una cuenta en modo fundador que el Worker no tiene en su lista recibía Sonnet en su primera pregunta de impuestos)
+        const m2 = o.soloHaiku ? HAIKU_IA : (modeloClaudeParaIA(tipo, ultimoTexto) || modelo);
+        return await conversarClaude({ ...o, claudeModelo: modelo === HAIKU_IA ? modelo : m2, idPregunta, reglas: null });
       }
     };
     // el mismo id de pregunta también si contesta Haiku: para el Worker sigue siendo una sola pregunta
@@ -916,7 +936,7 @@ const FRASES_CONSEJO_IA = [
   /(^\s*|[,:;]\s*|\b(?:y|pero|entonces|ahora)\s+)(aprovecha|deshazte|aguanta)\b/i,
   // el imperativo al empezar una frase o un punto de una lista («Vende la mitad», «- Compra más»), no «Compra de 10
   // acciones», «Compra fuerte» (los votos de los analistas) ni «compra y venta»
-  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(compra|vende|mantén|manten|traspasa)\b(?!\s+(de|del|fuerte|y|o|sin)\b)/i,
+  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(compra(?!\s+del\b)|vende|mantén|manten|traspasa)\b(?!\s+(de|fuerte|y|o|sin)\b)/i,
 ];
 // lo que va negado en la misma frase («no puedo decirte si te conviene», «no sé si es buen momento») no es un consejo
 // (5 nov, banco con Claude: «tampoco puedo decir qué reparto es el adecuado», «no tengo una opinión de…», «decir que un
@@ -930,9 +950,14 @@ const FRASES_CONSEJO_IA = [
    qué reparto te encaja», «- Compra del radar: …» (un título, no una orden) y, en inglés, «- Sell all 228.61 shares: about…»
    (el nombre de una opción con sus cifras) */
 const NEGADO_IA = /(^|[^a-zñáéíóú])(no (te )?(puedo|voy a|debo)|no s[eé]|no (te )?(lo )?digo|no (te )?(lo )?dir[ií]a|eso ser[ií]a|ni|tampoco|nadie|no tengo|no hago|no (te )?doy|(no|tampoco|sin) (te |lo )?(puedo |voy a |debo |quiero )?decir(te)? (que|si|qu[eé])|(recomendaci[oó]n|valoraci[oó]n) personalizada|no (es|son|era|ser[ií]a) (una |un |la |el |mi |ninguna |ning[uú]n )?(clasificaci[oó]n|recomendaci[oó]n|consejo|orden|lista|valoraci[oó]n|opini[oó]n|sugerencia|invitaci[oó]n)( m[ií]a| tuya| personal(izada)?)? (de|para|sobre)( lo)?( que)?)(?![a-zñáéíóú])/i;
-const RECHAZO_TRAS_IA = /\bser[ií]a (una )?(recomendaci[oó]n|valoraci[oó]n) personalizada|\bser[ií]a (ordenar|elegir|decidir|recomendar|aconsejar|asesorar)(te)?\b|\b(y )?eso no (te )?(lo )?(hago|puedo hacer|puedo d[aá]r(telo)?|puedo dec[ií]r(telo)?)\b|\bes (justo|justamente|precisamente|exactamente) eso\b/i;
+const RECHAZO_TRAS_IA = /\bser[ií]a (una )?(recomendaci[oó]n|valoraci[oó]n) personalizada/i;
+// revisión aparte (I1): las otras formas de rechazarlo después («…sería ordenar opciones», «…es justo eso», «…y eso no lo hago») solo
+// valen si la frase NOMBRA el acto antes («Decirte qué fondo te encaja…»): sin eso, «lo más recomendable para ti sería elegir el
+// indexado» o «lo que te encaja es justo eso» son consejos. El vigía también limpia la revisión automática del estándar
+const RECHAZO_TRAS_NOMBRADO_IA = /\bser[ií]a (ordenar|elegir|decidir|recomendar|aconsejar|asesorar)(te)?\b|\b(y )?eso no (te )?(lo )?(hago|puedo hacer)\b|\bes (justo|justamente|precisamente|exactamente) eso\b/i;
+const NOMBRA_EL_ACTO_IA = /(^|[^a-zñáéíóú])(decir|señalar|indicar|recomendar|aconsejar|elegir|escoger|ordenar|proponer)(te|le)?(?![a-zñáéíóú])/i;
 // tras cerrar las comillas, lo citado «depende», «no existe», «no lo hay»…: lo nombra para decir que no lo da
-const CITA_NEGADA_IA = /^[^«»“”"]*[»”"]\s*(depende|no existe|no hay|no lo hay|no es algo|ser[ií]a)\b/i;
+const CITA_NEGADA_IA = /^[^«»“”"]*[»”"]\s*(depende|no existe|no hay|no lo hay|no es algo)\b/i;
 /* el estándar puede contestar en inglés (parte E): lo mismo, lo justo, para una respuesta en inglés. Solo apunta al registro */
 const FRASES_CONSEJO_EN_IA = [
   /\bi(?:'d| would)? (?:strongly )?(recommend|suggest|advise)\b/i,
@@ -942,15 +967,16 @@ const FRASES_CONSEJO_EN_IA = [
   /\b(it'?s|it is|now is|this is) (not )?(a )?(good|bad|great|the right) (time|moment|idea) to (buy|sell|hold|get in|get out|enter|exit|switch|transfer)\b/i,
   /\b(is|are|it'?s|would be) (right|suitable|ideal|appropriate|a good fit|the best (option|choice)) for (you|your (age|profile|situation|goals|case))\b/i,
   /\b(don'?t|do not) (sell|buy|touch)\b/i,
-  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(sell|buy|hold)\b(?!\s+(order|orders|price|side|and|or|rating|ratings|recommendations?|signal|of|at|for)\b|:|[^:\n]{0,45}:)/i,
+  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(sell|buy|hold)\b(?!\s+(order|orders|price|side|and|or|rating|ratings|recommendations?|signal|of|at|for)\b|:|[^:\n]{0,45}:\s*(about|around|approximately|roughly|you(?:'d| would)|tell me|€|\$|\d))/i,
 ];
 const NEGADO_EN_IA = /\b(can(?:no|')t|cannot|won'?t|unable to|not able to|not going to|not allowed to|don'?t (?:give|make|tell|say|rank)|isn'?t|wouldn'?t be|never|neither|nor|without (?:telling|saying)|not (?:a|my) (?:recommendation|ranking|advice))\b/i;
 const RECHAZO_TRAS_EN_IA = /\bwould be (a )?(personali[sz]ed|personal) (recommendation|advice)|\b(is|that'?s) (not something|something) i (can(?:no|')t|cannot|don'?t)\b/i;
 function frasesConsejoIA(texto) {
-  const vistas = new Set();
+  const vistas = new Set(), enInglesTxt = !pareceEspanolIA(texto);
   for (const f of String(texto || '').replace(/\*\*/g, '').split(/(?<=[.!?])\s+|\n+/)) {
-    // en inglés: negado antes en la misma frase, o nombrado y rechazado después
-    for (const r of FRASES_CONSEJO_EN_IA) {
+    // en inglés: negado antes en la misma frase, o nombrado y rechazado después. Solo si la respuesta está en inglés (revisión
+    // aparte: en una respuesta en español, «Buy según 12 analistas» o «Hold es el consenso» no son consejos)
+    for (const r of enInglesTxt ? FRASES_CONSEJO_EN_IA : []) {
       for (const m of f.matchAll(new RegExp(r.source, r.flags + 'g'))) {
         const antes = f.slice(Math.max(0, m.index - 60), m.index), neg = [...antes.matchAll(new RegExp(NEGADO_EN_IA.source, 'gi'))].pop();
         if (neg && !/\b(but|although|however|though|so)\b|[;:]/i.test(antes.slice(neg.index + neg[0].length))) continue;
@@ -977,10 +1003,14 @@ function frasesConsejoIA(texto) {
       // el «pero» solo cuenta si va entre la negación y la frase («no puedo…, pero te conviene»), no antes («Lo entiendo,
       // pero decirte si yo la vendería sería…»)
       const neg = [...antes.matchAll(new RegExp(NEGADO_IA.source, 'gi'))].pop();
-      if (neg && !/\b(pero|aunque|sin embargo|ahora bien|as[ií] que|aun as[ií]|dicho esto|eso s[ií]|por eso)\b|[,;:]/i.test(antes.slice(neg.index + neg[0].length))) continue;
+      // (revisión aparte, I1) tampoco con un «y» en medio («no es una recomendación de inversión y te conviene vender»), y las dos
+      // negaciones nuevas («no es una clasificación de lo que…», «no te diría qué…») solo pegadas a la frase
+      const entre = neg ? antes.slice(neg.index + neg[0].length) : '';
+      const pegada = neg && /no (es|son|era|ser[ií]a) |no (te )?(lo )?dir[ií]a/i.test(neg[0]) ? entre.replace(/^\s*(qu[eé]|cu[aá]l|si|lo que)?\s*(fondo|reparto|acci[oó]n|opci[oó]n|producto)?\s*$/i, '') === '' : true;
+      if (neg && pegada && !/\b(pero|aunque|sin embargo|ahora bien|as[ií] que|aun as[ií]|dicho esto|eso s[ií]|por eso|y)\b|[,;:]/i.test(entre)) continue;
       // lo nombra para negarlo después en la misma frase («señalarte un fondo que te encaja sería una recomendación
       // personalizada»), sin un «pero» o «aunque» en medio (banco, cuarta vuelta)
-      const tras = f.slice(m.index + m[0].length), nr = tras.match(RECHAZO_TRAS_IA);
+      const tras = f.slice(m.index + m[0].length), nr = tras.match(RECHAZO_TRAS_IA) || (NOMBRA_EL_ACTO_IA.test(previo) ? tras.match(RECHAZO_TRAS_NOMBRADO_IA) : null);
       if (nr && nr.index < 90 && !/\b(pero|aunque|sin embargo|ahora bien|as[ií] que)\b|[,;:]/i.test(tras.slice(0, nr.index))) continue;
       vistas.add(m[0].replace(/^[\s.!?:*•\-\d)]+/, '').trim());
       }
@@ -1132,7 +1162,9 @@ const motorElegido = () => {
 };
 // con «segun», un hilo que ya ha contestado Sonnet sigue con Sonnet: cambiar de modelo a mitad pierde la caché (se vuelve a
 // escribir entera) y la respuesta siguiente depende de la anterior; un hilo de Haiku sube a Sonnet si el mensaje nuevo lo pide
-const hiloConSonnetIA = () => { try { return (AS.conv || []).some((t) => t && t.rol === 'ia' && t.modelo === 'claude-sonnet-5-5' && !t.error); } catch (e) { return false; } };
+// (revisión aparte) solo si esa respuesta es de la última hora: pasada la caché no hay nada que conservar, y una conversación
+// que se retoma otro día no se queda en Sonnet para siempre
+const hiloConSonnetIA = () => { try { const hace = Date.now() - 36e5; return (AS.conv || []).some((t) => t && t.rol === 'ia' && t.modelo === 'claude-sonnet-5-5' && !t.error && +t.t > hace); } catch (e) { return false; } };
 const SONNET_POR_TEMA = /vend[eoí]|vender|vent[ae]s?\b|traspas|reembols|rescat|impuest|hacienda|\birpf\b|declar|\brenta\b(?!\s+(?:fija|variable))|tribut|compens|p[ée]rdidas?\b|fifo|retenc|retien|recompr|plusval|\bsell|\btax|\btransfer\b|\bloss/i;
 function pideSonnetIA(q) { return SONNET_POR_TEMA.test(String(q || '')); }
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
@@ -1673,12 +1705,18 @@ function refrescarFoto(forzar, est = esPublico()) {
 
 // ¿la pregunta está en inglés? Por las palabras más corrientes de cada idioma (hacen falta al menos dos inglesas y más que
 // españolas). Solo para la nota del idioma del fundador: en caso de duda, no
-function pareceInglesIA(t) {
+function idiomaIA(t) {
   const s = ` ${String(t || '').toLowerCase()} `;
-  const en = (s.match(/[^a-z'](the|what|should|my|your|is|are|do|does|i|this|how|much|with|and|of|to|it|in|month|buy|sell)(?=[^a-z'])/g) || []).length;
-  const es = (s.match(/[^a-záéíóúñü](el|la|los|las|que|qué|mi|mis|tu|es|y|de|en|con|para|un|una|cuánto|compro|vendo|este|mes)(?=[^a-záéíóúñü])/g) || []).length;
-  return en >= 2 && en > es;
+  // revisión aparte (I6): al menos dos palabras que solo son inglesas; «i», «do», «in», «is», «of», «to», «it» suman pero no bastan
+  // (son también catalán, gallego o portugués: «Tinc 1.000 euros i vull comprar or i plata» recibía «(Answer in English.)»)
+  const claras = (s.match(/[^a-z'](the|what|should|my|your|are|does|this|how|much|with|and|month|buy|sell|which|would|could|can|have|about|for|if|me|you)(?=[^a-z'])/g) || []).length;
+  const en = claras + (s.match(/[^a-z'](is|do|i|of|to|it|in)(?=[^a-z'])/g) || []).length;
+  const es = (s.match(/[^a-záéíóúñüàèòçï·](el|la|los|las|que|qué|mi|mis|tu|es|y|de|en|con|para|un|una|cuánto|compro|vendo|este|mes|els|les|amb|tinc|com|què|vull|uma|não|dos|das|meu|minha|quanto|cal)(?=[^a-záéíóúñüàèòçï·])/g) || []).length;
+  return { claras, en, es };
 }
+function pareceInglesIA(t) { const { claras, en, es } = idiomaIA(t); return claras >= 2 && en > es; }
+// para el vigía: ¿la respuesta está en español (u otra lengua de aquí)? Entonces las frases en inglés no se miran
+function pareceEspanolIA(t) { const { en, es } = idiomaIA(t); return es >= 2 && es >= en; }
 // 19 nov (mejorar-ia): delante y detrás (con la nota solo al final, Sonnet contestó en español en la línea base, f16)
 function conNotaInglesIA(c) {
   const antes = '(Reply entirely in English, headings included.)\n\n', nota = '\n\n(Answer in English.)';

@@ -63,10 +63,13 @@ test('«segun» por defecto solo sin freno; un «auto» elegido después se resp
     AS.conv = [{ rol: 'yo', texto: '¿Qué compro este mes?' }, { rol: 'ia', modelo: 'claude-haiku-5-5', partes: [] }];
     out.hilo1 = m('¿y Repsol?');
     out.hilo2 = m('¿Y si la vendo?');
-    AS.conv.push({ rol: 'yo', texto: '¿Y si la vendo?' }, { rol: 'ia', modelo: 'claude-sonnet-5-5', partes: [] });
+    AS.conv.push({ rol: 'yo', texto: '¿Y si la vendo?' }, { rol: 'ia', modelo: 'claude-sonnet-5-5', partes: [], t: Date.now() - 5 * 60e3 });
     out.hilo3 = m('¿y entonces qué hago con ese dinero?');
+    // pasada una hora ya no hay caché que conservar: una conversación que se retoma otro día no se queda en Sonnet
+    AS.conv[AS.conv.length - 1].t = Date.now() - 2 * 36e5;
+    out.hiloViejo = m('¿y entonces qué hago con ese dinero?');
     // una respuesta de Sonnet que falló no arrastra
-    AS.conv = [{ rol: 'yo', texto: 'x' }, { rol: 'ia', modelo: 'claude-sonnet-5-5', error: 'No hay conexión.', partes: [] }];
+    AS.conv = [{ rol: 'yo', texto: 'x' }, { rol: 'ia', modelo: 'claude-sonnet-5-5', error: 'No hay conexión.', partes: [], t: Date.now() }];
     out.hiloFallo = m('¿y Repsol?');
     AS.conv = [];
     pintarAsesor();
@@ -76,7 +79,7 @@ test('«segun» por defecto solo sin freno; un «auto» elegido después se resp
   expect(r.autoViejo).toBe('segun');
   expect(r.conFreno).toEqual([false, 'auto']);
   expect(r.haiku).toBe('haiku');
-  expect([r.hilo1, r.hilo2, r.hilo3, r.hiloFallo]).toEqual([H5, S5, S5, H5]);
+  expect([r.hilo1, r.hilo2, r.hilo3, r.hiloViejo, r.hiloFallo]).toEqual([H5, S5, S5, H5, H5]);
   // el botón: «Según la pregunta» y «A fondo»; en Ajustes, la recomendada es «segun»; elegir «auto» y guardar se respeta
   await page.evaluate(() => abrirAsesor());
   await expect(page.locator('#asModo button[data-m="normal"]')).toHaveText('Según la pregunta');

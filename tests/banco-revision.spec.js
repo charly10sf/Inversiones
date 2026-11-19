@@ -96,6 +96,11 @@ test.describe('el banco de la revisión, sin Claude', () => {
         expect(r.foto).toMatch(/Hoy corta dividendo[^\n]*IAG \d+ € brutos \(\d+ € netos\), un 0,9 % de su valor/);
         expect(r.foto).toMatch(/### IAG[^\n]*\n[^\n]*\n[^\n]*hoy −1,1\s%/);
       } else expect(r.foto, caso).not.toContain('Hoy corta dividendo');
+      if (caso === 'normal') {
+        // (revisión aparte, I3) el aniversario del corte del año pasado, sin ex-dividendo anunciado para hoy, no es «Hoy corta dividendo»
+        const f3 = await page.evaluate(() => { const hoy = hoyIso(), I = S.precios.instrumentos, x0 = I.iag; I.iag = { ...x0, ex_dividendo: null, dividendos_pagos: [[sumarMeses(hoy, -12), 0.05]] }; S.M = calcular(); const f = contextoAsesor(S.M, 'revision', false); I.iag = x0; S.M = calcular(); return { f, hoy }; });
+        expect(f3.f).not.toContain('Hoy corta dividendo'); // una fecha estimada no se da por hecho
+      }
     }
     expect(errores).toEqual([]);
   });

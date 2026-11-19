@@ -226,8 +226,9 @@ test('una pregunta en inglés lleva la nota «Answer in English», sin freno y (
     return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream', 'X-Reglas': c.reglas === 'fundador' ? 'fundador' : 'estandar' }, body: sse });
   });
   await conCartera(page);
-  const unidad = await page.evaluate(() => ['What should I do with my Bitcoin this month?', '¿Qué compro este mes?', '¿y Repsol?', 'Repsol?', 'Is the S&P 500 fund a good buy for me?'].map(pareceInglesIA));
-  expect(unidad).toEqual([true, false, false, false, true]);
+  // (revisión aparte de mejorar-ia-2, I6) catalán, gallego o portugués no son inglés
+  const unidad = await page.evaluate(() => ['What should I do with my Bitcoin this month?', '¿Qué compro este mes?', '¿y Repsol?', 'Repsol?', 'Is the S&P 500 fund a good buy for me?', 'Tinc 1.000 euros i vull comprar or i plata, com ho veus?', 'Canto vale o fondo do banco e cal é o risco do fondo?', 'Should I sell?', 'How much tax would I pay if I sold half of my gold today?'].map(pareceInglesIA));
+  expect(unidad).toEqual([true, false, false, false, true, false, false, true, true]);
   const preguntar = async (q, modo) => {
     await page.evaluate(async ([q, modo]) => {
       guardarCfgAsesor({ auto: 'manual', web: false }); LS.set('inv-claude-ok', FB.user.uid); LS.del('inv-claude-pausa'); LS.del('inv-ia-fundador-no');
