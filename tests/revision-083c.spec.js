@@ -94,8 +94,8 @@ test('ordenador: con la IA agrandada se guarda otro ancho', async ({ page }, inf
   await tocar(page, '[data-as="agrandar"]');
   await expect.poll(() => anchoCol(page)).toBe(520);
   // la página se queda siempre con 640 px: a 1.440, la IA agrandada llega como mucho a 568
-  await arrastrar(page, NAV + 560);
-  expect(await anchoCol(page)).toBe(560);
+  // 0.9h: si una hoja que sale sola se queda con el ratón a mitad del arrastre, se repite (falló dos veces seguidas en la Action)
+  await expect(async () => { await arrastrar(page, NAV + 560); expect(await anchoCol(page)).toBe(560); }).toPass({ timeout: 20_000 });
   expect(Math.round((await page.locator('#asesorFondo').boundingBox()).width)).toBe(560);
   // reducida, vuelve a la suya
   await tocar(page, '[data-as="agrandar"]');
