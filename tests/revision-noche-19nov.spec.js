@@ -204,7 +204,8 @@ test('la foto no cambia de un minuto a otro (va en la caché de Claude): hora al
   await page.clock.runFor(4 * 60_000);
   await page.waitForTimeout(1500);
   const b = await foto();
-  expect(a.split('\n')[0]).toMatch(/hacia las 22:30/);
+  // (la página puede ir en otra zona horaria que la prueba: solo se mira que va al cuarto de hora; son y 31, así que y media)
+  expect(a.split('\n')[0]).toMatch(/hacia las \d{2}:30$/);
   expect(a).not.toMatch(/\bhace \d+ (min|h)\b|ahora mismo/);
   expect(b).toBe(a);
 });
