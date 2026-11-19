@@ -273,14 +273,43 @@ function editarFiscal(anio = new Date().getFullYear()) {
    parte, solo cuenta lo que quedaría (resto: true) */
 function restoEnPerdidas(M, planes) {
   const conAporte = new Set(aportacionesActivas().map(({ a }) => a.instrumento));
-  return M.filas.filter((f) => !conAporte.has(f.inst.id)).map((f) => {
+  const xs = M.filas.filter((f) => !conAporte.has(f.inst.id)).map((f) => {
     const g = f.valor - f.coste, pl = (planes || []).find((x) => x.f && x.f.pos && x.f.pos.id === f.pos.id);
     if (!pl) return conRecompra({ f, g, uds: f.uds });
     // uds: lo que queda por vender después de la venta que ya propone Toisón (lo usa el Paso a paso para dar la cantidad)
     // 19 nov (revisión aparte de mejorar-ia, 1): la pérdida del resto por FIFO (lo que no se lleva el plan), como su
     // «cuenta»; antes, a precio medio, y la diferencia salía como una regla de recompra que no existía
     return conRecompra({ f, g: g - (+pl.ganancia || 0), resto: true, uds: Math.max(0, +pl.queda || 0) }, pl);
-  }).filter((x) => x.g < -50 && x.cuenta < -50);
+  });
+  dosCuentas(xs);
+  return xs.filter((x) => x.g < -50 && x.cuenta < -50);
+}
+/* 19 nov (mejorar-ia-2, parte B) · el mismo valor en dos cuentas, las dos en pérdidas. Cada paso se calculaba por su lado:
+   el de la cuenta A decía «no restan… porque tienes B» y a la vez salía el de vender B, cuando vendiendo las dos la
+   pérdida resta entera. Ahora van en orden: la primera, como si solo vendieras esa (y avisa de que la otra tiene su paso);
+   cada una de las siguientes cuenta lo suyo con las anteriores ya vendidas, más lo que hace contar de ellas (libera, liberaDe).
+   Primero las que restan algo por sí solas: una que la otra bloquea entera solo tiene paso detrás de ella */
+function dosCuentas(xs) {
+  const grupos = new Map();
+  for (const x of xs) if (!x.resto && x.g < -50) { const k = x.f.pos.instrumento; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(x); }
+  for (const g of grupos.values()) {
+    if (g.length < 2) continue;
+    const orden = [...g.filter((x) => x.cuenta < -50), ...g.filter((x) => !(x.cuenta < -50))], vend = [];
+    let acum = 0;
+    for (const x of orden) {
+      if (!vend.length) { if (x.cuenta < -50) { vend.push(x); acum = x.cuenta; } continue; }
+      try {
+        const fuera = new Set([...vend, x].map((y) => y.f.pos));
+        const junta = (y) => { const rv = recompraDeVenta(y.f, y.uds, y.g, fuera); return Math.min(0, y.g + (rv ? rv.aplazada + rv.liberada : 0)); };
+        const total = sum([...vend, x], junta), propia = junta(x), cuenta = total - acum;
+        if (!(cuenta < -50)) continue;
+        x.cuenta = cuenta; x.noResta = Math.max(0, propia - x.g); x.libera = Math.max(0, propia - cuenta);
+        x.liberaDe = [...new Set(vend.filter((y) => y.noResta > 0.5).map((y) => y.f.pos.plataforma).filter(Boolean))];
+        for (const y of vend) if (y.noResta > 0.5) y.tambien = [...new Set([...(y.tambien || []), x.f.pos.plataforma || ''])].filter(Boolean);
+        vend.push(x); acum = total;
+      } catch (e) {}
+    }
+  }
 }
 /* 19 nov (mejorar-ia, parte 0) · la regla de recompra con lo comprado antes (recompraDeVenta, la misma cuenta que la IA).
    cuenta: la pérdida que resta de verdad este año; noResta: la parte que aplaza la regla. Vender la posición entera no
@@ -332,7 +361,7 @@ function htmlFiscalRecom(M, fa) {
   if (new Date().getMonth() >= 6) for (const x of perd) {
     const esR = esRCMVenta(x.f.inst);
     const ahorro = fiscalAnio(anio, gan, ganR).cuota - fiscalAnio(anio, gan + (esR ? 0 : x.cuenta), ganR + (esR ? x.cuenta : 0)).cuota;
-    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}${x.noResta > 0.5 ? ` (unos ${eur(x.noResta, 0)} no restan este año por la regla de recompra: tienes ${esc(x.f.inst.corto)} en otra cuenta comprado en el plazo)` : ''}${x.libera > 0.5 ? ` (y hace contar unos ${eur(x.libera, 0)} de la venta que propone Toisón, que la regla de recompra aplazaba)` : ''}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
+    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}${x.noResta > 0.5 ? ` (unos ${eur(x.noResta, 0)} no restan este año por la regla de recompra: tienes ${esc(x.f.inst.corto)} en otra cuenta comprado en el plazo${x.tambien && x.tambien.length ? `; si vendes también lo de ${esc(yLista(x.tambien))}, vuelven a restar` : ''})` : ''}${x.libera > 0.5 ? (x.liberaDe ? ` (y hace contar unos ${eur(x.libera, 0)} de la pérdida de lo de ${esc(yLista(x.liberaDe) || 'tu otra cuenta')}, que la regla de recompra aplazaba)` : ` (y hace contar unos ${eur(x.libera, 0)} de la venta que propone Toisón, que la regla de recompra aplazaba)`) : ''}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
   }
   const ap = sum(aportacionesActivas(), ({ a }) => +a.importe || 0);
   if (ap > 0) filas.push({ q: `Aportar ${eur(ap, 0)} al mes`, d: 'a fondos de acumulación: no reparten dividendos, no tributan hasta que vendas', v: 0, c: '' });

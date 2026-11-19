@@ -414,7 +414,7 @@ const HERRAMIENTAS = [
    - y, al revés, la pérdida aplazada de ventas de este año ya apuntadas que vuelve a restar porque se venden las
      participaciones recompradas que la bloqueaban.
    Devuelve importes con signo: aplazada > 0 (pérdida que no resta), liberada < 0 (pérdida que vuelve a restar) */
-function recompraDeVenta(f, u, gan) {
+function recompraDeVenta(f, u, gan, fuera) {
   const rr = reglaRecompra(f.inst);
   if (!rr || !rr.meses) return null;
   const hoy = hoyIso(), id = f.pos.instrumento;
@@ -423,7 +423,8 @@ function recompraDeVenta(f, u, gan) {
   let resto = u;
   for (const l of lotes) { const x = Math.max(0, Math.min(resto, +l.u || 0)); sale.push({ l, x }); resto -= x; }
   const quedan = sale.map(({ l, x }) => ({ ...l, u: (+l.u || 0) - x })).filter((l) => l.u > 1e-9);
-  const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === id).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
+  // fuera (mejorar-ia-2, parte B): posiciones del mismo valor en otras cuentas que se venden enteras a la vez: no quedan en la cartera
+  const otras = (S.cartera.posiciones || []).filter((p) => p !== f.pos && p.instrumento === id && !(fuera && fuera.has(p))).flatMap((p) => { try { return lotesDe(p); } catch (e) { return []; } });
   const auto = aportacionesActivas().some(({ a }) => a.instrumento === id);
   let aplazada = 0, porAntes = 0, porFuturas = 0, primera = null;
   if (gan < 0) {

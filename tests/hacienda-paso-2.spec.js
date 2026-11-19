@@ -5,6 +5,7 @@
 // (b) «cuentan X» sumaba la pérdida de otra venta que esta libera (podía salir más que la propia pérdida): va aparte;
 // (c) una venta con ganancia que libera una pérdida aplazada mayor decía «unos 0 € de impuesto»: ahora, lo que ahorra,
 //     y lo mismo que la tabla «Lo que costaría cada paso de tu plan»;
+// (d) el mismo valor en dos cuentas, las dos en pérdidas: los dos pasos se cuentan juntos (el segundo libera lo del primero).
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
@@ -109,4 +110,44 @@ test('(c) una venta con ganancia que hace contar una pérdida aplazada mayor: di
   expect(Math.abs(num(m[1]) - r.ahorro)).toBeLessThan(1.01);
   expect(r.html).toContain('Mover el dinero no te cuesta impuestos');
   expect(r.html).not.toContain('Coste fiscal de mover el dinero');
+});
+
+test('(d) el mismo fondo en dos cuentas, las dos en pérdidas: el segundo paso hace contar lo que el primero dejaba aplazado', async ({ page }) => {
+  test.skip(new Date().getMonth() < 6, 'de enero a junio el Paso a paso no propone vender con pérdidas');
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso(), anio = new Date().getFullYear();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'amundi-europe');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    pos.cantidad = 60; pos.lotes = [{ f: '2024-02-01', u: 60, c: 60 * pr * 1.4 }]; pos.coste = pos.lotes[0].c;
+    // en Openbank, 30 participaciones de hace 6 meses (dentro del año), también en pérdidas
+    const otra = { id: 'p-otra', instrumento: 'amundi-europe', plataforma: 'Openbank', cantidad: 30, coste: 30 * pr * 1.3, fecha: sumarMeses(hoy, -6), lotes: [{ f: sumarMeses(hoy, -6), u: 30, c: 30 * pr * 1.3 }] };
+    S.cartera.posiciones.push(otra);
+    S.M = calcular();
+    const planes = S.M.filas.map((f) => planVenta(f, S.M)).filter(Boolean);
+    const xs = restoEnPerdidas(S.M, planes);
+    const a = xs.find((y) => y.f.pos === pos), b = xs.find((y) => y.f.pos === otra);
+    const P = pasosRuta0(S.M), todos = [...P.mes, ...P.seis];
+    const pa = todos.find((y) => y.id.startsWith(`perdida:${pos.id}:`)), pb = todos.find((y) => y.id.startsWith('perdida:p-otra:'));
+    const base = fiscalAnio(anio).cuota, juntas = base - fiscalAnio(anio, a.g + b.g).cuota;
+    const ver = (x) => x && { g: x.g, cuenta: x.cuenta, noResta: x.noResta, libera: x.libera, liberaDe: x.liberaDe, tambien: x.tambien };
+    const txt = (p) => p && { pq: p.pq.replace(/<[^>]+>/g, ''), ahorro: p.ref.ahorro };
+    return { plat: pos.plataforma, a: ver(a), b: ver(b), pa: txt(pa), pb: txt(pb), juntas, haySoloPlanes: planes.some((pl) => pl.f.pos === pos || pl.f.pos === otra) };
+  });
+  expect(r.haySoloPlanes).toBe(false);
+  // la primera, como si solo vendiera esa: la mitad de su pérdida (30 de 60) no resta, y avisa de la otra cuenta
+  expect(r.a.noResta).toBeCloseTo(-r.a.g / 2, 1);
+  expect(r.a.cuenta).toBeCloseTo(r.a.g / 2, 1);
+  expect(r.a.tambien).toEqual(['Openbank']);
+  expect(r.pa.pq).toMatch(/De eso, unos [\d.]+\s€ no restan este año por la regla de recompra/);
+  expect(r.pa.pq).toContain('Si vendes también lo de Openbank (es otro paso de esta lista), esa parte vuelve a restar');
+  // la segunda: lo suyo entero más lo que libera de la primera; entre las dos, la pérdida entera
+  expect(r.b.noResta).toBe(0);
+  expect(r.b.libera).toBeCloseTo(r.a.noResta, 1);
+  expect(r.b.liberaDe).toEqual([r.plat]);
+  expect(r.a.cuenta + r.b.cuenta).toBeCloseTo(r.a.g + r.b.g, 1);
+  expect(r.pb.pq).toContain(`Si vendes también lo de ${r.plat} (es otro paso de esta lista), este hace contar además unos`);
+  expect(r.pb.pq).not.toContain('no restan este año');
+  // y el ahorro de los dos pasos suma el de vender las dos (antes, el segundo paso no contaba lo liberado)
+  expect(r.pa.ahorro + r.pb.ahorro).toBeCloseTo(r.juntas, 0);
 });
