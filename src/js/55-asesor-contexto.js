@@ -1055,7 +1055,18 @@ function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return 
 // 0.8.2b: sin «Solo Gemini» (quien lo tuviera elegido pasa a la opción recomendada)
 // 19 nov (mejorar-ia, parte 3): «segun», solo en el fundador y apagado por defecto: Sonnet para lo que va de vender,
 // traspasar o impuestos (pideSonnetIA) y Haiku para lo demás. En el estándar cuenta como «auto»
-const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) || (m === 'segun' && !esPublico()) ? m : 'auto'; };
+/* 19 nov (mejorar-ia-2; Carlos: «lo mejor entre lo más barato y calidad») · sin freno, «segun» es lo que va por defecto: en
+   el banco acierta como Sonnet para todo por un 40 % de lo que cuesta. Un «auto» guardado antes de este cambio (sin la marca
+   de haberlo elegido después, LS_MOTOR_ELEGIDO) cuenta como no elegido; si lo eliges ahora en Ajustes, se respeta */
+const LS_MOTOR_ELEGIDO = 'inv-ia-motor-elegido';
+const motorElegido = () => {
+  const m = LS.get(LS_MOTOR, null);
+  if (m == null || (m === 'auto' && !LS.get(LS_MOTOR_ELEGIDO, false))) return iaSinFreno() ? 'segun' : 'auto';
+  return ['auto', 'haiku', 'sonnet'].includes(m) || (m === 'segun' && !esPublico()) ? m : 'auto';
+};
+// con «segun», un hilo que ya ha contestado Sonnet sigue con Sonnet: cambiar de modelo a mitad pierde la caché (se vuelve a
+// escribir entera) y la respuesta siguiente depende de la anterior; un hilo de Haiku sube a Sonnet si el mensaje nuevo lo pide
+const hiloConSonnetIA = () => { try { return (AS.conv || []).some((t) => t && t.rol === 'ia' && t.modelo === 'claude-sonnet-5-5' && !t.error); } catch (e) { return false; } };
 const SONNET_POR_TEMA = /vend[eoí]|vender|vent[ae]s?\b|traspas|reembols|rescat|impuest|hacienda|\birpf\b|declar|\brenta\b(?!\s+(?:fija|variable))|tribut|compens|p[ée]rdidas?\b|fifo|retenc|retien|recompr|plusval|\bsell|\btax|\btransfer\b|\bloss/i;
 function pideSonnetIA(q) { return SONNET_POR_TEMA.test(String(q || '')); }
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
@@ -1116,7 +1127,7 @@ function modeloClaudeParaIA(tipo, q = null) {
   const m = motorElegido();
   // 0.8.2: Haiku por defecto (rápido y barato); Sonnet si eliges «A fondo» para tus preguntas o «Claude Sonnet para todo».
   // 0.8.2b: si hoy ya no te quedan «A fondo» (nivel reducido), Haiku sin intentarlo
-  const sonnet = m === 'sonnet' || (m !== 'haiku' && tipo === 'pregunta' && (AS.aFondo || (m === 'segun' && pideSonnetIA(q))));
+  const sonnet = m === 'sonnet' || (m !== 'haiku' && tipo === 'pregunta' && (AS.aFondo || (m === 'segun' && (pideSonnetIA(q) || hiloConSonnetIA()))));
   return sonnet && quedanFondoClaude() !== 0 ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
 }
 /* 0.8.2 · cuántas preguntas a Claude te quedan hoy: lo dice el Worker en cada respuesta (X-Quedan; su día es el de UTC) */
