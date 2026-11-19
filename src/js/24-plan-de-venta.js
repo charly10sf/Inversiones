@@ -69,6 +69,9 @@ function planVenta0(f, M) {
   const computa = ganancia + (recompra ? recompra.aplazada + recompra.liberada : 0);
   const iv = impuestoDeVenta(computa, anio, f.inst);
   const impuesto = Math.max(0, iv.impuesto);
+  // 19 nov (mejorar-ia-2, parte B) · lo que baja la renta cuando lo que cuenta es una pérdida (también si la venta gana pero
+  // hace contar una pérdida aplazada mayor): antes solo salía en la tabla de Hacienda; la cabecera decía «unos 0 € de impuesto»
+  const ahorro = Math.max(0, -iv.impuesto);
   const mover = Math.max(0, neto - impuesto);
   const fiscal = { coste: r.coste, mezcla: r.mezcla, lotes: r.usados.length, antes: iv.antes, despues: iv.despues, anio, finDeAnio: new Date().getMonth() >= 10, recompra };
 
@@ -107,7 +110,7 @@ function planVenta0(f, M) {
   // una acción nueva por menos de 300 € no compensa (comisiones, seguimiento): eso va al fondo
   if (!ideas.length || aIdea < 300) aIdea = 0;
   const aNucleo = resto - aIdea;
-  return { f, nivel, uds, queda, cuanto, importe, neto, ganancia, computa, impuesto, mover, cuando, ideas: ideas.slice(0, 3), aIdea, aNucleo, aColchon, salidaResto, accion, fiscal };
+  return { f, nivel, uds, queda, cuanto, importe, neto, ganancia, computa, impuesto, ahorro, mover, cuando, ideas: ideas.slice(0, 3), aIdea, aNucleo, aColchon, salidaResto, accion, fiscal };
 }
 
 /* qué declaras con esta venta y cuánto pagas, con todo lo que ya llevas en el año */
@@ -122,18 +125,42 @@ function htmlFiscalVenta(pl) {
   if (a.rcmVentas) yaLlevas.push(`${eurS(a.rcmVentas, 0)} en ventas de ETC`);
   if (a.pendientes) yaLlevas.push(`${eur(a.pendientes, 0)} de pérdidas de años anteriores`);
   if (a.pendientesRcm) yaLlevas.push(`${eur(a.pendientesRcm, 0)} de rendimientos negativos de años anteriores`);
+  /* 19 nov (mejorar-ia-2, parte B) · tres cosas que fallaban con la regla de recompra:
+     (a) «No vuelvas a comprar X en dos meses (ni antes ni después de vender)» cuando ya había comprado antes: ahora, la fecha
+         hasta la que no comprar (más);
+     (b) «cuentan X» sumaba la pérdida de OTRA venta que esta libera, y podía salir más que la propia pérdida: va aparte;
+     (c) una venta con ganancia que libera una pérdida aplazada mayor decía «unos 0 € de impuesto»: ahora dice lo que ahorra
+         (lo mismo que la tabla «Lo que costaría cada paso de tu plan») */
+  const rc = fs.recompra, nom = esc(pl.f.inst.corto), ahorro = pl.ahorro || 0;
+  const liberada = rc && rc.liberada < -0.5 ? -rc.liberada : 0; // de otra venta de este año, vuelve a restar
+  const aplazada = rc && rc.aplazada > 0.5 ? rc.aplazada : 0; // de esta venta, no resta este año
+  const propia = Math.max(0, -pl.ganancia - aplazada); // de esta pérdida, lo que sí cuenta
+  const cuenta = -(pl.computa != null ? pl.computa : pl.ganancia); // todo lo que resta este año con esta venta (> 0: resta)
+  const queResta = esRCMVenta(pl.f.inst) ? 'tus rendimientos del capital' : 'tus ganancias';
   if (pl.ganancia > 0) {
-    if (fs.recompra && fs.recompra.liberada < -0.5) lineas.push(`Con esta venta salen participaciones que bloqueaban la pérdida de una venta tuya de este año: unos ${eur(-fs.recompra.liberada, 0)} de esa pérdida vuelven a restar (ya están contados).`);
+    if (liberada) lineas.push(`Con esta venta salen participaciones que bloqueaban la pérdida de una venta tuya de este año: unos ${eur(liberada, 0)} de esa pérdida vuelven a restar (ya están contados).`);
     lineas.push(yaLlevas.length ? `Este año ya llevas ${yaLlevas.join(', ')}: con esta venta tu base del ahorro queda en ${eur(fs.despues.base, 0)} y tu tramo en el ${pctTramo(fs.despues.marginal)} %.` : `Es lo único que declaras este año por ahora. Si tienes pérdidas de otras ventas o dividendos, apúntalos en Análisis > Hacienda > Datos fiscales, y este cálculo se ajusta.`);
-    lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${esc(pl.f.inst.corto)} para que el cambio compense.`);
-    if (fs.finDeAnio) lineas.push(`Si esperas a enero, el impuesto se paga un año más tarde (en la renta de ${fs.anio + 1}).`);
+    if (cuenta > 0.5) lineas.push(`Mover el dinero no te cuesta impuestos: la pérdida que vuelve a restar es mayor que esta ganancia, y los ${eur(cuenta, 0)} de diferencia restan de ${queResta} de ${fs.anio}${ahorro > 0.5 ? ` (unos ${eur(ahorro, 0)} menos en la renta)` : '; si no tienes, quedan para los 4 años siguientes'}.`);
+    else lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${nom} para que el cambio compense.`);
+    if (fs.finDeAnio && pl.impuesto > 0.5) lineas.push(`Si esperas a enero, el impuesto se paga un año más tarde (en la renta de ${fs.anio + 1}).`);
   } else {
-    const rc = fs.recompra;
-    if (rc && rc.aplazada > 0.5) lineas.push(`${rc.aplazada >= -pl.ganancia - 0.5 ? 'Esa pérdida no resta este año' : `De esa pérdida, unos ${eur(rc.aplazada, 0)} no restan este año (cuentan ${eur(Math.max(0, -pl.computa), 0)})`}: ${rc.porAntes > 0.5 ? `compraste ${esc(pl.f.inst.corto)} en ${rc.plazo === 'un año' ? 'el año anterior' : 'los dos meses anteriores'}${rc.primera ? ` (desde el ${fechaLarga(rc.primera)})` : ''} y eso sigue en tu cartera tras vender` : ''}${rc.porAntes > 0.5 && rc.porFuturas > 0.5 ? ', y ' : ''}${rc.porFuturas > 0.5 ? `tu aportación automática comprará más en ${rc.plazo}` : ''}. Es la regla de recompra de Hacienda: esa parte se aplaza hasta que vendas lo recomprado.`);
-    if (!(rc && rc.aplazada >= -pl.ganancia - 0.5)) lineas.push(`${rc && rc.aplazada > 0.5 ? `Lo que cuenta (${eur(Math.max(0, -pl.computa), 0)}) resta` : 'Esa pérdida resta'} de ${esRCMVenta(pl.f.inst) ? 'tus rendimientos del capital' : 'tus ganancias'} de ${fs.anio}; si sobra, ${comunidadUsuario() === 'paisvasco' ? '' : esRCMVenta(pl.f.inst) ? 'de hasta un 25 % de tus ganancias y ' : 'de hasta un 25 % de tus dividendos e intereses y '}el resto en los 4 años siguientes. ${(() => { const r = reglaRecompra(pl.f.inst); return r && r.meses ? `No vuelvas a comprar ${esc(pl.f.inst.corto)} en ${r.plazo} (ni antes ni después de vender) o la pérdida no cuenta hasta que la vendas.` : 'En cripto la norma no está clara: para ir sobre seguro, no la recompres en un año.'; })()}`);
+    const toda = aplazada && aplazada >= -pl.ganancia - 0.5;
+    if (aplazada) lineas.push(`${toda ? 'Esa pérdida no resta este año' : `De esa pérdida, unos ${eur(aplazada, 0)} no restan este año (cuentan ${eur(propia, 0)})`}: ${rc.porAntes > 0.5 ? `compraste ${nom} en ${rc.plazo === 'un año' ? 'el año anterior' : 'los dos meses anteriores'}${rc.primera ? ` (desde el ${fechaLarga(rc.primera)})` : ''} y eso sigue en tu cartera tras vender` : ''}${rc.porAntes > 0.5 && rc.porFuturas > 0.5 ? ', y ' : ''}${rc.porFuturas > 0.5 ? `tu aportación automática comprará más en ${rc.plazo}` : ''}. Es la regla de recompra de Hacienda: esa parte se aplaza hasta que vendas lo recomprado.`);
+    if (liberada) lineas.push(`Aparte, con esta venta salen participaciones que bloqueaban la pérdida de otra venta tuya de este año: unos ${eur(liberada, 0)} de aquella pérdida vuelven a restar.`);
+    if (cuenta > 0.5) {
+      const r = reglaRecompra(pl.f.inst), libre = libreRecompra(pl.f.inst);
+      const noCompres = !(r && r.meses) ? 'En cripto la norma no está clara: para ir sobre seguro, no la recompres en un año.'
+        : rc && rc.porAntes > 0.5 ? `No compres más ${nom} hasta el ${fechaLarga(libre)} si vendes hoy: lo que compres antes aplazaría otra parte de la pérdida.`
+        : `No vuelvas a comprar ${nom} hasta el ${fechaLarga(libre)} si vendes hoy (${r.plazo} y un día después de vender): la pérdida de lo que recompres antes no cuenta hasta que lo vendas.`;
+      lineas.push(`${aplazada || liberada ? `Lo que cuenta este año (${eur(cuenta, 0)}${liberada ? ', con lo de la otra venta' : ''}) resta` : 'Esa pérdida resta'} de ${queResta} de ${fs.anio}; si sobra, ${comunidadUsuario() === 'paisvasco' ? '' : esRCMVenta(pl.f.inst) ? 'de hasta un 25 % de tus ganancias y ' : 'de hasta un 25 % de tus dividendos e intereses y '}el resto en los 4 años siguientes. ${noCompres}`);
+    }
   }
-  const sinRestar = pl.ganancia <= 0 && fs.recompra && fs.recompra.aplazada >= -pl.ganancia - 0.5;
-  return `<b>${pl.ganancia > 0 ? `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto` : sinRestar ? `Pierdes ${eur(-pl.ganancia, 0)}, pero este año no resta: la regla de recompra la aplaza` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas${-pl.computa > 0.5 ? ' y te ahorra impuestos' : ''}`}</b><details class="mas"><summary>Cómo se calcula</summary><ul class="motivos">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul></details>`;
+  const sinRestar = pl.ganancia <= 0 && !(cuenta > 0.5) && aplazada > 0;
+  const cab = pl.ganancia > 0
+    ? (cuenta > 0.5 ? L(`Declaras una ganancia de ${eur(pl.ganancia, 0)}, pero vuelve a restar una pérdida aplazada de ${eur(liberada, 0)}: no pagas${ahorro > 0.5 ? ` y te ahorras unos ${eur(ahorro, 0)}` : ''}`, `You declare a gain of ${eur(pl.ganancia, 0)}, but a deferred loss of ${eur(liberada, 0)} counts again: you pay nothing${ahorro > 0.5 ? ` and save about ${eur(ahorro, 0)}` : ''}`) : `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto`)
+    : sinRestar ? `Pierdes ${eur(-pl.ganancia, 0)}, pero este año no resta: la regla de recompra la aplaza`
+    : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas${cuenta > 0.5 ? ' y te ahorra impuestos' : ''}`;
+  return `<b>${cab}</b><details class="mas"><summary>Cómo se calcula</summary><ul class="motivos">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul></details>`;
 }
 function htmlPlanVenta(pl, compacto) {
   if (!pl) return '';
