@@ -1,6 +1,29 @@
 {
  "versiones": [
   {
+   "v": "0.9e",
+   "f": "2026-11-19",
+   "h": "14:30",
+   "t": "Apunta con la captura de tu bróker",
+   "commits": [
+    {
+     "cuando": "2026-11-19 12:45",
+     "asunto": "Apuntar una compra o una venta con la captura del justificante del bróker",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 13:15",
+     "asunto": "Revisión aparte de apuntar con la captura: la tasa una vez, la venta en su fondo y otra moneda",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 14:20",
+     "asunto": "Versión 0.9e: Apunta con la captura de tu bróker",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9d",
    "f": "2026-11-18",
    "h": "07:15",

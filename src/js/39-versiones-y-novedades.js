@@ -10,6 +10,11 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9e', f: '2026-11-19', h: '14:30', t: 'Apunta con la captura de tu bróker', arreglos: [
+    'En Compra y Venta, «Rellenar con una captura»: sube la del detalle de la orden de tu bróker y la IA te rellena qué, dónde, cuándo, cuántas, el precio y la comisión. Tú lo revisas antes de apuntar.',
+    'En una venta, Toisón compara lo que gana o pierde con lo que dice tu bróker, y al efectivo va lo que te llega de verdad, ya sin la retención.',
+    'Si escribes el total y cuadra con cuántas por el precio, se apunta ese total: ya no se pierden céntimos al redondear.',
+  ] },
   { v: '0.9d', f: '2026-11-18', h: '07:15', t: 'La IA del fundador, sin freno', arreglos: [
     { t: 'La IA, en el modo fundador, ya no tiene freno: te dice qué comprar, vender, mantener o traspasar, cuánto, cuándo y dónde, con tus números y lo que pagas a Hacienda.', solo: 'dueno' },
     { t: 'Las preguntas que te propone la IA en el modo fundador van a lo que hay que hacer, como «¿Qué compro, vendo o mantengo este mes?».', solo: 'dueno' },
