@@ -38,3 +38,21 @@ test('«segun»: Sonnet para vender, traspasar e impuestos; Haiku para lo demás
   expect(r.analisis).toBe(H5);
   expect(r.publico).toEqual({ elegido: 'auto', vender: H5 });
 });
+
+test('la foto del chat del fundador va sin los temas de la semana ni los titulares del mercado (con informe); la del estándar, igual que antes', async ({ page }) => {
+  await crearCuenta(page); await quitarCapas(page); await meterCartera(page);
+  const r = await page.evaluate(async () => {
+    await cargarFichas().catch(() => {});
+    S.M = calcular();
+    const f = contextoAsesor(S.M, 'chat', false), e = contextoAsesor(S.M, 'chat', true), rev = contextoAsesor(S.M, 'revision', false);
+    return { f, e, rev, temas: temasGrowIA(5).length, informe: !!informeVisible() };
+  });
+  expect(r.informe, 'los datos de prueba traen informe de prensa').toBe(true);
+  expect(r.temas, 'los datos de prueba traen temas de la semana').toBeGreaterThan(0);
+  expect(r.f).not.toContain('## Temas de la semana');
+  expect(r.f).not.toMatch(/^Mercado:$/m);
+  expect(r.f).toContain('## Informe de prensa de la IA');
+  expect(r.e).toContain('## Temas de la semana');
+  expect(r.rev).toContain('## Temas de la semana');
+  expect(r.e).toContain('## Titulares recientes');
+});
