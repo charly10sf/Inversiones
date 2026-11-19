@@ -10,6 +10,12 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9f', f: '2026-11-19', h: '15:10', t: 'La IA del fundador, más fina', arreglos: [
+    { t: 'Al plantearte vender con pérdidas, la IA ya no te promete un ahorro en la renta que no existe: cuenta lo que compras con la aportación automática y la regla de recompra.', solo: 'dueno' },
+    { t: 'La IA te avisa cuando el precio de un fondo lleva días sin actualizarse.', solo: 'dueno' },
+    { t: 'Si le preguntas en inglés, la IA contesta en inglés.', solo: 'dueno' },
+    { t: 'Las preguntas a la IA cuestan menos: la foto de tu cartera ya no cambia cada minuto y se aprovecha la caché.', solo: 'dueno' },
+  ] },
   { v: '0.9e', f: '2026-11-19', h: '14:30', t: 'Apunta con la captura de tu bróker', arreglos: [
     'En Compra y Venta, «Rellenar con una captura»: sube la del detalle de la orden de tu bróker y la IA te rellena qué, dónde, cuándo, cuántas, el precio y la comisión. Tú lo revisas antes de apuntar.',
     'En una venta, Toisón compara lo que gana o pierde con lo que dice tu bróker, y al efectivo va lo que te llega de verdad, ya sin la retención.',

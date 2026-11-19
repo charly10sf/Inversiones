@@ -1,6 +1,99 @@
 {
  "versiones": [
   {
+   "v": "0.9f",
+   "f": "2026-11-19",
+   "h": "15:10",
+   "t": "La IA del fundador, más fina",
+   "commits": [
+    {
+     "cuando": "2026-11-18 23:44",
+     "asunto": "simular_venta aplica la regla de recompra",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:44",
+     "asunto": "La foto de la IA: pérdidas aplazadas, fondos atascados y el Paso a paso con su motivo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:47",
+     "asunto": "La foto de la IA: aviso de recompra al venderlo todo, sin entidades HTML ni análisis vacío",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:52",
+     "asunto": "Banco del fundador: 33 preguntas para medir que la IA sin freno recomienda bien",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:53",
+     "asunto": "Pruebas de la frontera fundador/estándar en el Worker, como si quisieras saltártela",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:53",
+     "asunto": "Worker: el 403 «reglas» no gasta un hueco de la ráfaga por minuto",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-18 23:58",
+     "asunto": "Al pasar de sin freno a las reglas del estándar, se repintan los botones «Pregúntale»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:12",
+     "asunto": "Sin freno: si le escribe en inglés, contesta en inglés; el banco no cuenta «no te lo recomiendo» como escudarse",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:20",
+     "asunto": "Sin freno: las cuentas que se confundían en el banco del fundador, y el banco repone el fondo atascado",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:29",
+     "asunto": "La foto de la IA no cambia de un minuto a otro: aprovecha la caché de Claude",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:33",
+     "asunto": "Sin freno: la regla del idioma, también delante de todo (nota del fundador)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:39",
+     "asunto": "Sin freno: cuándo se libera una pérdida aplazada y el tope del ahorro al juntar ventas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:43",
+     "asunto": "Sin freno: en un traspaso no cuenta la pérdida, y los impuestos de una venta parcial con la herramienta",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 00:56",
+     "asunto": "Revisión aparte de la rama: la recompra con la aportación y las ventas apuntadas, la caché entera y las pruebas flojas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 01:12",
+     "asunto": "Prueba de la foto que no cambia: independiente de la zona horaria",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 01:21",
+     "asunto": "Sin freno: una pregunta en inglés con la app en español lleva «(Answer in English.)»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 15:10",
+     "asunto": "Versión 0.9f: La IA del fundador, más fina",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9e",
    "f": "2026-11-19",
    "h": "14:30",
