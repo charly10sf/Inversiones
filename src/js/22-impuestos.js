@@ -276,9 +276,10 @@ function restoEnPerdidas(M, planes) {
   return M.filas.filter((f) => !conAporte.has(f.inst.id)).map((f) => {
     const g = f.valor - f.coste, pl = (planes || []).find((x) => x.f && x.f.pos && x.f.pos.id === f.pos.id);
     if (!pl) return conRecompra({ f, g, uds: f.uds });
-    const queda = f.uds ? Math.max(0, +pl.queda || 0) / f.uds : 0;
     // uds: lo que queda por vender después de la venta que ya propone Toisón (lo usa el Paso a paso para dar la cantidad)
-    return conRecompra({ f, g: g * queda, resto: true, uds: Math.max(0, +pl.queda || 0) }, pl);
+    // 19 nov (revisión aparte de mejorar-ia, 1): la pérdida del resto por FIFO (lo que no se lleva el plan), como su
+    // «cuenta»; antes, a precio medio, y la diferencia salía como una regla de recompra que no existía
+    return conRecompra({ f, g: g - (+pl.ganancia || 0), resto: true, uds: Math.max(0, +pl.queda || 0) }, pl);
   }).filter((x) => x.g < -50 && x.cuenta < -50);
 }
 /* 19 nov (mejorar-ia, parte 0) · la regla de recompra con lo comprado antes (recompraDeVenta, la misma cuenta que la IA).
@@ -302,6 +303,8 @@ function conRecompra(x, pl) {
   } catch (e) { cuenta = x.g; }
   x.cuenta = Math.min(0, cuenta);
   x.noResta = Math.max(0, x.cuenta - x.g);
+  // con resto: si la venta del plan tenía su pérdida aplazada por lo que ahora se vende, vender el resto la hace contar
+  x.libera = x.resto ? Math.max(0, x.g - x.cuenta) : 0;
   return x;
 }
 /* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */
@@ -316,7 +319,7 @@ function htmlFiscalRecom(M, fa) {
     const gc = pl.computa != null ? pl.computa : pl.ganancia;
     if (esR) ganR += gc; else gan += gc;
     const despues = fiscalAnio(anio, gan, ganR).cuota;
-    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `${pl.ganancia < 0 ? `pérdida de ${eur(-pl.ganancia, 0)}` : `ganancia de ${eur(pl.ganancia, 0)}`} por FIFO (se venden primero las más antiguas)`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
+    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `${pl.ganancia < 0 ? `pérdida de ${eur(-pl.ganancia, 0)}` : `ganancia de ${eur(pl.ganancia, 0)}`} por FIFO (se venden primero las más antiguas)${pl.computa != null && Math.abs(pl.computa - pl.ganancia) > 0.5 ? `; por la regla de recompra, este año cuenta ${eurS(pl.computa, 0)}` : ''}`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
     const top = pl.ideas[0];
     if (pl.aIdea > 0 && top) {
       const tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede), e = rentaEsperada(top, top.pot, 12);
@@ -329,7 +332,7 @@ function htmlFiscalRecom(M, fa) {
   if (new Date().getMonth() >= 6) for (const x of perd) {
     const esR = esRCMVenta(x.f.inst);
     const ahorro = fiscalAnio(anio, gan, ganR).cuota - fiscalAnio(anio, gan + (esR ? 0 : x.cuenta), ganR + (esR ? x.cuenta : 0)).cuota;
-    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}${x.noResta > 0.5 ? ` (unos ${eur(x.noResta, 0)} no restan este año por la regla de recompra: tienes ${esc(x.f.inst.corto)} en otra cuenta comprado en el plazo)` : ''}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
+    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}${x.noResta > 0.5 ? ` (unos ${eur(x.noResta, 0)} no restan este año por la regla de recompra: tienes ${esc(x.f.inst.corto)} en otra cuenta comprado en el plazo)` : ''}${x.libera > 0.5 ? ` (y hace contar unos ${eur(x.libera, 0)} de la venta que propone Toisón, que la regla de recompra aplazaba)` : ''}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
   }
   const ap = sum(aportacionesActivas(), ({ a }) => +a.importe || 0);
   if (ap > 0) filas.push({ q: `Aportar ${eur(ap, 0)} al mes`, d: 'a fondos de acumulación: no reparten dividendos, no tributan hasta que vendas', v: 0, c: '' });

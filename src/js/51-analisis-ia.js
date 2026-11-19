@@ -95,7 +95,7 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 Lo que más falla en esta revisión (banco de la revisión del fundador, 19 nov):
 - El titular empieza por lo que ha pasado hoy en su cartera: lo que más se ha movido en euros, resultados o noticias de sus posiciones, un fondo sin precio, un dividendo. No por el patrimonio ni la ganancia latente si no han cambiado, ni con frases sin cifra («el riesgo es el mercado, no tu plan»). Sus metas, solo si algo de hoy las cambia.
 - Lo de hoy en euros sale de las posiciones con precio de hoy. Un fondo que aún no tiene el precio de hoy no se ha movido hoy: no lo cuentes en la caída ni en la subida de hoy, aunque su índice sí se mueva. Si una acción no se ha movido, no digas que ha caído.
-- Si el ex-dividendo de una posición fue ayer u hoy, su bajada es el dividendo: dilo con la cifra y no lo trates como una mala noticia.
+- El día del ex-dividendo de una posición, la parte de su bajada que corresponde al dividendo no es una mala noticia: dilo con la cifra (si el corte fue ayer, ya iba en la bajada de ayer).
 - Si un fondo lleva varias sesiones sin valor liquidativo, dilo con su fecha y propón mirarlo en su bróker.
 - Una pérdida aplazada por la regla de recompra cuenta cuando venda lo recomprado: no la prometas por parar la aportación ni la cuentes en la renta de este año. El plazo de los fondos es un año.
 - En la hoja de ruta, la decisión ya tomada: nada de «valora», «decide si» ni «considera».
@@ -234,7 +234,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // poco, 6 de 7 días del banco de la revisión se quedaban sin espacio (24.000 de salida) y se repetían sin pensar: el
     // doble de tiempo (unos 140 s) y de gasto para acabar igual. El estándar, como estaba
     let pedido = null;
-    const preparar = (est) => (pedido = { mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }], ...(auto && !est ? { pensar: false } : {}) });
+    const preparar = (est) => (pedido = { mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }], ...(auto ? { pensar: !!est } : {}) });
     const idPregunta = nuevoIdPregunta();
     await conversar({ tipo: 'análisis', tarea: 'revision', soloHaiku: auto, turno, preparar, idPregunta, ...(auto ? { esfuerzo: 'low' } : {}), maxTokens: REVISION_SALIDA / 2, alCambiar, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');

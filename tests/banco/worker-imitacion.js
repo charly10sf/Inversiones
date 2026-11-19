@@ -6,8 +6,11 @@
 // Las comprobaciones de la petición siguen el orden de manejarClaude para el nivel alto (el de Carlos):
 // cuerpo de más de CLAUDE_MAX_CUERPO, JSON, reglas, modelo, max_tokens, messages, campos que pasan, herramientas con su
 // tope de búsquedas, adjuntos, system con la nota delante, tareas, noticia, y el conteo de tokens con su tope de entrada
-// (el doble en las rondas siguientes). Lo que NO se imita, a propósito: los topes del día (20 preguntas y 60 peticiones)
-// y la ráfaga por minuto, que pararían el banco a mitad; sí el de 16 peticiones por pregunta.
+// (el doble en las rondas siguientes). Lo que NO se imita, a propósito: los topes del día (20 preguntas y 60 peticiones,
+// las tareas y las 2 revisiones al día, el gasto de tareas de 2 $), la huella de las tareas, las 6 peticiones de una
+// noticia y la ráfaga por minuto, que pararían el banco a mitad; tampoco convierte los errores de Anthropic como el
+// Worker ({error:'claude'…}, 'sin-creditos'). Sí el de 16 peticiones por pregunta. Usa los valores por defecto del
+// Worker, no las variables de entorno de producción.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

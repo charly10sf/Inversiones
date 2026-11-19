@@ -794,6 +794,23 @@ test('la revisión automática del fundador va sin pensar desde la primera petic
   expect(w.peticiones[1].cuerpo).not.toHaveProperty('thinking');
 });
 
+// revisión aparte (19 nov): si el Worker no da las reglas del fundador a esta cuenta, la repetición con las del estándar
+// piensa como siempre (antes se quedaba sin pensar)
+test('la revisión automática del fundador que el Worker pasa al estándar se repite pensando, como el estándar', async ({ page }) => {
+  await preparada(page);
+  await fundador(page);
+  await page.evaluate(() => { LS.set('inv-claude-ok', true); LS.del('inv-ia-fundador-no'); });
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  const w = await worker(page.context(), (c) => (c.reglas === 'fundador' ? { json: { error: 'reglas' }, estado: 403 } : { sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]) }));
+  await page.evaluate(() => generarAnalisisIA('revisión de la mañana'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  expect(w.peticiones.length).toBe(2);
+  expect(w.peticiones[0].cuerpo.thinking).toEqual({ type: 'disabled' });
+  expect(w.peticiones[1].cuerpo.reglas).toBeUndefined();
+  expect(w.peticiones[1].cuerpo).not.toHaveProperty('thinking');
+});
+
 test('si en la revisión se cuela un «te conviene», se pide reescrito en la misma revisión; si no llega bien, se quita la frase', async ({ page }) => {
   await preparada(page);
   await page.evaluate(() => LS.set('inv-claude-ok', true));

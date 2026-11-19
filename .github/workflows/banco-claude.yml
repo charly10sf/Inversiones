@@ -38,6 +38,8 @@ jobs:
           CLAVE: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
         run: |
           if [ "${{ inputs.motor }}" != "los dos" ] && [ "${{ inputs.motor }}" != "${{ matrix.motor }}" ]; then exit 0; fi
+          # el banco de la revisión solo va con haiku (la automática es siempre Haiku)
+          case "${{ inputs.solo }}" in revision*) if [ "${{ matrix.motor }}" != "haiku" ]; then [ "${{ inputs.motor }}" = "sonnet" ] && echo "::error::El banco de la revisión solo corre con haiku" && exit 1; exit 0; fi;; esac
           if [ -z "$CLAVE" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY (o ANTHROPIC_API_KEY)"; exit 1; fi
           echo "si=1" >> "$GITHUB_OUTPUT"
 

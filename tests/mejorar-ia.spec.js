@@ -29,6 +29,9 @@ test('buscar_empresa y simular_compra encuentran la empresa con el nombre y el t
   expect(r.solo).toBe(r.s);
   expect(r.herr).toBeNull();
   expect(r.nada).toBeNull();
+  // revisión aparte: las formas jurídicas no son tickers (antes «Siemens AG» daba First Majestic, AG; «Philips NV», NVDA)
+  const malos = await page.evaluate(() => Object.fromEntries(['Siemens AG', 'Bayer AG (BAYN.DE)', 'Inditex SA', 'Volvo AB', 'Philips NV', 'Alphabet Class A', 'Berkshire B'].map((q) => [q, (buscarRadar(q) || {}).s || null])));
+  for (const [q, s] of Object.entries(malos)) expect(['AG', 'SA', 'AB', 'NVDA', 'A', 'B'], q).not.toContain(s);
 });
 
 test('una pregunta en inglés lleva la nota delante y detrás', async ({ page }) => {
@@ -54,7 +57,7 @@ test('las instrucciones del fundador llevan lo que se confundía en el banco; el
 test('el pedido de la revisión del fundador lleva lo que fallaba en su banco; el del estándar no cambia', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: pedidoAnalisis(['repsol'], 'prueba', false, true, false), e: pedidoAnalisisPublico(['repsol'], 'prueba', false, true), anio: String(new Date().getFullYear()) }));
-  for (const t of ['El titular empieza por lo que ha pasado hoy', 'Un fondo que aún no tiene el precio de hoy no se ha movido hoy', 'su bajada es el dividendo', 'nada de «valora», «decide si»', '"fuentes" vacío', 'da la cifra que ya calcula Toisón']) {
+  for (const t of ['El titular empieza por lo que ha pasado hoy', 'Un fondo que aún no tiene el precio de hoy no se ha movido hoy', 'la parte de su bajada que corresponde al dividendo', 'nada de «valora», «decide si»', '"fuentes" vacío', 'da la cifra que ya calcula Toisón']) {
     expect(r.f, t).toContain(t);
     expect(r.e, t).not.toContain(t);
   }

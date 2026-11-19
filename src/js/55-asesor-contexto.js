@@ -15,10 +15,17 @@ function buscarRadar(q) {
   if (x) return x;
   const trozos = String(q || '').split(/[\s(),;/|]+/).filter(Boolean);
   if (trozos.length < 2) return null;
-  const esTicker = (t) => /\./.test(t) || /^[A-Z0-9]{1,6}$/.test(t);
-  for (const t of trozos.filter(esTicker)) { const y = buscarRadar0(t); if (y && normTxt(y.s).replace(/ /g, '').startsWith(normTxt(t).replace(/ /g, ''))) return y; }
-  const nombre = trozos.filter((t) => !esTicker(t)).join(' ');
-  return nombre && nombre !== q ? buscarRadar0(nombre) : null;
+  // revisión aparte: las formas jurídicas («Siemens AG», «Inditex SA», «Volvo AB», «Philips NV», «Class A») no son tickers;
+  // el ticker, solo si coincide entero (con su bolsa o sin ella)
+  const FORMAS = new Set(['AG', 'SA', 'SE', 'NV', 'PLC', 'INC', 'AB', 'ASA', 'SPA', 'OYJ', 'AS', 'BV', 'CO', 'CORP', 'LTD', 'GROUP', 'HOLDING', 'CLASS', 'A', 'B', 'C', 'SAU', 'SL']);
+  const esTicker = (t) => !FORMAS.has(t.toUpperCase()) && (/\./.test(t) || /^[A-Z0-9]{2,6}$/.test(t));
+  const igual = (y, t) => { const c = normTxt(t).replace(/ /g, ''), tk = normTxt(y.s).replace(/ /g, ''), base = normTxt(String(y.s).split('.')[0]).replace(/ /g, ''); return tk === c || base === c; };
+  const tickers = trozos.filter(esTicker).sort((a, b) => (/\./.test(b) ? 1 : 0) - (/\./.test(a) ? 1 : 0));
+  const nombre = trozos.filter((t) => !esTicker(t) && !FORMAS.has(t.toUpperCase())).join(' ');
+  for (const t of tickers.filter((t) => /\./.test(t))) { const y = buscarRadar0(t); if (y && igual(y, t)) return y; }
+  if (nombre && nombre !== q) { const y = buscarRadar0(nombre); if (y) return y; }
+  for (const t of tickers.filter((t) => !/\./.test(t))) { const y = buscarRadar0(t); if (y && igual(y, t)) return y; }
+  return null;
 }
 function buscarRadar0(q) {
   const r = radarVals();
@@ -109,7 +116,7 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     if (!est) {
       const conHoy = M.filas.filter((f) => f.varDia != null && Math.abs(f.dia) >= 0.5).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia));
       const sinHoy = [...new Set(M.filas.filter((f) => f.varDia == null && !f.sinPrecio).map((f) => f.inst.corto))];
-      if (conHoy.length || sinHoy.length) L.push(`Lo de hoy sale solo de lo que tiene precio de hoy${conHoy.length ? `: ${conHoy.slice(0, 6).map((f) => `${f.inst.corto} ${eurP(f.dia, 0)} (${P1(f.varDia)})`).join(', ')}` : ''}.${sinHoy.length ? ` Sin precio de hoy (no cuentan en lo de hoy, aunque su índice se mueva): ${sinHoy.join(', ')}.` : ''}`);
+      if (conHoy.length || sinHoy.length) L.push(`Lo de hoy sale solo de lo que tiene precio de hoy${conHoy.length ? `; lo que más mueve: ${conHoy.slice(0, 6).map((f) => `${f.inst.corto} ${eurP(f.dia, 0)} (${P1(f.varDia)})`).join(', ')}` : ''}.${sinHoy.length ? ` Sin precio de hoy (no cuentan en lo de hoy, aunque su índice se mueva): ${sinHoy.join(', ')}.` : ''}`);
     }
     L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
     try {
@@ -370,7 +377,7 @@ Cuentas que se confunden (banco del fundador, 19 nov):
 - No atribuyas un fondo a un bróker si no lo sabes (cada fondo lo comercializa una gestora; si no sabes si está en MyInvestor, dilo).
 
 Más que se confunde (mejorar-ia, 19 nov):
-- Sin impuestos solo se cambia de un fondo de inversión a otro (traspaso). Una acción, un ETF o un ETC (su oro) no se traspasan: cambiarlos por otra cosa es vender y tributar, y dilo cuando propongas moverlos. Al revés, si el dinero sale de un fondo y va a otro fondo (o a un monetario), proponlo como traspaso, no como venta.
+- Sin impuestos solo se cambia de un fondo de inversión a otro (traspaso). Una acción, un ETF o un ETC (su oro) no se traspasan: cambiarlos por otra cosa es vender y tributar, y dilo cuando propongas moverlos. Al revés, si el dinero sale de un fondo y va a otro fondo (o a un monetario), proponlo como traspaso, no como venta, salvo que quiera que una pérdida reste este año: entonces, reembolso.
 - Cuando des el impuesto de una venta, di en una frase de qué sale: lo que ya lleva en el año y cuánto lo rebajan sus pérdidas de años anteriores pendientes (vienen en sus datos), con la renta que devuelve simular_venta.
 - Las cifras de la regla de recompra, las de los datos o las de simular_venta (cuántos euros de una pérdida no restarían), nunca «la mayor parte» ni «casi toda». Una pérdida ya aplazada no se libera cambiando la aportación a otro fondo: solo al vender lo recomprado.
 - «Ese dinero», «eso», «lo que saque»: lo que saldría de lo que acabáis de hablar (la venta de la respuesta anterior), no dinero nuevo. Da el impuesto de esa venta y lo que pierde por hacerla (por ejemplo, un dividendo con fecha cercana).
@@ -380,7 +387,7 @@ Más que se confunde (mejorar-ia, 19 nov):
 - Si sus datos dicen que tiene pérdidas de años anteriores pendientes, nunca digas que no tiene pérdidas que compensar. Lo que ahorra una pérdida depende de las ganancias del año: si solo ahorra si vende además otra cosa, dilo así.
 - El orden de compensar: una pérdida de este año resta primero de las ganancias de este año; las pérdidas de años anteriores, después. Nunca digas que las de años anteriores «ya cubren» las ganancias del año si propones vender con pérdidas.
 - Un mismo euro no cuenta dos veces: si su efectivo es su colchón, no lo sumes también para una meta o para una compra; si lo usas para una cosa, di cómo queda la otra.
-- En cada compra o venta que propongas, el bróker donde la hace y cuándo (un día o «antes del…»).
+- En cada compra o venta que propongas, el bróker donde la hace (el suyo si ya lo tiene allí; si es un fondo nuevo y no sabes si está en su bróker, dilo) y cuándo (un día o «antes del…»).
 - Si propones reinvertir lo que saca de una venta, reinvierte lo que queda tras apartar el impuesto, y di las dos cifras.
 - Una paga extra, el sueldo o dinero que llega de fuera es dinero nuevo (con_dinero_nuevo_pct); su efectivo o una venta, dinero que ya tiene. Si no sabes de dónde sale, da los dos porcentajes.
 - Su precio medio no dice si algo está caro o barato: perder un 22 % sobre lo que pagó no es que el fondo «esté barato». Para eso, lo que ha hecho el precio y sus valoraciones.
@@ -923,7 +930,7 @@ function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return 
 // 19 nov (mejorar-ia, parte 3): «segun», solo en el fundador y apagado por defecto: Sonnet para lo que va de vender,
 // traspasar o impuestos (pideSonnetIA) y Haiku para lo demás. En el estándar cuenta como «auto»
 const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) || (m === 'segun' && !esPublico()) ? m : 'auto'; };
-const SONNET_POR_TEMA = /vend|vent[ae]s?\b|traspas|impuest|hacienda|\brenta\b|tribut|compens|p[ée]rdid|fifo|retenc|retien|recompr|plusval|ganancia|\bsell|\btax|transfer|\bloss/i;
+const SONNET_POR_TEMA = /vend[eoí]|vender|vent[ae]s?\b|traspas|reembols|rescat|impuest|hacienda|\birpf\b|declar|\brenta\b|tribut|compens|p[ée]rdidas?\b|fifo|retenc|retien|recompr|plusval|\bsell|\btax|\btransfer\b|\bloss/i;
 function pideSonnetIA(q) { return SONNET_POR_TEMA.test(String(q || '')); }
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
 const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)

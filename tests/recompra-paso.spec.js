@@ -116,3 +116,34 @@ test('fondo con pérdidas y más participaciones en otra cuenta compradas hace 6
   expect(r.todo.x).toBeFalsy();
   expect(r.todo.paso).toBeFalsy();
 });
+
+// revisión aparte (19 nov): con «resto» (Toisón ya propone vender una parte), la pérdida del resto va por FIFO; antes, a
+// precio medio, y la diferencia salía como una regla de recompra que no existía
+test('el resto de una posición sin otra cuenta no inventa una regla de recompra; si libera la pérdida aplazada del plan, lo dice', async ({ page }) => {
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    const caso = (fReciente, cViejo, cNuevo) => {
+      pos.cantidad = 600; pos.lotes = [{ f: '2024-03-01', u: 300, c: 300 * pr * cViejo }, { f: fReciente, u: 300, c: 300 * pr * cNuevo }]; pos.coste = pos.lotes[0].c + pos.lotes[1].c;
+      S.M = calcular();
+      const f = S.M.filas.find((x) => x.pos === pos);
+      // el plan: vende las 300 viejas (como planVenta0 con Recortar)
+      const ganancia = 300 * pr - pos.lotes[0].c, rv = recompraDeVenta(f, 300, ganancia);
+      const pl = { f, queda: 300, ganancia, computa: ganancia + (rv ? rv.aplazada + rv.liberada : 0) };
+      const x = restoEnPerdidas(S.M, [pl]).find((y) => y.f.pos === pos);
+      return { pl: { ganancia: pl.ganancia, computa: pl.computa }, x: x && { g: x.g, cuenta: x.cuenta, noResta: x.noResta, libera: x.libera } };
+    };
+    return { a: caso(sumarMeses(hoy, -6), 1.6, 1.1), b: caso(sumarDias(hoy, -21), 1.5, 1.2) };
+  });
+  // A: el lote nuevo es de hace 6 meses (fuera de los dos meses): nada se aplaza
+  expect(r.a.x.noResta).toBe(0);
+  expect(r.a.x.libera).toBe(0);
+  expect(r.a.x.cuenta).toBeCloseTo(r.a.x.g, 1);
+  // B: el de hace 3 semanas aplaza la pérdida del plan; vender el resto la hace contar
+  expect(r.b.pl.computa).toBeCloseTo(0, 1);
+  expect(r.b.x.noResta).toBe(0);
+  expect(r.b.x.libera).toBeCloseTo(-r.b.pl.ganancia, 0);
+  expect(r.b.x.cuenta).toBeCloseTo(r.b.x.g + r.b.pl.ganancia, 0);
+});
