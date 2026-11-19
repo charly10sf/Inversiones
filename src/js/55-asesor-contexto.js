@@ -8,7 +8,19 @@ function buscarFila(q) {
     || M.filas.find((f) => claves(f).some((k) => k.length > 2 && (k.startsWith(c) || (c.length > 3 && c.startsWith(k)))))
     || null;
 }
+/* 19 nov (mejorar-ia) · con el nombre y el ticker juntos («Salzgitter SZG.DE», «NetEase (NTES)»), lo que escribe la IA a
+   menudo, no encontraba nada (banco del fundador, f18 y f30): si no sale entero, se prueba el ticker solo y luego el nombre */
 function buscarRadar(q) {
+  const x = buscarRadar0(q);
+  if (x) return x;
+  const trozos = String(q || '').split(/[\s(),;/|]+/).filter(Boolean);
+  if (trozos.length < 2) return null;
+  const esTicker = (t) => /\./.test(t) || /^[A-Z0-9]{1,6}$/.test(t);
+  for (const t of trozos.filter(esTicker)) { const y = buscarRadar0(t); if (y && normTxt(y.s).replace(/ /g, '').startsWith(normTxt(t).replace(/ /g, ''))) return y; }
+  const nombre = trozos.filter((t) => !esTicker(t)).join(' ');
+  return nombre && nombre !== q ? buscarRadar0(nombre) : null;
+}
+function buscarRadar0(q) {
   const r = radarVals();
   const n = normTxt(q), c = n.replace(/ /g, '');
   if (!c) return null;
@@ -349,6 +361,15 @@ Cuentas que se confunden (banco del fundador, 19 nov):
 - Para su límite de acciones sueltas, si el dinero sale de lo que ya tiene (su efectivo o una venta), usa con_dinero_que_ya_tiene_pct de simular_compra; si es dinero nuevo, con_dinero_nuevo_pct. Su efectivo cuenta para su colchón: si propones gastarlo, mira que el colchón siga cubierto.
 - Dividendos: cada cifra de la lista es un pago, por toda la posición; al año es la suma de los pagos de esa empresa.
 - No atribuyas un fondo a un bróker si no lo sabes (cada fondo lo comercializa una gestora; si no sabes si está en MyInvestor, dilo).
+
+Más que se confunde (mejorar-ia, 19 nov):
+- Sin impuestos solo se cambia de un fondo de inversión a otro (traspaso). Una acción, un ETF o un ETC (su oro) no se traspasan: cambiarlos por otra cosa es vender y tributar, y dilo cuando propongas moverlos. Al revés, si el dinero sale de un fondo y va a otro fondo (o a un monetario), proponlo como traspaso, no como venta.
+- Cuando des el impuesto de una venta, di en una frase de qué sale: lo que ya lleva en el año y cuánto lo rebajan sus pérdidas de años anteriores pendientes (vienen en sus datos), con la renta que devuelve simular_venta.
+- Las cifras de la regla de recompra, las de los datos o las de simular_venta (cuántos euros de una pérdida no restarían), nunca «la mayor parte» ni «casi toda». Una pérdida ya aplazada no se libera cambiando la aportación a otro fondo: solo al vender lo recomprado.
+- «Ese dinero», «eso», «lo que saque»: lo que saldría de lo que acabáis de hablar (la venta de la respuesta anterior), no dinero nuevo. Da el impuesto de esa venta y lo que pierde por hacerla (por ejemplo, un dividendo con fecha cercana).
+- Si un plan junta dinero de varios sitios, comprueba con simular_compra del importe total cómo quedan sus acciones sueltas y esa empresa: nunca por encima de su límite. Da una cifra, no un rango.
+- Al reembolsar un fondo, la gestora retiene a cuenta el 19 % de la ganancia; no es un impuesto de más: se descuenta en la renta.
+- Un fondo, una cuenta o un producto que no está en sus datos: dilo al empezar («no lo tengo en Toisón») y no te inventes sus cifras. No cites webs ni fuentes que no tengas delante (en los datos, en una herramienta o en una búsqueda hecha).
 
 ${fiscal}`;
 }
@@ -1433,9 +1454,12 @@ function pareceInglesIA(t) {
   const es = (s.match(/[^a-záéíóúñü](el|la|los|las|que|qué|mi|mis|tu|es|y|de|en|con|para|un|una|cuánto|compro|vendo|este|mes)(?=[^a-záéíóúñü])/g) || []).length;
   return en >= 2 && en > es;
 }
+// 19 nov (mejorar-ia): delante y detrás (con la nota solo al final, Sonnet contestó en español en la línea base, f16)
 function conNotaInglesIA(c) {
-  const nota = '\n\n(Answer in English.)';
-  return Array.isArray(c) ? c.map((p, i) => (i === c.length - 1 && typeof p.text === 'string' ? { ...p, text: p.text + nota } : p)) : `${c}${nota}`;
+  const antes = '(Reply entirely in English, headings included.)\n\n', nota = '\n\n(Answer in English.)';
+  if (!Array.isArray(c)) return `${antes}${c}${nota}`;
+  const iT = c.findIndex((p) => typeof p.text === 'string'), iU = c.map((p) => typeof p.text === 'string').lastIndexOf(true);
+  return c.map((p, i) => (i === iT || i === iU ? { ...p, text: `${i === iT ? antes : ''}${p.text}${i === iU ? nota : ''}` } : p));
 }
 async function preguntarAsesor(texto) {
   texto = String(texto || '').trim();
