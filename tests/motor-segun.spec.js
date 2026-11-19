@@ -21,7 +21,7 @@ test('«segun»: Sonnet para vender, traspasar e impuestos; Haiku para lo demás
     const out = { defecto: motorElegido(), conDefecto: m('¿Vendo Repsol?') };
     LS.set('inv-ia-motor', 'segun');
     out.elegido = motorElegido();
-    out.preguntas = Object.fromEntries(['¿Vendo Repsol?', '¿Traspaso el MSCI Europe al S&P 500?', '¿Cuánto pago a Hacienda si vendo el oro?', 'Should I sell my IAG shares?', '¿Qué pérdidas tengo para compensar?', '¿Qué compro este mes?', '¿y Repsol?', '¿Es buen momento para comprar bitcoin?'].map((q) => [q, m(q)]));
+    out.preguntas = Object.fromEntries(['¿Vendo Repsol?', '¿Traspaso el MSCI Europe al S&P 500?', '¿Cuánto pago a Hacienda si vendo el oro?', 'Should I sell my IAG shares?', '¿Qué pérdidas tengo para compensar?', '¿Qué compro este mes?', '¿y Repsol?', '¿Es buen momento para comprar bitcoin?', '¿Cuánto vale mi fondo de renta fija?'].map((q) => [q, m(q)]));
     AS.aFondo = true; out.aFondo = m('¿Qué compro este mes?'); AS.aFondo = false;
     // el análisis (la revisión) no cambia
     out.analisis = modeloClaudeParaIA('análisis', '¿Vendo Repsol?');
@@ -33,7 +33,7 @@ test('«segun»: Sonnet para vender, traspasar e impuestos; Haiku para lo demás
   expect(r.conDefecto).toBe('claude-haiku-5-5');
   expect(r.elegido).toBe('segun');
   const S5 = 'claude-sonnet-5-5', H5 = 'claude-haiku-5-5';
-  expect(r.preguntas).toEqual({ '¿Vendo Repsol?': S5, '¿Traspaso el MSCI Europe al S&P 500?': S5, '¿Cuánto pago a Hacienda si vendo el oro?': S5, 'Should I sell my IAG shares?': S5, '¿Qué pérdidas tengo para compensar?': S5, '¿Qué compro este mes?': H5, '¿y Repsol?': H5, '¿Es buen momento para comprar bitcoin?': H5 });
+  expect(r.preguntas).toEqual({ '¿Vendo Repsol?': S5, '¿Traspaso el MSCI Europe al S&P 500?': S5, '¿Cuánto pago a Hacienda si vendo el oro?': S5, 'Should I sell my IAG shares?': S5, '¿Qué pérdidas tengo para compensar?': S5, '¿Qué compro este mes?': H5, '¿y Repsol?': H5, '¿Es buen momento para comprar bitcoin?': H5, '¿Cuánto vale mi fondo de renta fija?': H5 });
   expect(r.aFondo).toBe(S5);
   expect(r.analisis).toBe(H5);
   expect(r.publico).toEqual({ elegido: 'auto', vender: H5 });

@@ -933,7 +933,7 @@ function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return 
 // 19 nov (mejorar-ia, parte 3): «segun», solo en el fundador y apagado por defecto: Sonnet para lo que va de vender,
 // traspasar o impuestos (pideSonnetIA) y Haiku para lo demás. En el estándar cuenta como «auto»
 const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) || (m === 'segun' && !esPublico()) ? m : 'auto'; };
-const SONNET_POR_TEMA = /vend[eoí]|vender|vent[ae]s?\b|traspas|reembols|rescat|impuest|hacienda|\birpf\b|declar|\brenta\b|tribut|compens|p[ée]rdidas?\b|fifo|retenc|retien|recompr|plusval|\bsell|\btax|\btransfer\b|\bloss/i;
+const SONNET_POR_TEMA = /vend[eoí]|vender|vent[ae]s?\b|traspas|reembols|rescat|impuest|hacienda|\birpf\b|declar|\brenta\b(?!\s+(?:fija|variable))|tribut|compens|p[ée]rdidas?\b|fifo|retenc|retien|recompr|plusval|\bsell|\btax|\btransfer\b|\bloss/i;
 function pideSonnetIA(q) { return SONNET_POR_TEMA.test(String(q || '')); }
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
 const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)
