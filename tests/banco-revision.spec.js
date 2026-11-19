@@ -74,6 +74,13 @@ test.describe('el banco de la revisión, sin Claude', () => {
       const r = await page.evaluate((c) => { const h = window.__casoRevision(c); return { h, hoy: hoyIso(), foto: contextoAsesor(S.M, 'revision', false), fotoEst: contextoAsesor(S.M, 'revision', true) }; }, caso);
       expect(r.fotoEst, caso).not.toContain('Hoy corta dividendo');
       expect(r.h.caso).toBe(caso);
+      if (caso === 'ayer') {
+        // con una revisión de ayer, la foto la lleva (niveles y hoja de ruta): es lo que mide r2
+        const f2 = await page.evaluate(() => { if (S.ia && !S.ia.fecha) S.ia = { ...S.ia, fecha: '2000-01-01' }; S.iaPropio = { fecha: new Date(Date.now() - 86400000).toISOString(), modelo: 'claude-haiku-5-5', json: { titular: 'Ayer, nada nuevo.', resumen: ['Sin cambios.'], posiciones: { p6: { nivel: 'mantener', veredicto: 'Sigue igual' } }, hoja_de_ruta: { mes: [{ t: 'Este mes, nada' }] } } }; const f = contextoAsesor(S.M, 'revision', false); S.iaPropio = null; return f; });
+        expect(f2).toContain('## Tu último análisis');
+        expect(f2).toMatch(/Nivel que diste a cada posición: [^\n]*: mantener \(«Sigue igual»\)/);
+        expect(f2).toContain('Tu hoja de ruta de este mes: Este mes, nada');
+      }
       if (caso === 'resultados') expect(r.foto).toContain('beneficio neto cae un 38 %');
       if (caso === 'atascado') expect(r.foto).toContain('valor liquidativo atascado');
       if (caso === 'aplazada') expect(r.foto).toMatch(/490[^\n]*no restan este año por la regla de recompra/);
@@ -131,6 +138,9 @@ test.describe('la revisión del fundador, con Claude de verdad', () => {
         const hecho = window.__casoRevision(caso);
         // cada día, sin revisión anterior; «ayer», con la del día normal hecha hace un día
         S.iaPropio = caso === 'ayer' && ayer ? { ...ayer, fecha: new Date(Date.now() - 86400000).toISOString() } : null;
+        // 19 nov (mejorar-ia-2): la cartera fija pone sus reglas en S.ia sin fecha, y iaActual() se quedaba con eso en vez de con
+        // la revisión de ayer: r2 no recibía la revisión anterior y medía otra cosa. En la app, S.ia sin fecha no se da
+        if (S.ia && !S.ia.fecha) S.ia = { ...S.ia, fecha: '2000-01-01' };
         IA.generando = false; IA.ultimoIntento = 0; IA.error = null;
         LS.set('inv-claude-quedan', { ...(LS.get('inv-claude-quedan') || {}), rv: null });
         if (window.__viejoNB && S.precios.instrumentos['nb-short']) S.precios.instrumentos['nb-short'] = { ...S.precios.instrumentos['nb-short'], fecha: window.__viejoNB };
