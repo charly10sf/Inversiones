@@ -22,9 +22,9 @@
 .as-md a { overflow-wrap: anywhere; }
 .as-tabla { overflow-x: auto; margin: 0 0 12px; }
 /* 19 nov (mejorar-ia): si la tabla no cabe, se difumina por el lado al que queda más (marcarTablasIA) */
-.as-tabla.as-tabla-der { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
-.as-tabla.as-tabla-izq { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
-.as-tabla.as-tabla-der.as-tabla-izq { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
+.as-tabla.as-tabla-der { -webkit-mask-image: linear-gradient(to right, currentColor calc(100% - 36px), transparent); mask-image: linear-gradient(to right, currentColor calc(100% - 36px), transparent); }
+.as-tabla.as-tabla-izq { -webkit-mask-image: linear-gradient(to left, currentColor calc(100% - 36px), transparent); mask-image: linear-gradient(to left, currentColor calc(100% - 36px), transparent); }
+.as-tabla.as-tabla-der.as-tabla-izq { -webkit-mask-image: linear-gradient(to right, transparent, currentColor 36px, currentColor calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, currentColor 36px, currentColor calc(100% - 36px), transparent); }
 .as-tabla table { font-size: 13px; }
 .as-tabla th, .as-tabla td { padding: 6px 8px; white-space: nowrap; }
 .as-paso { display: flex; gap: 8px; align-items: flex-start; color: var(--tenue); font-size: 12.5px; margin: 0 0 8px; line-height: 1.4; }
