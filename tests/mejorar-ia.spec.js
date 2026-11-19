@@ -73,3 +73,15 @@ test('sin freno, la foto dice de dónde sale lo de hoy y qué no tiene precio de
   expect(r.e).not.toContain('Lo de hoy sale solo');
   for (const n of r.sin) expect(r.f).toMatch(new RegExp(`Sin precio de hoy[^\\n]*${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
 });
+
+test('sin freno, simular_venta dice las pérdidas de años anteriores que usa; con las reglas del estándar, no', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    S.cartera.fiscal = { [String(new Date().getFullYear())]: { otras: 0, rcm: 0, pendientes: 300 } };
+    S.M = calcular();
+    const f = S.M.filas.find((x) => x.valor - x.coste > 500);
+    return { f: ejecutarHerramienta('simular_venta', { posicion: f.pos.id }, false).renta, e: ejecutarHerramienta('simular_venta', { posicion: f.pos.id }, true).renta };
+  });
+  expect(r.f.perdidas_de_anios_anteriores).toMatchObject({ pendientes: 300, usadas_sin_esta_venta: 0, usadas_con_esta_venta: 300 });
+  expect(r.e.perdidas_de_anios_anteriores).toBeUndefined();
+});

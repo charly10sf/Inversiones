@@ -454,7 +454,7 @@ function recompraDeVenta(f, u, gan) {
   if (!(gan < 0) && !liberada) return null;
   return { rr, aplazada, porAntes, porFuturas, primera, liberada, auto };
 }
-function hSimularVenta(q) {
+function hSimularVenta(q, est = esPublico()) {
   const f = buscarFila(q.posicion);
   if (!f) return { error: `No encuentro "${q.posicion}" en su cartera. Tiene: ${S.M.filas.map((x) => `${x.inst.corto} (id "${x.pos.id}")`).join(', ')}.` };
   if (!f.uds || !f.precio) return { error: 'Esa posición no tiene unidades o precio.' };
@@ -487,7 +487,10 @@ function hSimularVenta(q) {
     lotes_usados: r.usados.map((l) => ({ fecha: l.f, unidades: R2(l.u, 6), coste: R2(l.c) })),
     ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial', impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
     tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
-    renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra) },
+    renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra),
+      /* 19 nov (mejorar-ia) · sin freno, las pérdidas de años anteriores que usa, a la vista: en el banco, Haiku decía «no tienes
+         pérdidas que compensen» con 300 € pendientes (ya restadas en el impuesto) en 6 preguntas */
+      ...(!est && (iv.despues.pendientes || iv.despues.pendientesRcm) ? { perdidas_de_anios_anteriores: { pendientes: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0)), usadas_sin_esta_venta: R2((iv.antes.usadas || 0) + (iv.antes.usadasRcm || 0)), usadas_con_esta_venta: R2((iv.despues.usadas || 0) + (iv.despues.usadasRcm || 0)), nota: 'Ya están restadas en cuota_despues: cuéntalo al explicar el impuesto.' } } : {}) },
     ...(recompra ? { regla_de_recompra: recompra } : {}),
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
     notas: [/^Fondo/.test(f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', r.mezcla ? 'Lo que tenía antes de usar Toisón cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined,
