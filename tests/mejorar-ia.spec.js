@@ -50,3 +50,14 @@ test('las instrucciones del fundador llevan lo que se confundía en el banco; el
   const huella = (x) => createHash('sha256').update(x.split(r.anio).join('AAAA')).digest('hex').slice(0, 16);
   expect({ instrucciones: huella(r.e), nota: huella(r.ne) }).toEqual({ instrucciones: 'abdb65f31b1d749b', nota: '137a3f8b20bfd03f' });
 });
+
+test('el pedido de la revisión del fundador lleva lo que fallaba en su banco; el del estándar no cambia', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => ({ f: pedidoAnalisis(['repsol'], 'prueba', false, true, false), e: pedidoAnalisisPublico(['repsol'], 'prueba', false, true), anio: String(new Date().getFullYear()) }));
+  for (const t of ['El titular empieza por lo que ha pasado hoy', 'Un fondo que aún no tiene el precio de hoy no se ha movido hoy', 'su bajada es el dividendo', 'nada de «valora», «decide si»', '"fuentes" vacío', 'da la cifra que ya calcula Toisón']) {
+    expect(r.f, t).toContain(t);
+    expect(r.e, t).not.toContain(t);
+  }
+  const huella = createHash('sha256').update(r.e.split(r.anio).join('AAAA')).digest('hex').slice(0, 16);
+  expect(huella).toBe('beca2a7f8d7ceefe');
+});
