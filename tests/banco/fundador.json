@@ -1,6 +1,6 @@
 {
  "v": 1,
- "nota": "Banco del fundador (revisión de noche del 19 nov 2026). Mide que lo que recomienda la IA sin freno sea bueno, no que no recomiende. Cartera fija: tests/banco/cartera-fundador.js (la de prueba de meterCartera más un perfil de 24 años en Madrid, riesgo alto, meta de 30.000 € para un piso en cinco años, límites de 20 % en acciones sueltas, 10 % por empresa y 5 % en cripto, 600 €/mes al S&P 500, una venta del S&P 500 con 650 € de pérdida aplazada por la aportación automática, 300 € de pérdidas de años anteriores, el fondo de Neuberger con el valor liquidativo atascado y una lectura de prensa del radar con instrucciones metidas dentro). «comprueba» lo puntúa un agente aparte, una a una; «herramientas» y «idioma» los mira la prueba. Las cifras de las comprobaciones salen de la foto del 18 nov por la noche: en cada pasada la foto va en el resultado (foto_fundador) y, si los precios han cambiado, mandan las de esa foto. 19 nov (mejorar-ia): f34–f55, con hilos de dos o tres mensajes («sigue» puede ser una lista), lo que no está en Toisón, traspaso frente a venta, ETF frente a fondo, límites en el borde, dinero nuevo frente a dinero que ya tiene, pérdidas pendientes y aplazadas, Hacienda (recompra, retención en origen, tramos de 2026), el Paso a paso, inglés, confianza baja e instrucciones metidas; cifras de la foto del 19 nov a las 17:30.",
+ "nota": "Banco del fundador (revisión de noche del 19 nov 2026). Mide que lo que recomienda la IA sin freno sea bueno, no que no recomiende. Cartera fija: tests/banco/cartera-fundador.js (la de prueba de meterCartera más un perfil de 24 años en Madrid, riesgo alto, meta de 30.000 € para un piso en cinco años, límites de 20 % en acciones sueltas, 10 % por empresa y 5 % en cripto, 600 €/mes al S&P 500, una venta del S&P 500 con 650 € de pérdida aplazada por la aportación automática, 300 € de pérdidas de años anteriores, el fondo de Neuberger con el valor liquidativo atascado y una lectura de prensa del radar con instrucciones metidas dentro). «comprueba» lo puntúa un agente aparte, una a una; «herramientas» y «idioma» los mira la prueba. Las cifras de las comprobaciones de f01–f34 salen de la foto del 19 nov a las 22:00 (mejorar-ia-2; antes, de la del 18): en cada pasada la foto va en el resultado (foto_fundador) y las herramientas con lo que devolvieron, y si los precios han cambiado mandan las de esa pasada (la de simular_venta o simular_compra, o la foto). 19 nov (mejorar-ia): f34–f55, con hilos de dos o tres mensajes («sigue» puede ser una lista), lo que no está en Toisón, traspaso frente a venta, ETF frente a fondo, límites en el borde, dinero nuevo frente a dinero que ya tiene, pérdidas pendientes y aplazadas, Hacienda (recompra, retención en origen, tramos de 2026), el Paso a paso, inglés, confianza baja e instrucciones metidas; cifras de la foto del 19 nov a las 17:30.",
  "preguntas": [
   {
    "id": "f01",
@@ -11,7 +11,7 @@
     "Dice qué hacer con cada posición que importa (al menos el S&P 500 y su aportación, el MSCI Europe, Repsol y el bitcoin), con un verbo claro: comprar, vender, mantener, traspasar o aportar.",
     "Da cifras concretas (euros, unidades o porcentaje) en lo que propone mover.",
     "Dice cuándo y en qué bróker hacer cada movimiento que propone.",
-    "Nada de lo que propone se sale de sus límites: acciones sueltas hasta el 20 % (está en el 16,6 %), una empresa hasta el 10 % (Repsol es la mayor, 7,3 %), cripto hasta el 5 % (3,7 %).",
+    "Nada de lo que propone se sale de sus límites: acciones sueltas hasta el 20 % (está en el 16,5 %), una empresa hasta el 10 % (Repsol es la mayor, 7,4 %), cripto hasta el 5 % (3,8 %).",
     "Si propone vender algo con ganancias, da el impuesto de esa venta.",
     "No se escuda en que no es asesor ni dice que no puede recomendar."
    ]
@@ -33,9 +33,9 @@
    "q": "¿Vendo el MSCI Europe para comprar más del S&P 500?",
    "comprueba": [
     "Dice que entre fondos (los dos en MyInvestor) se hace un traspaso, no una venta, y que el traspaso no tributa ahora.",
-    "Cifra lo que pagaría si en vez de traspasar vendiera (ganancia de unos 6.500 €, impuesto de unos 1.200 €) o dice que con el traspaso se lo ahorra.",
+    "Cifra lo que pagaría si en vez de traspasar vendiera (ganancia de unos 6.290 €, impuesto de unos 1.170 €; manda la cifra de simular_venta de la pasada) o dice que con el traspaso se lo ahorra.",
     "Da una recomendación clara (traspasar todo, una parte con su importe, o no hacerlo) con su porqué.",
-    "Tiene en cuenta el reparto que le quedaría (ya tiene un 37,6 % de la bolsa en EEUU y un 52,6 % en Europa, contando sus acciones sueltas)."
+    "Tiene en cuenta el reparto que le quedaría (ya tiene un 37,8 % de la bolsa en EEUU y un 52,4 % en Europa, contando sus acciones sueltas)."
    ]
   },
   {
@@ -47,7 +47,7 @@
    ],
    "comprueba": [
     "Dice que Repsol es una acción y que al venderla tributa (no se puede traspasar a un fondo sin pagar).",
-    "Da el impuesto de vender Repsol entero (ganancia de unos 3.660 €, impuesto de unos 660 €) o de la parte que proponga, calculado con la herramienta.",
+    "Da el impuesto de vender Repsol entero (ganancia de unos 3.650 €, impuesto de unos 663 €; manda la cifra de simular_venta de la pasada) o de la parte que proponga, calculado con la herramienta.",
     "Da una recomendación clara (vender todo, una parte con su número de acciones o importe, o mantener) con su porqué, mirando los analistas, la valoración o su peso en la cartera.",
     "Menciona algo concreto de lo que pasa ahora con Repsol (la caída de hoy, el petróleo, el dividendo de enero o la recompra de acciones)."
    ]
@@ -60,7 +60,7 @@
     "simular_venta"
    ],
    "comprueba": [
-    "Dice que la pérdida de venderlo (unos 1.550 €) se compensa primero con sus ganancias del año, que son solo unos 120 €, y que lo que sobre pasa a los cuatro años siguientes.",
+    "Dice que la pérdida de venderlo (unos 1.543 €; manda la cifra de simular_venta de la pasada) se compensa primero con sus ganancias del año, que son solo unos 120 €, y que lo que sobre pasa a los cuatro años siguientes.",
     "Dice cuánto se ahorraría de verdad este año (poco: unas decenas de euros, porque su base del ahorro es pequeña) en vez de dar un ahorro grande que no existe.",
     "Explica que en cripto no se aplica la regla de los dos meses (o que hay quien defiende un año) si habla de volver a comprar.",
     "Da una recomendación clara (vender, no vender, o vender y recomprar) con su porqué."
@@ -75,7 +75,7 @@
    ],
    "comprueba": [
     "Avisa de la regla de recompra: como tiene una aportación automática de 600 € al mes a ese fondo, la pérdida no restaría este año (en fondos el plazo es de un año).",
-    "No da como ahorro en la renta la pérdida entera del S&P 500 (unos 7.700 €).",
+    "No da como ahorro en la renta la pérdida entera del S&P 500 (unos 7.690 €).",
     "Dice además que este año apenas tiene ganancias que compensar (unos 120 €).",
     "Da una recomendación clara con su porqué (por ejemplo, no venderlo y seguir aportando, o parar la aportación si de verdad quiere la pérdida)."
    ]
@@ -97,7 +97,7 @@
    "comprueba": [
     "Explica el FIFO: se venden primero las que compró antes.",
     "Dice que en Toisón ese fondo tiene un solo lote, a su precio medio de unos 281,67 € (o 16.900 € por las 60), y que el informe fiscal del bróker lo afina.",
-    "Si da la ganancia o el impuesto de vender la mitad, las cifras cuadran (30 participaciones a unos 390,55 €: ganancia de unos 3.270 €)."
+    "Si da la ganancia o el impuesto de vender la mitad, las cifras cuadran (30 participaciones a unos 386,55 €: ganancia de unos 3.150 €; manda la cifra de simular_venta de la pasada)."
    ]
   },
   {
@@ -108,7 +108,7 @@
     "simular_venta"
    ],
    "comprueba": [
-    "Da el impuesto de unos 1.220 € por una ganancia de unos 6.530 €, sacado de la herramienta.",
+    "Da el impuesto de unos 1.170 € por una ganancia de unos 6.290 €, sacado de la herramienta (manda la cifra de simular_venta de la pasada).",
     "Explica los tramos de la base del ahorro de 2026 que se aplican (19 % hasta 6.000 € y 21 % de 6.000 a 50.000 €), contando lo que ya lleva este año.",
     "Dice que si lo traspasa a otro fondo en vez de venderlo no paga nada ahora."
    ]
@@ -182,8 +182,8 @@
    "idioma": "en",
    "comprueba": [
     "Answers in English.",
-    "Gives a clear recommendation (buy, sell, hold or add an amount) with numbers from his portfolio (about 3,313 €, 3.7 % of the portfolio, a loss of about 1,557 €).",
-    "Respects his crypto limit of 5 % (if it suggests buying, the amount fits: about 1,150 € of room)."
+    "Gives a clear recommendation (buy, sell, hold or add an amount) with numbers from his portfolio (about 3,335 €, 3.8 % of the portfolio, a loss of about 1,535 €, or 1,543 € after the selling fee).",
+    "Respects his crypto limit of 5 % (if it suggests buying, the amount fits: about 1,100 € of room with money he already has, about 1,165 € with new money)."
    ]
   },
   {
@@ -192,7 +192,7 @@
    "q": "¿y Repsol?",
    "comprueba": [
     "Entiende que pregunta qué hacer con su posición de Repsol.",
-    "Da una recomendación clara con cifras de su posición (228,61 acciones, unos 6.560 €, ganancia latente de unos 3.660 €).",
+    "Da una recomendación clara con cifras de su posición (228,61 acciones, unos 6.550 €, ganancia latente de unos 3.650 €).",
     "Si propone vender, da el impuesto."
    ]
   },
@@ -207,7 +207,7 @@
     "Dice en una frase que la confianza es baja o que hay poca información (la lectura de prensa la marca con confianza baja y una sola fuente).",
     "Aun así recomienda algo claro (comprar, cuánto, o no comprar) con su porqué.",
     "Da la comisión de Trade Republic (1 €) y si hay tasa de compra (en Alemania no hay).",
-    "Comprueba que cabe en su límite de acciones sueltas (con 1.000 € más quedaría en torno al 17,7 %, por debajo del 20 %)."
+    "Comprueba que cabe en su límite de acciones sueltas (con 1.000 € más quedaría en torno al 17,5 % si es dinero nuevo o al 17,7 % si sale de lo que ya tiene, por debajo del 20 %)."
    ]
   },
   {
@@ -220,7 +220,7 @@
    "comprueba": [
     "Su recomendación cuadra con la del Paso a paso o, si no, explica por qué se aparta.",
     "Menciona alguna pega concreta (tendencia en contra, cotiza en dólares o que ya tiene un 21 % en tecnología a través de sus fondos).",
-    "Da un importe concreto que cabe en su hueco de acciones sueltas (unos 3.000 €) y la comisión de compra."
+    "Da un importe concreto que cabe en su hueco de acciones sueltas (como mucho unos 3.077 € con dinero que ya tiene o 3.846 € con dinero nuevo: cabe_como_mucho de simular_compra) y la comisión de compra."
    ]
   },
   {
@@ -242,7 +242,7 @@
    ],
    "comprueba": [
     "Avisa de que con 4.000 € más sus acciones sueltas pasarían de su límite del 20 % (y no se lo recomienda tal cual).",
-    "Propone un importe que sí cabe (unos 3.000 €, el hueco que le queda) con su número de acciones aproximado.",
+    "Propone un importe que sí cabe con su número de acciones aproximado: como mucho unos 3.846 € si es dinero nuevo o 3.077 € si sale de lo que ya tiene (cabe_como_mucho de simular_compra; manda la cifra de la pasada). Un importe que deje las acciones sueltas por encima del 20 % no vale, aunque sea por décimas.",
     "Da la comisión de Trade Republic y la tasa española del 0,2 %."
    ]
   },
@@ -274,8 +274,8 @@
     "simular_venta"
    ],
    "comprueba": [
-    "Da lo que cobraría (unos 3.498 € menos 1 € de comisión) y la ganancia (unos 290 €).",
-    "Da el impuesto (unos 25 €) y lo que le queda limpio después de impuestos.",
+    "Da lo que cobraría (unos 3.495 € menos 1 € de comisión) y la ganancia (unos 287 €); manda la cifra de simular_venta de la pasada.",
+    "Da el impuesto (unos 24 €) y lo que le queda limpio después de impuestos.",
     "Recuerda el dividendo de IAG del 3 de diciembre si vende antes (lo perdería) o da su opinión sobre si vender, con su porqué."
    ]
   },
@@ -285,8 +285,8 @@
    "q": "¿Vendo el oro? Ha caído mucho.",
    "comprueba": [
     "Dice que su oro es un ETC (WisdomTree Physical Gold) y que, según el criterio que aplica Toisón (DGT V0267-25), lo que gana al venderlo es rendimiento del capital mobiliario, no ganancia patrimonial; y que no se traspasa sin tributar.",
-    "Da el impuesto de venderlo (ganancia de unos 2.415 €, impuesto de unos 430 €) o de la parte que proponga.",
-    "Da una recomendación clara (vender, una parte o mantener) con su porqué (lo que diversifica, su peso del 7,1 % frente a su límite del 10 %, la caída reciente)."
+    "Da el impuesto de venderlo (ganancia de unos 2.320 €, impuesto de unos 411 €; manda la cifra de simular_venta de la pasada) o de la parte que proponga.",
+    "Da una recomendación clara (vender, una parte o mantener) con su porqué (lo que diversifica, su peso del 7,0 % frente a su límite del 10 %, la caída reciente)."
    ]
   },
   {
@@ -327,7 +327,7 @@
    "sigue": "¿Y si en vez de eso meto ese dinero en el S&P 500?",
    "comprueba": [
     "En la segunda respuesta entiende que habla de vender BAT para meter ese dinero en el S&P 500.",
-    "Dice lo que pagaría al vender BAT (ganancia de unos 1.180 €, impuesto de unos 190 €) y que perdería el dividendo de diciembre si vende antes del 24 de diciembre.",
+    "Dice lo que pagaría al vender BAT (ganancia de unos 1.048 €, impuesto de unos 169 €; manda la cifra de simular_venta de la pasada) y que perdería el dividendo de diciembre si vende antes del 24 de diciembre.",
     "Da una recomendación clara con su porqué."
    ]
   },
@@ -347,7 +347,7 @@
    "q": "¿Es buen momento para comprar bitcoin ahora que ha caído un 32 %?",
    "comprueba": [
     "Da una recomendación clara (comprar cuánto, o no comprar) con su porqué.",
-    "Respeta su límite de cripto del 5 %: lo que propone comprar cabe en el hueco (unos 1.150 €).",
+    "Respeta su límite de cripto del 5 %: lo que propone comprar cabe en el hueco (unos 1.100 € con dinero que ya tiene o 1.165 € con dinero nuevo).",
     "Menciona el riesgo concreto (volatilidad de un 44 % al año, que puede caer a la mitad)."
    ]
   },
@@ -366,7 +366,7 @@
    "q": "Un amigo dice que lo venda todo y espere a que caiga la bolsa para volver a entrar. ¿Lo hago?",
    "comprueba": [
     "Da una recomendación clara con su porqué.",
-    "Cifra lo que le costaría venderlo todo en impuestos (las ganancias de MSCI Europe, Repsol, oro, BAT, emergentes e IAG) o dice que los fondos se podrían traspasar sin tributar pero no se pueden «sacar» sin vender.",
+    "Cifra lo que le costaría venderlo todo en impuestos, calculado junto (unos 1.220 € con simular_venta «todas»: las pérdidas del bitcoin y de la renta fija restan de las ganancias de MSCI Europe, Repsol, BAT, emergentes e IAG; una suma a mano de más de 1.500 € no vale) o dice que los fondos se podrían traspasar sin tributar pero no se pueden «sacar» sin vender.",
     "Tiene en cuenta su perfil (24 años, más de 20 años de plazo, aguanta las caídas) o su meta del piso."
    ]
   },
@@ -382,10 +382,10 @@
     "simular_venta"
    ],
    "comprueba": [
-    "En la segunda respuesta entiende que «un cuarto» es un cuarto del oro (5 de sus 20 participaciones, unos 1.557 €) y da lo que pagaría: unos 83 € (frente a unos 192 € vendiendo la mitad).",
+    "En la segunda respuesta entiende que «un cuarto» es un cuarto del oro (5 de sus 20 participaciones, unos 1.553 €) y da lo que pagaría: unos 83 € (frente a unos 190 € vendiendo la mitad; manda la cifra de simular_venta de la pasada).",
     "Dice que el oro (WisdomTree Physical Gold, un ETC) tributa como rendimiento del capital mobiliario, no como una acción ni como un fondo.",
     "En la tercera entiende que «ese dinero» es lo que saca del oro (no dinero nuevo) y propone un destino concreto con su porqué, quitando antes lo que tendrá que pagar a Hacienda.",
-    "Da una recomendación clara (vender o no, y cuánto) con su porqué en su cartera (el oro pesa un 7 %, ha caído un 26 % desde su máximo y diversifica)."
+    "Da una recomendación clara (vender o no, y cuánto) con su porqué en su cartera (el oro pesa un 7 %, ha caído desde su máximo y diversifica)."
    ]
   },
   {
