@@ -398,8 +398,9 @@ function operacion(tipo, id, sim, cand) {
       let cand = op.isin ? ps.filter((p) => String((S.inst[p.instrumento] || {}).isin || '').toUpperCase() === op.isin) : [];
       if (!cand.length) { const m = emparejar(x); if (m) cand = ps.filter((p) => p.instrumento === m.id); }
       posSel = cand.find((p) => op.plataforma && p.plataforma === op.plataforma) || cand[0] || null;
+      // si no está, no se queda la posición con la que se abrió la hoja: se apuntaría la venta en otro fondo
       if (posSel) { inst = posSel.instrumento; plat = posSel.plataforma; }
-      else op.dudas.unshift(L(`No encuentro «${nom}» entre lo que tienes en Toisón: elige abajo qué vendiste.`, `I can't find "${nom}" among your holdings in Toisón: choose below what you sold.`));
+      else inst = null, op.dudas.unshift(L(`No encuentro «${nom}» entre lo que tienes en Toisón: elige abajo qué vendiste.`, `I can't find "${nom}" among your holdings in Toisón: choose below what you sold.`));
     } else {
       const m = emparejar(x);
       if (m) inst = m.id; else { inst = null; op.dudas.unshift(L(`No encuentro «${nom}»: búscalo abajo por su nombre o su ISIN.`, `I can't find "${nom}": search for it below by name or ISIN.`)); }
@@ -408,10 +409,14 @@ function operacion(tipo, id, sim, cand) {
     const pon = (n, v, dec) => { q(n).value = v > 0 ? String(+(+v).toFixed(dec)).replace('.', ',') : ''; };
     if (op.fecha) q('fecha').value = op.fecha;
     pon('uds', op.uds, 6); pon('precio', op.precio, 6); pon('importe', op.bruto, 2);
-    q('gastos').value = op.gastos > 0 ? String(+op.gastos.toFixed(2)).replace('.', ',') : '0'; q('gastos').dataset.tocado = '1';
-    precioTocado = true; ultimos = ['uds', 'precio']; delete fm.dataset.confirmado; err('');
-    pintarLeida(); pintarTodo();
-    if (inst && op.fecha && op.fecha < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(recalcular).catch(() => {});
+    // la tasa de la compra (la Tobin en España, la de Francia o Italia): si Toisón ya la suma sola, no va también en la
+    // comisión, que el coste para Hacienda saldría inflado; si no la conoce, va con la comisión para que cuente
+    const g = (op.gastos || 0) + (t === 'compra' && inst && tasaDe(inst) ? 0 : op.tasas || 0);
+    q('gastos').value = g > 0 ? String(+g.toFixed(2)).replace('.', ',') : '0'; q('gastos').dataset.tocado = '1';
+    // sin precio (otra moneda), Toisón pone el de ese día en euros, como cuando se mete a mano
+    precioTocado = op.precio > 0; ultimos = ['uds', 'precio']; delete fm.dataset.confirmado; err('');
+    pintarLeida(); ponerPrecio(); pintarTodo();
+    if (inst && op.fecha && op.fecha < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(() => { ponerPrecio(); recalcular(); }).catch(() => {});
   };
   const capEst = (x, mal) => { $('#opCapEst', h.el).innerHTML = x ? `<span class="${mal ? 'down' : 'k'}">${esc(x)}</span>` : ''; };
   $('#opCap', h.el).onclick = () => $('#opCapArch', h.el).click();

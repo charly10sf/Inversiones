@@ -61,7 +61,10 @@ test('lo leído se limpia y se comprueba: fecha del valor liquidativo, cifras qu
     const raras = operacionDeLectura({ ...v, isin: 'IE00BFZMJT79', bruto: 600, neto: 400, moneda: 'usd', fecha_orden: '2026-12-01', fecha_ejecucion: null }, '2026-11-19');
     const traspaso = operacionDeLectura({ ...v, tipo: 'Traspaso entre fondos' }, '2026-11-19');
     const suscripcion = operacionDeLectura({ tipo: 'Suscripción', cantidad: '10,5', precio: 20, comisiones: null, fecha_ejecucion: '2026-11-10' }, '2026-11-19');
-    return { ok, raras, traspaso, suscripcion };
+    // revisión aparte: cifras con coma de miles a la inglesa, la tasa aparte en el neto y otra moneda sin precios
+    const ingles = operacionDeLectura({ tipo: 'compra', cantidad: '100', precio: '12.505', bruto: '1,250.50', comisiones: 1, tasas: 2.5, neto: 1254, fecha_ejecucion: '2026-11-10' }, '2026-11-19');
+    const dolares = operacionDeLectura({ tipo: 'venta', cantidad: 2, precio: 150, bruto: 300, comisiones: 1, retencion: 4, neto: 295, resultado: 20, moneda: 'USD', fecha_ejecucion: '2026-11-10' }, '2026-11-19');
+    return { ok, raras, traspaso, suscripcion, ingles, dolares };
   }, VENTA_NB);
   // la orden del 18 se ejecutó a la 1 de la madrugada del 19 con el valor del 18: cuenta el 18
   expect(r.ok).toMatchObject({ tipo: 'venta', fecha: '2026-11-18', isin: 'IE00BFZMJT78', uds: 4.226, precio: 118.18, bruto: 499.42, gastos: 0, retencion: 3.13, neto: 496.29, resultado: 16.45, dudas: [] });
@@ -77,6 +80,10 @@ test('lo leído se limpia y se comprueba: fecha del valor liquidativo, cifras qu
   expect(r.traspaso.dudas[0]).toMatch(/traspaso/);
   // una suscripción es una compra; el bruto sale de cuántas por el precio
   expect(r.suscripcion).toMatchObject({ tipo: 'compra', uds: 10.5, bruto: 210, gastos: 0, fecha: '2026-11-10' });
+  expect(r.ingles).toMatchObject({ bruto: 1250.5, gastos: 1, tasas: 2.5, dudas: [] });
+  // en dólares solo valen las unidades: nada de precios, comisión, retención ni resultado en las casillas de euros
+  expect(r.dolares).toMatchObject({ uds: 2, precio: null, bruto: null, neto: null, resultado: null, gastos: 0, retencion: 0 });
+  expect(r.dolares.dudas.join(' ')).toMatch(/USD/);
 });
 
 test('una venta desde la captura: rellena el formulario, avisa si el resultado no cuadra con el bróker y se apunta con sus céntimos', async ({ page, context }) => {
@@ -132,13 +139,14 @@ test('una venta desde la captura: rellena el formulario, avisa si el resultado n
 
 test('una compra de algo que no se encuentra: lo dice y deja buscarlo; sin cuenta, no se lee nada', async ({ page, context }) => {
   await preparada(page);
-  await worker(context, { tipo: 'compra', plataforma: 'Trade Republic', nombre: 'Empresa Inventada Zeta', isin: null, cantidad: 3, precio: 10, bruto: 30, comisiones: 1, neto: 31, fecha_ejecucion: '2026-11-17', estado: 'ejecutada' });
+  await worker(context, { tipo: 'compra', plataforma: 'Trade Republic', nombre: 'Empresa Inventada Zeta', isin: null, cantidad: 3, precio: 10, bruto: 30, comisiones: 1, tasas: 0.06, neto: 31.06, fecha_ejecucion: '2026-11-17', estado: 'ejecutada' });
   await page.evaluate(() => operacion('venta'));
   await page.locator('#opCapArch').setInputFiles({ name: 'compra.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.locator('#opLeida')).toContainText('No encuentro «Empresa Inventada Zeta»', { timeout: 20_000 });
   await expect(page.locator('[data-t="compra"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#opQue input')).toBeVisible();
-  await expect(page.locator('#fOp [name="gastos"]')).toHaveValue('1');
+  // sin saber qué es, Toisón no puede poner la tasa: va con la comisión para que cuente en el coste
+  await expect(page.locator('#fOp [name="gastos"]')).toHaveValue('1,06');
   await expect(page.locator('#opPlat [aria-pressed="true"]')).toHaveText('Trade Republic');
   // en «Ya la tenías» no sale
   await page.locator('[data-t="tengo"]').click();
@@ -149,4 +157,37 @@ test('una compra de algo que no se encuentra: lo dice y deja buscarlo; sin cuent
   await page.evaluate(() => { FB.user = null; operacion('compra'); });
   await page.locator('#opCapArch').setInputFiles({ name: 'compra.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.locator('#opCapEst')).toContainText('Con tu cuenta', { timeout: 10_000 });
+});
+
+test('revisión aparte: la tasa no se cuenta dos veces y una venta que no se encuentra no se queda en otro fondo', async ({ page, context }) => {
+  await preparada(page);
+  // una acción con la tasa de compra que Toisón ya suma sola (como la Tobin): la del Reino Unido, que no mira el tamaño
+  const acc = await page.evaluate(() => {
+    const id = Object.keys(S.inst).find((k) => S.inst[k].tipo === 'Acción' && isinValido(String(S.inst[k].isin || '')));
+    S.inst[id].pais = 'GB'; delete S.inst[id].bolsa;
+    return { id, isin: S.inst[id].isin, nombre: S.inst[id].nombre };
+  });
+  await worker(context, { tipo: 'compra', plataforma: 'MyInvestor', nombre: acc.nombre, isin: acc.isin, cantidad: 10, precio: 20, bruto: 200, comisiones: 2, tasas: 1, neto: 203, fecha_ejecucion: '2026-11-17', estado: 'ejecutada' });
+  await page.evaluate(() => operacion('compra'));
+  await page.locator('#opCapArch').setInputFiles({ name: 'compra.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#opLeida')).toContainText('Rellenado con tu captura', { timeout: 20_000 });
+  await expect(page.locator('#fOp [name="gastos"]')).toHaveValue('2');
+  for (let k = 0; k < 3; k++) {
+    await page.locator('#bOp').click();
+    if (await page.evaluate(() => (S.cartera.movimientos || []).some((m) => m.captura))) break;
+  }
+  const m = await page.evaluate(() => S.cartera.movimientos.find((x) => x.captura));
+  expect(m.gastos).toBe(2);
+  expect(m.tasa).toBe(1);
+  expect(m.importe).toBe(203);
+
+  // la hoja se abre vendiendo nb-short, pero la captura es de otro fondo que no está: no se queda nb-short
+  await page.evaluate(() => document.querySelector('#fOp [data-cerrar]') && document.querySelector('#fOp [data-cerrar]').click());
+  await context.unroute('https://growfolio.growfolio-web-app.workers.dev/claude');
+  await worker(context, { ...VENTA_NB, nombre: 'Fondo Que No Tengo', isin: 'LU0000000000' });
+  await page.evaluate(() => operacion('venta', 'p4'));
+  await page.locator('#opCapArch').setInputFiles({ name: 'orden.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#opLeida')).toContainText('No encuentro «Fondo Que No Tengo»', { timeout: 20_000 });
+  await expect(page.locator('.op-pos[aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator('#calc')).toContainText('Elige primero qué');
 });

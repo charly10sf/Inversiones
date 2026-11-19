@@ -325,7 +325,7 @@ Responde solo con JSON:
  "nombre": "", "isin": "", "ticker": "", "tipoActivo": "Acción|ETF|Fondo|Cripto|Oro|Otro",
  "fecha_orden": "AAAA-MM-DD", "hora_orden": "HH:MM", "fecha_ejecucion": "AAAA-MM-DD", "hora_ejecucion": "HH:MM",
  "cantidad": unidades o participaciones, "precio": precio de cada una (en un fondo, el valor liquidativo),
- "moneda": "EUR si no se dice", "bruto": importe bruto, "comisiones": comisiones y tasas, "retencion": impuesto retenido (en destino y en origen, sumados),
+ "moneda": "EUR si no se dice", "bruto": importe bruto, "comisiones": solo las comisiones del bróker, "tasas": los impuestos de la operación aparte (el impuesto sobre transacciones financieras, la Tobin, el stamp duty), "retencion": impuesto retenido (en destino y en origen, sumados),
  "neto": importe neto, "resultado": la ganancia o la pérdida que dice el bróker (resultado fiscal), con signo,
  "estado": "ejecutada|pendiente|cancelada"}
 No pongas el número de cuenta, el titular ni el DNI aunque se vean. Si el importe es «estimado» pero hay también uno de la ejecución, usa el de la ejecución.`;
@@ -333,7 +333,13 @@ No pongas el número de cuenta, el titular ni el DNI aunque se vean. Si el impor
 function operacionDeLectura(o, hoy = hoyIso()) {
   if (!o || typeof o !== 'object') return null;
   // por si vuelve como texto con coma decimal («10,5», «1.250,50»)
-  const num = (v) => { if (v == null || v === '') return null; let t = typeof v === 'string' ? v.replace(/[\s\u00a0€]/g, '') : v; if (typeof t === 'string' && t.includes(',')) t = t.replace(/\./g, '').replace(',', '.'); const x = Number(t); return Number.isFinite(x) ? x : null; };
+  // (y si trae los dos signos, el decimal es el último: «1.250,50» y «1,250.50» son lo mismo)
+  const num = (v) => {
+    if (v == null || v === '') return null;
+    let t = typeof v === 'string' ? v.replace(/[\s\u00a0€$]/g, '') : v;
+    if (typeof t === 'string' && t.includes(',')) t = t.includes('.') && t.lastIndexOf('.') > t.lastIndexOf(',') ? t.replace(/,/g, '') : t.replace(/\./g, '').replace(',', '.');
+    const x = Number(t); return Number.isFinite(x) ? x : null;
+  };
   const abs = (v) => { const x = num(v); return x == null ? null : Math.abs(x); };
   const fOk = (f) => (/^\d{4}-\d{2}-\d{2}$/.test(String(f || '')) ? String(f) : null);
   const tt = normTxt(o.tipo || ''), dudas = [];
@@ -343,7 +349,7 @@ function operacionDeLectura(o, hoy = hoyIso()) {
   // en un fondo, la orden de un día se ejecuta de madrugada del siguiente con el valor liquidativo del día de la orden
   if (fo && fe && diasEntre(fo, fe) === 1 && /^0[0-5]:/.test(String(o.hora_ejecucion || ''))) fecha = fo;
   let uds = abs(o.cantidad), precio = abs(o.precio), bruto = abs(o.bruto);
-  const gastos = abs(o.comisiones) || 0, retencion = abs(o.retencion) || 0, neto = abs(o.neto), resultado = num(o.resultado);
+  let gastos = abs(o.comisiones) || 0, tasas = abs(o.tasas) || 0, retencion = abs(o.retencion) || 0, neto = abs(o.neto), resultado = num(o.resultado);
   if (!(bruto > 0) && uds > 0 && precio > 0) bruto = +(uds * precio).toFixed(2);
   if (!(precio > 0) && bruto > 0 && uds > 0) precio = bruto / uds;
   if (!(uds > 0) && bruto > 0 && precio > 0) uds = +(bruto / precio).toFixed(6);
@@ -357,7 +363,7 @@ function operacionDeLectura(o, hoy = hoyIso()) {
   if (!(uds > 0) || !(precio > 0)) dudas.push(L('Faltan cifras: pon cuántas y el precio de cada una.', 'Figures are missing: enter how many and the price of each.'));
   else if (bruto > 0 && Math.abs(uds * precio - bruto) > Math.max(0.05, bruto * 0.01)) dudas.push(L('Cuántas por el precio no dan el importe: revisa las tres cifras.', "Quantity times price doesn't give the amount: check the three figures."));
   if (bruto > 0 && neto > 0 && tipo !== 'traspaso') {
-    const esperado = tipo === 'compra' ? bruto + gastos : bruto - gastos - retencion;
+    const esperado = tipo === 'compra' ? bruto + gastos + tasas : bruto - gastos - tasas - retencion;
     if (Math.abs(esperado - neto) > 0.05) dudas.push(L('El neto no cuadra con el bruto, la comisión y la retención: revísalos.', "The net amount doesn't match the gross, fee and withholding: check them."));
   }
   if (moneda !== 'EUR') dudas.push(L(`Va en ${moneda}: pon las cifras en euros (con el cambio de ese día).`, `It's in ${moneda}: enter the figures in euros (at that day's rate).`));
@@ -365,7 +371,10 @@ function operacionDeLectura(o, hoy = hoyIso()) {
   if (/pendiente|curso|pending/.test(est)) dudas.push(L('La orden aún está pendiente: apúntala cuando se ejecute.', 'The order is still pending: record it once it has been executed.'));
   if (/cancel|anulad|rechaz/.test(est)) dudas.push(L('La orden está cancelada: no hay nada que apuntar.', 'The order was cancelled: there is nothing to record.'));
   const plataforma = PLATAFORMAS.find((p) => normTxt(o.plataforma || '').includes(normTxt(p))) || (o.plataforma ? String(o.plataforma).slice(0, 40) : null);
-  return { tipo, plataforma, nombre: o.nombre ? String(o.nombre).slice(0, 160) : null, isin, ticker: o.ticker ? String(o.ticker).slice(0, 20) : null, tipoActivo: o.tipoActivo || null, fecha, uds, precio, bruto, gastos, retencion, neto, resultado, moneda, dudas };
+  // en otra moneda solo valen las unidades: el precio, el total, la comisión, la retención y el resultado irían en
+  // dólares a casillas de euros (y el coste para Hacienda saldría mal). Toisón propone el precio en euros de ese día
+  if (moneda !== 'EUR') { precio = null; bruto = null; neto = null; resultado = null; gastos = 0; tasas = 0; retencion = 0; }
+  return { tipo, plataforma, nombre: o.nombre ? String(o.nombre).slice(0, 160) : null, isin, ticker: o.ticker ? String(o.ticker).slice(0, 20) : null, tipoActivo: o.tipoActivo || null, fecha, uds, precio, bruto, gastos, tasas, retencion, neto, resultado, moneda, dudas };
 }
 // lee el justificante (hasta 3 capturas o un PDF, en una sola petición: son la misma operación) y lo devuelve en limpio
 async function leerOperacionCaptura(files, alPaso) {
