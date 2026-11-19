@@ -3,8 +3,8 @@
 // 1) Siempre (en «Pruebas»): el banco está bien hecho (de 25 a 40 preguntas, ids distintos, comprobaciones escritas).
 // 2) Solo con una clave de la API de Anthropic (GF_BANCO_ANTHROPIC; la Action «Banco de la IA con Claude» con solo =
 //    «fundador» o «fundador:f01,f02»): cada pregunta en una conversación nueva, con la app de verdad, la cartera fija
-//    (tests/banco/cartera-fundador.js) y Claude de verdad, con las reglas del fundador. El Worker se imita con sus mismas
-//    reglas para el fundador (su CLAUDE_NOTA_FUNDADOR delante, solo los campos que deja pasar y X-Reglas: fundador).
+//    (tests/banco/cartera-fundador.js) y Claude de verdad, con las reglas del fundador. El Worker se imita con su mismo
+//    código (tests/banco/worker-imitacion.js): sus topes, su nota del fundador delante y su cuenta de lo que cuesta.
 //    La prueba guarda cada respuesta, las herramientas con lo que devolvieron, la foto de la cartera y lo que ha costado; la
 //    puntuación de las comprobaciones la hace un agente aparte con el resultado delante. Aquí solo se mira lo automático:
 //    que contesta, con las reglas del fundador, sin escudarse en que no es asesor, con las herramientas que tocan y en inglés
@@ -20,6 +20,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 import { carteraFundador } from './banco/cartera-fundador.js';
+import { delWorker, imitarWorker } from './banco/worker-imitacion.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const CLAVE = process.env.GF_BANCO_ANTHROPIC || '';
@@ -109,33 +110,13 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
   test.setTimeout(110 * 60_000);
 
   test(`banco del fundador con Claude (${MOTOR})`, async ({ page, context, errores }) => {
-    const w = readFileSync(join(AQUI, '..', 'worker', 'src', 'index.js'), 'utf8');
-    const NOTA_F = /const CLAUDE_NOTA_FUNDADOR = '([^']+)'/.exec(w)[1];
-    expect(NOTA_F.length > 200 && NOTA_F.endsWith('.'), 'la nota del fundador leída del Worker está entera').toBe(true);
-    const CAMPOS = JSON.parse(/const CLAUDE_CAMPOS = (\[[^\]]+\])/.exec(w)[1].replace(/'/g, '"'));
-    const PRECIOS = JSON.parse(/const PRECIOS_CLAUDE = (\{[^}]+\})/.exec(w)[1].replace(/'/g, '"'));
-    const gasto = { peticiones: 0, entrada: 0, cache_lee: 0, cache_escribe: 0, salida: 0, dolares: 0 };
+    // 19 nov (mejorar-ia, parte 2): la imitación del Worker con su mismo código (tests/banco/worker-imitacion.js): sus topes,
+    // la nota del fundador y lo que cuesta cada petición con costeUso (Haiku más caro por encima de 100.000 tokens)
+    const W = delWorker();
+    expect(W.CLAUDE_NOTA_FUNDADOR.length > 200 && W.CLAUDE_NOTA_FUNDADOR.endsWith('.'), 'la nota del fundador leída del Worker está entera').toBe(true);
+    const gasto = { peticiones: 0, entrada: 0, cache_lee: 0, cache_escribe: 0, salida: 0, dolares: 0, rechazadas: 0 };
     let sinFundador = 0;
-    await context.route(WORKER, async (r) => {
-      const q = r.request();
-      if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
-      const texto = q.postData() || '';
-      if (texto === '{}') return r.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: 'peticion', motivo: 'modelo' }) });
-      const c = JSON.parse(texto), cuerpo = {};
-      if (c.reglas !== 'fundador') sinFundador++;
-      for (const k of CAMPOS) if (c[k] !== undefined) cuerpo[k] = c[k];
-      cuerpo.system = [{ type: 'text', text: NOTA_F }, ...(Array.isArray(cuerpo.system) ? cuerpo.system : cuerpo.system ? [{ type: 'text', text: String(cuerpo.system) }] : [])];
-      gasto.peticiones++;
-      const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': CLAVE, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) });
-      const sse = await res.text();
-      // el uso de esta petición: el mayor de cada campo entre message_start y message_delta
-      const u = { input_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0, output_tokens: 0 };
-      for (const m of sse.matchAll(/^data: (.+)$/gm)) { let ev; try { ev = JSON.parse(m[1]); } catch (e) { continue; } const us = (ev.message && ev.message.usage) || ev.usage; if (us) for (const k of Object.keys(u)) if (us[k] > u[k]) u[k] = us[k]; }
-      const p = PRECIOS[cuerpo.model] || [0, 0, 0, 0];
-      gasto.entrada += u.input_tokens; gasto.cache_lee += u.cache_read_input_tokens; gasto.cache_escribe += u.cache_creation_input_tokens; gasto.salida += u.output_tokens;
-      gasto.dolares += (u.input_tokens * p[0] + u.output_tokens * p[1] + u.cache_read_input_tokens * p[2] + u.cache_creation_input_tokens * p[3]) / 1e6;
-      return r.fulfill({ status: res.status, headers: { ...CORS, 'content-type': res.headers.get('content-type') || 'text/event-stream', ...(res.ok ? { 'X-Reglas': 'fundador' } : {}) }, body: sse });
-    });
+    await context.route(WORKER, imitarWorker({ clave: CLAVE, gasto, cors: CORS, W, alPedir: (c) => { if (c.model && c.reglas !== 'fundador') sinFundador++; } }));
     await context.route('https://generativelanguage.googleapis.com/**', (r) => r.abort());
     await crearCuenta(page);
     await quitarCapas(page);

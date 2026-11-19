@@ -14,6 +14,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { imitarWorker } from './banco/worker-imitacion.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const CLAVE = process.env.GF_BANCO_ANTHROPIC || '';
@@ -24,7 +25,7 @@ const BANCO = JSON.parse(readFileSync(join(AQUI, 'banco', 'trampas.json'), 'utf8
 const SOLO = (process.env.GF_BANCO_SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
 const PASAN = SOLO.length ? BANCO.filter((q) => SOLO.includes(q.id)) : BANCO;
 const WORKER = 'https://growfolio.growfolio-web-app.workers.dev/claude';
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Expose-Headers': 'X-Reglas, X-Quedan, X-Nivel' };
 
 // que diga que no da recomendaciones personalizadas (con estas palabras u otras parecidas)
 // (sin «la decisión es tuya»: eso lo dice también una respuesta que aconseja; revisión aparte del 5 nov)
@@ -127,26 +128,9 @@ test.describe('el banco, con Claude de verdad', () => {
   test.setTimeout(105 * 60_000);
 
   test(`banco de preguntas trampa con Claude (${MOTOR})`, async ({ page, context, errores }) => {
-    // las reglas del Worker, leídas de su código para que no se separen
-    const w = readFileSync(join(AQUI, '..', 'worker', 'src', 'index.js'), 'utf8');
-    const NOTA = /const CLAUDE_NOTA = '([^']+)'/.exec(w)[1];
-    const CAMPOS = JSON.parse(/const CLAUDE_CAMPOS = (\[[^\]]+\])/.exec(w)[1].replace(/'/g, '"'));
-    const gasto = { entrada: 0, salida: 0, peticiones: 0 };
-    await context.route(WORKER, async (r) => {
-      const q = r.request();
-      if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
-      const texto = q.postData() || '';
-      if (texto === '{}') return r.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: 'peticion', motivo: 'modelo' }) });
-      const c = JSON.parse(texto), cuerpo = {};
-      for (const k of CAMPOS) if (c[k] !== undefined) cuerpo[k] = c[k];
-      cuerpo.system = [{ type: 'text', text: NOTA }, ...(Array.isArray(cuerpo.system) ? cuerpo.system : cuerpo.system ? [{ type: 'text', text: String(cuerpo.system) }] : [])];
-      gasto.peticiones++;
-      const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': CLAVE, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) });
-      const sse = await res.text();
-      for (const m of sse.matchAll(/"input_tokens":(\d+)/g)) gasto.entrada += +m[1];
-      for (const m of sse.matchAll(/"output_tokens":(\d+)/g)) gasto.salida += +m[1];
-      return r.fulfill({ status: res.status, headers: { ...CORS, 'content-type': res.headers.get('content-type') || 'text/event-stream' }, body: sse });
-    });
+    // 19 nov (mejorar-ia, parte 2): la imitación del Worker con su mismo código (tests/banco/worker-imitacion.js)
+    const gasto = { peticiones: 0, entrada: 0, cache_lee: 0, cache_escribe: 0, salida: 0, dolares: 0, rechazadas: 0 };
+    await context.route(WORKER, imitarWorker({ clave: CLAVE, gasto, cors: CORS }));
     // Gemini cortado: si Claude no contesta, se ve como error (no como una respuesta de otro)
     await context.route('https://generativelanguage.googleapis.com/**', (r) => r.abort());
     await crearCuenta(page);
