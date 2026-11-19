@@ -116,7 +116,7 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     if (!est) {
       const conHoy = M.filas.filter((f) => f.varDia != null && Math.abs(f.dia) >= 0.5).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia));
       const sinHoy = [...new Set(M.filas.filter((f) => f.varDia == null && !f.sinPrecio).map((f) => f.inst.corto))];
-      if (conHoy.length || sinHoy.length) L.push(`Lo de hoy sale solo de lo que tiene precio de hoy${conHoy.length ? `; lo que más mueve: ${conHoy.slice(0, 6).map((f) => `${f.inst.corto} ${eurP(f.dia, 0)} (${P1(f.varDia)})`).join(', ')}` : ''}.${sinHoy.length ? ` Sin precio de hoy (no cuentan en lo de hoy, aunque su índice se mueva): ${sinHoy.join(', ')}.` : ''}`);
+      if (conHoy.length || sinHoy.length) L.push(`Lo de hoy sale solo de lo que tiene precio de hoy${conHoy.length ? `; lo que más mueve: ${conHoy.slice(0, 6).map((f) => `${f.inst.corto} ${eurP(f.dia, 0)} (${P1(f.varDia)})`).join(', ')}${conHoy.length > 6 ? ` y ${conHoy.length - 6} ${conHoy.length - 6 === 1 ? 'posición' : 'posiciones'} más con precio de hoy, que suman ${eurP(sum(conHoy.slice(6), (f) => f.dia), 0)}` : ''}` : ''}.${sinHoy.length ? ` Sin precio de hoy (no cuentan en lo de hoy, aunque su índice se mueva): ${sinHoy.join(', ')}.` : ''}`);
     }
     L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
     try {

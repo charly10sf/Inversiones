@@ -155,3 +155,22 @@ test('el pedido de la revisión del fundador lleva lo de Hacienda, las monedas, 
     expect(r.e, t).not.toContain(t);
   }
 });
+
+// Parte F (menores): la foto sin freno enseña como mucho 6 posiciones en «lo que más mueve»; si hay más con precio de hoy, dice cuántas quedan fuera y lo que suman
+test('sin freno, «lo que más mueve» dice cuántas posiciones con precio de hoy quedan fuera de la lista', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso(), I = S.precios.instrumentos;
+    // todas las posiciones con precio de hoy y un movimiento distinto
+    S.cartera.posiciones.forEach((p, k) => { const x = I[p.instrumento]; if (x && x.precio) I[p.instrumento] = { ...x, fecha: hoy, cierre_anterior: x.precio / (1 + (k + 1) / 100) }; });
+    S.M = calcular();
+    const con = S.M.filas.filter((f) => f.varDia != null && Math.abs(f.dia) >= 0.5).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia));
+    return { n: con.length, resto: Math.round(con.slice(6).reduce((a, f) => a + f.dia, 0)), f: contextoAsesor(S.M, 'chat', false), e: contextoAsesor(S.M, 'chat', true) };
+  });
+  expect(r.n).toBeGreaterThan(6);
+  const m = r.f.match(/y (\d+) (posición|posiciones) más con precio de hoy, que suman ([+−-][\d.]+) €/);
+  expect(m, r.f.slice(r.f.indexOf('Lo de hoy sale solo'), r.f.indexOf('Lo de hoy sale solo') + 500)).toBeTruthy();
+  expect(+m[1]).toBe(r.n - 6);
+  expect(Math.abs(+m[3].replace('−', '-').replace(/\./g, '') - r.resto)).toBeLessThanOrEqual(1);
+  expect(r.e).not.toContain('más con precio de hoy');
+});
