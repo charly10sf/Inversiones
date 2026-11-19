@@ -1,6 +1,6 @@
 {
  "v": 1,
- "nota": "Banco de la revisión diaria del fundador (mejorar-ia, 19 nov 2026): la revisión automática (la de las 5:00 y las 16:30: Haiku, sin herramientas ni búsquedas, pensando poco) con las reglas del fundador, sobre la cartera fija del banco del fundador (cartera-fundador.js) y un día distinto en cada caso (revision-casos.js). «comprueba» lo puntúa un agente aparte con la revisión (el JSON) y la foto delante. r2 va justo después de r1, con la de r1 como revisión de ayer.",
+ "nota": "Banco de la revisión diaria del fundador (mejorar-ia, 19 nov 2026): la revisión automática (la de las 5:00 y las 16:30: Haiku, sin herramientas ni búsquedas, pensando poco) con las reglas del fundador, sobre la cartera fija del banco del fundador (cartera-fundador.js) y un día distinto en cada caso (revision-casos.js). «comprueba» lo puntúa un agente aparte con la revisión (el JSON) y la foto delante. r2 va justo después de r1, con la de r1 como revisión de ayer. 19 nov (mejorar-ia-2): arreglados los fallos del propio banco (la caída sale del último cierre y va sin el informe de prensa de la mañana; el corte del dividendo de IAG es hoy, no ayer).",
  "casos": [
   {
    "id": "r1",
@@ -71,8 +71,8 @@
    "comprueba": [
     "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
     "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
-    "Explica que lo que baja hoy IAG es el corte del dividendo (0,05 € por acción, unos 26 € netos), no una mala noticia, y no le pide hacer nada por eso.",
-    "Si nombra el dividendo, da la cifra y cuándo lo cobra (o que llega en unos días), sin inventarse una fecha que no esté en los datos."
+    "Explica que lo que baja hoy IAG es (casi todo) el corte de su dividendo de hoy (viene en los datos: unos 31 € brutos, 25 € netos, un 0,9 % de su valor), no una mala noticia, y no le pide hacer nada por eso.",
+    "Si nombra el dividendo, da la cifra de los datos y que lo cobra en unos días o semanas, sin inventarse una fecha de cobro que no esté en los datos."
    ]
   }
  ]

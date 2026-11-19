@@ -45,11 +45,11 @@ async function montar(page) {
   await page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); LS.del('inv-ia-fundador-no'); });
   await page.evaluate(`(${carteraFundador.toString()})()`);
   // lo de cada día se pone sobre una copia de los precios y la prensa de partida
-  await page.evaluate(() => { window.__base = JSON.stringify({ i: S.precios.instrumentos, m: S.precios.mercados, l: (S.escaneo && S.escaneo.lectura) || {} }); });
+  await page.evaluate(() => { window.__base = JSON.stringify({ i: S.precios.instrumentos, m: S.precios.mercados, l: (S.escaneo && S.escaneo.lectura) || {}, inf: S.informe || null }); });
 }
 const reponer = (page) => page.evaluate(async () => {
   const b = JSON.parse(window.__base);
-  S.precios.instrumentos = b.i; S.precios.mercados = b.m; if (S.escaneo) S.escaneo.lectura = b.l;
+  S.precios.instrumentos = b.i; S.precios.mercados = b.m; if (S.escaneo) S.escaneo.lectura = b.l; S.informe = b.inf;
 });
 
 test.describe('el banco de la revisión, sin Claude', () => {
@@ -71,12 +71,24 @@ test.describe('el banco de la revisión, sin Claude', () => {
     for (const caso of CASOS) {
       await reponer(page);
       await page.evaluate(`(${carteraFundador.toString()})()`);
-      const r = await page.evaluate((c) => { const h = window.__casoRevision(c); return { h, foto: contextoAsesor(S.M, 'revision', false) }; }, caso);
+      const r = await page.evaluate((c) => { const h = window.__casoRevision(c); return { h, hoy: hoyIso(), foto: contextoAsesor(S.M, 'revision', false), fotoEst: contextoAsesor(S.M, 'revision', true) }; }, caso);
+      expect(r.fotoEst, caso).not.toContain('Hoy corta dividendo');
       expect(r.h.caso).toBe(caso);
       if (caso === 'resultados') expect(r.foto).toContain('beneficio neto cae un 38 %');
       if (caso === 'atascado') expect(r.foto).toContain('valor liquidativo atascado');
       if (caso === 'aplazada') expect(r.foto).toMatch(/490[^\n]*no restan este año por la regla de recompra/);
-      if (caso === 'caida') expect(r.foto).toMatch(/### Repsol[^\n]*\n[^\n]*\n[^\n]*hoy −7,\d\s%/);
+      // mejorar-ia-2: los fallos del propio banco. La caída es de un 7,0 % justo en las tres (BAT salía a −9,8 %) y va sin el
+      // informe de prensa de la mañana; el día del dividendo no lleva otro dividendo de IAG por llegar este año
+      if (caso === 'caida') { for (const n of ['Repsol', 'BAT', 'IAG']) expect(r.foto, n).toMatch(new RegExp(`### ${n}[^\\n]*\\n[^\\n]*\\n[^\\n]*hoy −7,0\\s%`)); expect(r.foto).not.toContain('## Informe de prensa de la IA'); }
+      else expect(r.foto, caso).toContain('## Informe de prensa de la IA');
+      if (caso === 'dividendo') {
+        // un solo pago de IAG este año en la lista, el de hoy; y la línea que lo relaciona con la bajada
+        const deIag = r.foto.match(new RegExp(`${new Date().getFullYear()}-\\d\\d-\\d\\d IAG \\d+ € netos`, 'g')) || [];
+        expect(deIag).toHaveLength(1);
+        expect(deIag[0].startsWith(r.hoy)).toBe(true);
+        expect(r.foto).toMatch(/Hoy corta dividendo[^\n]*IAG \d+ € brutos \(\d+ € netos\), un 0,9 % de su valor/);
+        expect(r.foto).toMatch(/### IAG[^\n]*\n[^\n]*\n[^\n]*hoy −1,1\s%/);
+      } else expect(r.foto, caso).not.toContain('Hoy corta dividendo');
     }
     expect(errores).toEqual([]);
   });
@@ -105,7 +117,7 @@ test.describe('la revisión del fundador, con Claude de verdad', () => {
       await cargarFichas().catch(() => {});
     });
     await page.evaluate(`window.__casoRevision = ${casoRevision.toString()}`);
-    await page.evaluate(() => { window.__base = JSON.stringify({ i: S.precios.instrumentos, m: S.precios.mercados, l: (S.escaneo && S.escaneo.lectura) || {} }); });
+    await page.evaluate(() => { window.__base = JSON.stringify({ i: S.precios.instrumentos, m: S.precios.mercados, l: (S.escaneo && S.escaneo.lectura) || {}, inf: S.informe || null }); });
     const resultados = [];
     let deAyer = null;
     const guardar = (parcial) => writeFileSync(SALIDA, JSON.stringify({ v: 1, generado: new Date().toISOString(), ...(parcial ? { parcial: true } : {}), total: resultados.length, gasto: { ...gasto, dolares: Math.round(gasto.dolares * 1000) / 1000 }, tope: TOPE, sin_reglas_fundador: sinFundador, errores_pagina: errores.slice(0, 10), casos: resultados }, null, 1));
