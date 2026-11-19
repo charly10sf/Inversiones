@@ -42,7 +42,7 @@ test('una pregunta en inglés lleva la nota delante y detrás', async ({ page })
   expect(r.b[0]).toEqual({ type: 'image', source: {} });
 });
 
-test('las instrucciones del fundador llevan lo que se confundía en el banco; el estándar no cambia', async ({ page }) => {
+test('las instrucciones del fundador llevan lo que se confundía en el banco; el estándar solo cambia en la frase del idioma', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true), ne: NOTA_CLAUDE, nf: NOTA_CLAUDE_FUNDADOR, anio: String(new Date().getFullYear()) }));
   for (const t of ['Una acción, un ETF o un ETC (su oro) no se traspasan', 'pérdidas de años anteriores pendientes', 'nunca «la mayor parte»', '«Ese dinero»', 'simular_compra del importe total', 'retiene a cuenta el 19 % de la ganancia', '«no lo tengo en Toisón»', 'Acaba siempre con tu recomendación clara', 'nunca digas que no tiene pérdidas que compensar', 'tras apartar el impuesto', 'Una paga extra', 'Su precio medio no dice si algo está caro', 'El orden de compensar', 'Un mismo euro no cuenta dos veces', 'el bróker donde la hace']) {
@@ -51,7 +51,12 @@ test('las instrucciones del fundador llevan lo que se confundía en el banco; el
   }
   // la huella del estándar (sin el año): si cambia, es que algo ha llegado al estándar
   const huella = (x) => createHash('sha256').update(x.split(r.anio).join('AAAA')).digest('hex').slice(0, 16);
-  expect({ instrucciones: huella(r.e), nota: huella(r.ne) }).toEqual({ instrucciones: 'abdb65f31b1d749b', nota: '137a3f8b20bfd03f' });
+  // 19 nov (mejorar-ia-2, parte E) · CAMBIADA A PROPÓSITO, con el sí de Carlos (parte A, 20:45): las instrucciones del
+  // estándar llevan una frase más («Si te escribe en otro idioma…, contesta entero en ese idioma, con estas mismas reglas…»).
+  // Antes: abdb65f31b1d749b. La nota (NOTA_CLAUDE) no cambia. Va a la revisión aparte
+  expect({ instrucciones: huella(r.e), nota: huella(r.ne) }).toEqual({ instrucciones: '7952c3b240b42f43', nota: '137a3f8b20bfd03f' });
+  expect(r.e.split('Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma, con estas mismas reglas: lo que no haces y las palabras que no usas valen igual en cualquier idioma.').length).toBe(2);
+  expect(huella(r.e.replace(' Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma, con estas mismas reglas: lo que no haces y las palabras que no usas valen igual en cualquier idioma.', ''))).toBe('abdb65f31b1d749b');
 });
 
 test('el pedido de la revisión del fundador lleva lo que fallaba en su banco; el del estándar no cambia', async ({ page }) => {

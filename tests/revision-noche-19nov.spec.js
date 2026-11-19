@@ -173,14 +173,15 @@ test('al pasar de sin freno a las reglas del estándar (el «no» del Worker) se
   expect(r.ahora).toBe(false);
 });
 
-test('sin freno, si le escribe en inglés contesta en inglés; las instrucciones del estándar no cambian', async ({ page }) => {
+test('si le escribe en inglés contesta en inglés: sin freno y, desde mejorar-ia-2, también con las reglas del estándar', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true), nf: NOTA_CLAUDE_FUNDADOR, ne: NOTA_CLAUDE }));
   expect(r.f).toContain('Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma.');
   // y delante de todo, en la nota del fundador (Haiku no lo hacía con la regla solo en las instrucciones)
   expect(r.nf).toContain('Contesta en el idioma de su último mensaje');
   expect(r.ne).not.toContain('Contesta en el idioma de su último mensaje');
-  expect(r.e).not.toContain('contesta entero en ese idioma');
+  // 19 nov (mejorar-ia-2, parte E; Carlos dio el sí): el estándar también, diciendo que sus reglas valen igual en cualquier idioma
+  expect(r.e).toContain('Si te escribe en otro idioma (en inglés, por ejemplo), contesta entero en ese idioma, con estas mismas reglas: lo que no haces y las palabras que no usas valen igual en cualquier idioma.');
 });
 
 test('sin freno, las instrucciones llevan las cuentas que se confundían en el banco; el estándar no', async ({ page }) => {
@@ -210,7 +211,7 @@ test('la foto no cambia de un minuto a otro (va en la caché de Claude): hora al
   expect(b).toBe(a);
 });
 
-test('sin freno, una pregunta en inglés lleva la nota «Answer in English»; en español o con las reglas del estándar, no', async ({ page, context }) => {
+test('una pregunta en inglés lleva la nota «Answer in English», sin freno y (desde mejorar-ia-2) con las reglas del estándar; en español, no', async ({ page, context }) => {
   const ev = (tipo, datos) => `event: ${tipo}\ndata: ${JSON.stringify({ type: tipo, ...datos })}\n\n`;
   const sse = ev('message_start', { message: { id: 'm', type: 'message', role: 'assistant', content: [], model: 'claude-haiku-5-5', stop_reason: null, usage: { input_tokens: 10, output_tokens: 1 } } })
     + ev('content_block_start', { index: 0, content_block: { type: 'text', text: '' } }) + ev('content_block_delta', { index: 0, delta: { type: 'text_delta', text: 'Hold it.' } })
@@ -240,5 +241,7 @@ test('sin freno, una pregunta en inglés lleva la nota «Answer in English»; en
   };
   expect(await preguntar('What should I do with my Bitcoin this month?', 'privado')).toMatch(/\(Answer in English\.\)$/);
   expect(await preguntar('¿Qué hago con mi bitcoin este mes?', 'privado')).not.toContain('Answer in English');
-  expect(await preguntar('What should I do with my Bitcoin this month?', 'publico')).not.toContain('Answer in English');
+  // 19 nov (mejorar-ia-2, parte E; Carlos dio el sí): el estándar también contesta en inglés si le escriben en inglés
+  expect(await preguntar('What should I do with my Bitcoin this month?', 'publico')).toMatch(/\(Answer in English\.\)$/);
+  expect(await preguntar('¿Qué hago con mi bitcoin este mes?', 'publico')).not.toContain('Answer in English');
 });
