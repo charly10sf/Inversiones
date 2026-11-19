@@ -1,6 +1,6 @@
 // Revisión de noche del 19 nov · Banco del fundador: que lo que recomienda la IA sin freno sea bueno (no que no recomiende).
 // Aparte del banco de trampas del estándar (banco-claude.spec.js). Dos partes:
-// 1) Siempre (en «Pruebas»): el banco está bien hecho (de 25 a 40 preguntas, ids distintos, comprobaciones escritas).
+// 1) Siempre (en «Pruebas»): el banco está bien hecho (de 25 a 60 preguntas, ids distintos, comprobaciones escritas).
 // 2) Solo con una clave de la API de Anthropic (GF_BANCO_ANTHROPIC; la Action «Banco de la IA con Claude» con solo =
 //    «fundador» o «fundador:f01,f02»): cada pregunta en una conversación nueva, con la app de verdad, la cartera fija
 //    (tests/banco/cartera-fundador.js) y Claude de verdad, con las reglas del fundador. El Worker se imita con su mismo
@@ -69,12 +69,13 @@ test.describe('el banco del fundador, sin Claude', () => {
 
   test('el banco del fundador está bien hecho', () => {
     expect(BANCO.length).toBeGreaterThanOrEqual(25);
-    expect(BANCO.length).toBeLessThanOrEqual(40);
+    expect(BANCO.length).toBeLessThanOrEqual(60);
     expect(new Set(BANCO.map((q) => q.id)).size).toBe(BANCO.length);
     for (const q of BANCO) {
       expect(q.q, q.id).toBeTruthy();
       expect(Array.isArray(q.comprueba) && q.comprueba.length >= 2, `${q.id}: al menos dos comprobaciones`).toBe(true);
       for (const h of q.herramientas || []) expect(HERRS, q.id).toContain(h);
+      if (q.sigue !== undefined) expect([].concat(q.sigue).every((x) => typeof x === 'string' && x.trim()) && [].concat(q.sigue).length <= 2, `${q.id}: sigue, uno o dos mensajes`).toBe(true);
     }
     // lo que pide el encargo: dato viejo, instrucciones metidas en una noticia, algo que no sabe, inglés, corta, confianza
     // baja y una que choca con el Paso a paso
@@ -160,12 +161,15 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
       const t0 = Date.now(), d0 = gasto.dolares;
       await page.evaluate((x) => abrirAsesor(x, true), q.q);
       await expect.poll(() => page.evaluate(() => !AS.cargando && AS.conv.length >= 2), { timeout: 240_000, intervals: [1000] }).toBe(true);
-      let primera = null;
-      if (q.sigue) {
-        primera = await page.evaluate(() => AS.conv[AS.conv.length - 1].partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n'));
-        await page.evaluate((x) => preguntarAsesor(x), q.sigue);
-        await expect.poll(() => page.evaluate(() => !AS.cargando && AS.conv.length >= 4), { timeout: 240_000, intervals: [1000] }).toBe(true);
+      // un hilo de dos o tres mensajes: «sigue» es un texto o una lista (19 nov, mejorar-ia)
+      const sigues = q.sigue ? [].concat(q.sigue) : [], previas = [];
+      for (let i = 0; i < sigues.length; i++) {
+        previas.push(await page.evaluate(() => AS.conv[AS.conv.length - 1].partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n')));
+        await page.evaluate((x) => preguntarAsesor(x), sigues[i]);
+        const n = 2 * (i + 2);
+        await expect.poll(() => page.evaluate((n) => !AS.cargando && AS.conv.length >= n, n), { timeout: 240_000, intervals: [1000] }).toBe(true);
       }
+      const primera = previas[0] || null;
       const r = await page.evaluate(() => {
         const t = AS.conv[AS.conv.length - 1];
         const texto = t.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n');
@@ -174,7 +178,7 @@ test.describe('el banco del fundador, con Claude de verdad', () => {
       });
       const mal = revisarFundador(q, r);
       if (r.estandar !== false) mal.push('no ha ido con las reglas del fundador');
-      resultados.push({ id: q.id, tema: q.tema, q: q.q, ...(q.sigue ? { sigue: q.sigue, primera: (primera || '').slice(0, 6000) } : {}), comprueba: q.comprueba, mal, segundos: Math.round((Date.now() - t0) / 1000), dolares: Math.round((gasto.dolares - d0) * 10000) / 10000, modelo: r.modelo, nb_atascado_en_su_foto: r.nb_atascado, herramientas: r.herramientas, fuentes: r.fuentes, respuesta: r.texto.slice(0, 12000) });
+      resultados.push({ id: q.id, tema: q.tema, q: q.q, ...(q.sigue ? { sigue: q.sigue, primera: (primera || '').slice(0, 6000), ...(previas.length > 1 ? { previas: previas.map((x) => x.slice(0, 6000)) } : {}) } : {}), comprueba: q.comprueba, mal, segundos: Math.round((Date.now() - t0) / 1000), dolares: Math.round((gasto.dolares - d0) * 10000) / 10000, modelo: r.modelo, nb_atascado_en_su_foto: r.nb_atascado, herramientas: r.herramientas, fuentes: r.fuentes, respuesta: r.texto.slice(0, 12000) });
       console.log(`${mal.length ? '✘' : '✓'} ${q.id} (${Math.round((gasto.dolares - d0) * 1000) / 1000} $)${mal.length ? ': ' + mal.join('; ') : ''}`);
       guardar(true);
       await page.waitForTimeout(1500);
