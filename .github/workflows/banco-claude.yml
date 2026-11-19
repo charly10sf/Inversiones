@@ -16,7 +16,7 @@ on:
         options: [haiku, sonnet, los dos]
         default: haiku
       solo:
-        description: "Solo estas preguntas (ids separados por comas; vacío = las 34). «fundador» o «fundador:f01,f02»: el banco del fundador"
+        description: "Solo estas preguntas (ids separados por comas; vacío = las 34). «fundador» o «fundador:f01,f02»: el banco del fundador; «revision» o «revision:r1,r3»: el de la revisión diaria del fundador (solo haiku)"
         type: string
         default: ""
 
@@ -59,7 +59,7 @@ jobs:
           npm run build
 
       - name: Preguntas trampa a la IA con Claude
-        if: steps.toca.outputs.si && !startsWith(inputs.solo, 'fundador')
+        if: steps.toca.outputs.si && !startsWith(inputs.solo, 'fundador') && !startsWith(inputs.solo, 'revision')
         timeout-minutes: 110
         env:
           GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
@@ -83,10 +83,23 @@ jobs:
           mkdir -p salida
           GF_BANCO_SALIDA=$PWD/salida/banco-fundador-${{ matrix.motor }}.json npx playwright test tests/banco-fundador.spec.js --project=pc --reporter=list --retries=0
 
+      # 19 nov (mejorar-ia, parte 4): con solo = «revision» (o «revision:r1,r3»), el banco de la revisión diaria del fundador
+      # (tests/banco/revision.json): la automática va siempre con Haiku, así que solo corre en el trabajo de haiku
+      - name: Banco de la revisión diaria del fundador con Claude
+        if: steps.toca.outputs.si && startsWith(inputs.solo, 'revision') && matrix.motor == 'haiku'
+        timeout-minutes: 80
+        env:
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
+          GF_BANCO_SOLO: ${{ inputs.solo }}
+          GF_BANCO_TOPE: "1"
+        run: |
+          mkdir -p salida
+          GF_BANCO_SALIDA=$PWD/salida/banco-revision.json npx playwright test tests/banco-revision.spec.js --project=pc --reporter=list --retries=0
+
       - uses: actions/upload-artifact@v4
         if: always() && steps.toca.outputs.si
         with:
-          name: ${{ startsWith(inputs.solo, 'fundador') && 'banco-fundador' || 'banco-claude' }}-${{ matrix.motor }}
+          name: ${{ startsWith(inputs.solo, 'fundador') && 'banco-fundador' || startsWith(inputs.solo, 'revision') && 'banco-revision' || 'banco-claude' }}-${{ matrix.motor }}
           path: salida/
           if-no-files-found: ignore
           retention-days: 30

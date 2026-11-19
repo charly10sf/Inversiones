@@ -1,0 +1,79 @@
+{
+ "v": 1,
+ "nota": "Banco de la revisión diaria del fundador (mejorar-ia, 19 nov 2026): la revisión automática (la de las 5:00 y las 16:30: Haiku, sin herramientas ni búsquedas, pensando poco) con las reglas del fundador, sobre la cartera fija del banco del fundador (cartera-fundador.js) y un día distinto en cada caso (revision-casos.js). «comprueba» lo puntúa un agente aparte con la revisión (el JSON) y la foto delante. r2 va justo después de r1, con la de r1 como revisión de ayer.",
+ "casos": [
+  {
+   "id": "r1",
+   "caso": "normal",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "No se inventa un problema: si no hay nada urgente, lo dice y la hoja de ruta lo refleja («este mes, nada» o seguir aportando).",
+    "Menciona el fondo de Neuberger con el valor liquidativo atascado (del lunes 16 nov) o al menos no da su valor como de hoy."
+   ]
+  },
+  {
+   "id": "r2",
+   "caso": "ayer",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "Es constante con la revisión anterior (la de ayer, en los datos): no cambia niveles de posiciones ni la hoja de ruta sin un motivo nuevo, y si cambia algo, dice qué y por qué.",
+    "No repite con las mismas palabras el titular ni el resumen de ayer: cuenta lo que ha cambiado desde entonces (o que no ha cambiado nada) en pocas frases."
+   ]
+  },
+  {
+   "id": "r3",
+   "caso": "caida",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "El titular dice la caída de hoy con su cifra (en euros de su cartera y en porcentaje) y nombra lo que más le ha restado.",
+    "No le dice que venda por la caída: recuerda que sus fondos aún no tienen el precio de hoy, su horizonte y su colchón, y que la aportación del 1 de diciembre compra más barato.",
+    "No dice que los fondos han caído hoy con una cifra que no está en los datos (sin precio de hoy)."
+   ]
+  },
+  {
+   "id": "r4",
+   "caso": "resultados",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "Pone en primer plano los resultados de Repsol de hoy (beneficio −38 %, dividendo de 2027 −20 %, la acción −9 %) con lo que supone en euros para él.",
+    "Dice qué hacer con Repsol con su porqué (mantener, recortar o vender) y, si propone vender, lo que pagaría (sigue con ganancia latente) y el cambio en el dividendo que cobra.",
+    "Cambia el nivel de Repsol solo si lo explica por los resultados (es un motivo nuevo de los que permiten cambiar)."
+   ]
+  },
+  {
+   "id": "r5",
+   "caso": "atascado",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "Avisa de que el fondo de Neuberger lleva 8 sesiones sin valor liquidativo (desde el día que dice el dato) y que su valor y el patrimonio pueden no estar al día.",
+    "Propone qué hacer con eso (mirar en MyInvestor el valor de verdad, o esperar) sin alarmar más de la cuenta (es el 4 % de la cartera, renta fija de riesgo 2)."
+   ]
+  },
+  {
+   "id": "r6",
+   "caso": "aplazada",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "En la puntuación de Impuestos o en lo que hay que mejorar cuenta que las pérdidas de las ventas del S&P 500 (650 € y 490 €) no restan este año por la regla de recompra (su aportación automática) y se aplazan.",
+    "No le propone vender más S&P 500 con pérdidas para compensar este año sin decir que, con la aportación automática activa, esa pérdida tampoco restaría.",
+    "Cuenta las pérdidas de años anteriores pendientes (300 €) cuando habla de impuestos, o al menos no lo contradice."
+   ]
+  },
+  {
+   "id": "r7",
+   "caso": "dividendo",
+   "comprueba": [
+    "El titular y el resumen hablan de lo importante de hoy con cifras (euros o porcentajes), sin frases de relleno ni metas lejanas.",
+    "La hoja de ruta del mes dice qué hacer (o que no haga nada) con un paso concreto, su porqué con cifras y, si compra o vende, lo de Hacienda; nada de «valora» o «considera».",
+    "Explica que lo que baja hoy IAG es el corte del dividendo (0,05 € por acción, unos 26 € netos), no una mala noticia, y no le pide hacer nada por eso.",
+    "Si nombra el dividendo, da la cifra y cuándo lo cobra (o que llega en unos días), sin inventarse una fecha que no esté en los datos."
+   ]
+  }
+ ]
+}
