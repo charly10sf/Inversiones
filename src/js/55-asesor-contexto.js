@@ -377,7 +377,7 @@ Cómo respondes:
 - Las fechas de los precios, como vienen en cada posición: si una dice que el valor liquidativo está atascado, avísalo cada vez que des su valor, su ganancia o su rentabilidad. No digas que un precio es de otro día.
 
 Cuentas que se confunden (banco del fundador, 19 nov):
-- Lo que ahorra en la renta una venta con pérdidas es el ahorro_en_la_renta de simular_venta, y lo que pasa a años siguientes, su perdidas_para_anios_siguientes: no lo estimes tú. El orden: la pérdida del año compensa primero las ganancias del año; lo que sobre, hasta el 25 % de los dividendos e intereses; y lo que quede, los 4 años siguientes. Las pérdidas de años anteriores van después de las del año.
+- Lo que ahorra en la renta una venta con pérdidas es el ahorro_en_la_renta de simular_venta, y lo que pasa a años siguientes, su perdidas_para_anios_siguientes (si es su oro u otro ETC, rendimientos_negativos_para_anios_siguientes): no lo estimes tú. El orden: la pérdida del año compensa primero las ganancias del año; lo que sobre, hasta el 25 % de los dividendos e intereses; y lo que quede, los 4 años siguientes. Las pérdidas de años anteriores van después de las del año.
 - La regla de recompra solo mira el mismo valor (el mismo ISIN): comprar otro fondo, otra acción u otra cripto no la activa. Una pérdida aplazada no se libera al pasar el plazo: cuenta cuando vende las participaciones recompradas que la bloquean.
 - En un traspaso entre fondos no cuenta ni la ganancia ni la pérdida (pasan al fondo nuevo): para que una pérdida reste en la renta hay que vender (reembolsar). Los impuestos de vender una parte, también con simular_venta, nunca de cabeza: cuenta lo que ya lleva en el año y las pérdidas de años anteriores.
 - Varias ventas a la vez (dos posiciones, una con pérdidas y otra con ganancias, «venderlo todo»): una sola llamada a simular_venta con «ventas» (o «todas»: true) y da el impuesto de todas_juntas. Nunca sumes a mano el impuesto de cada una. No multipliques la pérdida por el tipo: lo que ahorra una pérdida nunca pasa del impuesto de la ganancia que compensa (el resto pasa a años siguientes).
@@ -406,7 +406,7 @@ Más que se confunde (mejorar-ia, 19 nov):
 - Di de qué es cada porcentaje: «de tu bolsa» o «de tu cartera»; lo que pierde sobre lo que pagó no es lo que ha caído el fondo (viene aparte, en su rentabilidad); la mayor de sus acciones sueltas no es su mayor posición.
 - Tras una venta, lo que le queda de pérdidas de años anteriores es le_quedan_despues_de_esta_venta de simular_venta, no las que tenía; tras una compra, el hueco que queda es despues_aun_cabrian de simular_compra. Cada hueco o porcentaje de un límite, diciendo si es con dinero nuevo o con el que ya tiene (si te ha dicho de dónde sale, simula con dinero_nuevo).
 - Si recomiendas entrar en un fondo y ya tiene otros fondos, di que puede hacerlo por traspaso desde uno de ellos sin tributar (y desde cuál lo harías), además de con dinero nuevo.
-- Si habla de una cuenta, un plan o un producto suyo que no está en Toisón, dile además que lo apunte en la app (como efectivo o como posición) para que cuente en su colchón y en sus cifras.
+- Si habla de una cuenta o de dinero suyo que no está en Toisón y que puede sacar cuando quiera, dile además que lo apunte en la app como efectivo para que cuente en su colchón y en sus cifras. Un plan de pensiones o un depósito a plazo no son colchón ni se apuntan como efectivo.
 - Su colchón es la cifra de sus datos («Tiene … entre efectivo, monetarios y renta fija»), entera: no solo el efectivo ni solo el fondo de renta fija. Si propones gastar parte, resta y di cómo queda frente a lo que quiere.
 - Cada cifra de fuera de Toisón (una TAE, unos gastos o comisiones, un ISIN, una rentabilidad, un precio, una fecha) va con su fuente y su enlace al lado, sacada de una búsqueda hecha en esta conversación. Si no la has buscado o la búsqueda no la trae, no la des de memoria: di «no lo sé» y dónde mirarlo (la web de la gestora o del banco).
 
@@ -610,7 +610,8 @@ function hSimularVentas(q) {
   if (mal) return mal;
   const anio = new Date().getFullYear();
   const iv = impuestoDeVentas(cs.map((c) => ({ g: c.cuenta, inst: c.f.inst })), anio);
-  const sueltas = cs.map((c) => impuestoDeVenta(c.cuenta, anio, c.f.inst).impuesto);
+  // (segunda revisión) «si solo vendiera esta» es ella sola de verdad: sin las otras de la tanda (ni «fuera» ni «previas»)
+  const sueltas = lista.map((v, k) => { const c1 = calcVenta(v || {}); return impuestoDeVenta(c1.error ? cs[k].cuenta : c1.cuenta, anio, cs[k].f.inst).impuesto; });
   const gan = sum(cs, (c) => c.gan), cuenta = sum(cs, (c) => c.cuenta), ganPos = sum(cs, (c) => Math.max(0, c.cuenta));
   const ventas = cs.map((c, k) => ({ ...fichaVenta(c), lotes_usados: undefined, cuenta_este_anio: R2(c.cuenta), si_solo_vendiera_esta: sueltas[k] >= 0 ? { impuesto_extra: R2(sueltas[k]) } : { ahorro: R2(-sueltas[k]) }, ...(c.recompra ? { regla_de_recompra: c.recompra } : {}), te_quedan: R2(c.f.uds - c.u, 6), notas: notasVenta(c) }));
   // lo de todas juntas va delante: es lo que hay que dar, y no se pierde si el resultado se recorta al guardarlo
@@ -679,7 +680,7 @@ function hSimularCompra(q, est = esPublico()) {
       ...(Number.isFinite(mN) && Number.isFinite(mT) ? { asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, mN), con_dinero_que_ya_tiene: tras(mT, 0) } } : {}),
       ...(imp > 0 ? { este_importe: nuevoDe != null
         ? { de_los_que_son_dinero_nuevo: R2(nuevoDe), resultado: veredicto(imp, nuevoDe), asi_quedaria: tras(imp, nuevoDe), ...(cabeCon(imp, nuevoDe) ? { despues_aun_cabrian: despues(imp, nuevoDe) } : {}) }
-        : { con_dinero_nuevo: veredicto(imp, imp), con_dinero_que_ya_tiene: veredicto(imp, 0), asi_quedaria: { con_dinero_nuevo: tras(imp, imp), con_dinero_que_ya_tiene: tras(imp, 0) }, despues_aun_cabrian: { si_era_dinero_nuevo: cabeCon(imp, imp) ? despues(imp, imp) : 'no cabe', si_era_dinero_que_ya_tiene: cabeCon(imp, 0) ? despues(imp, 0) : 'no cabe' } } } : {}),
+        : { con_dinero_nuevo: veredicto(imp, imp) + (cabeCon(imp, imp) || !Number.isFinite(mN) ? '' : `; como mucho, ${E0(mN)}`), con_dinero_que_ya_tiene: veredicto(imp, 0) + (cabeCon(imp, 0) || !Number.isFinite(mT) ? '' : `; como mucho, ${E0(mT)}`), asi_quedaria: { con_dinero_nuevo: tras(imp, imp), con_dinero_que_ya_tiene: tras(imp, 0) }, despues_aun_cabrian: { si_era_dinero_nuevo: cabeCon(imp, imp) ? despues(imp, imp) : 'no cabe', si_era_dinero_que_ya_tiene: cabeCon(imp, 0) ? despues(imp, 0) : 'no cabe' } } } : {}),
       nota: `Importes en euros enteros, redondeados hacia abajo: es lo más que puede comprar sin pasar ${accion ? 'ninguno de sus dos límites' : 'su límite'}. Si propones un importe, que no pase de aquí; no lo calcules de cabeza. Si el dinero es en parte suyo (efectivo, una venta) y en parte nuevo, vuelve a llamar con dinero_nuevo (la parte nueva): los dos máximos no se suman. El hueco que queda tras una compra es despues_aun_cabrian, no el máximo de antes.`,
     };
   }
@@ -939,7 +940,7 @@ const FRASES_CONSEJO_IA = [
   /(^\s*|[,:;]\s*|\b(?:y|pero|entonces|ahora)\s+)(aprovecha|deshazte|aguanta)\b/i,
   // el imperativo al empezar una frase o un punto de una lista («Vende la mitad», «- Compra más»), no «Compra de 10
   // acciones», «Compra fuerte» (los votos de los analistas) ni «compra y venta»
-  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(compra(?!\s+del\b)|vende|mantén|manten|traspasa)\b(?!\s+(de|fuerte|y|o|sin)\b)/i,
+  /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(compra(?!\s+del radar\b)|vende|mantén|manten|traspasa)\b(?!\s+(de|fuerte|y|o|sin)\b)/i,
 ];
 // lo que va negado en la misma frase («no puedo decirte si te conviene», «no sé si es buen momento») no es un consejo
 // (5 nov, banco con Claude: «tampoco puedo decir qué reparto es el adecuado», «no tengo una opinión de…», «decir que un
@@ -958,7 +959,10 @@ const RECHAZO_TRAS_IA = /\bser[ií]a (una )?(recomendaci[oó]n|valoraci[oó]n) p
 // valen si la frase NOMBRA el acto antes («Decirte qué fondo te encaja…»): sin eso, «lo más recomendable para ti sería elegir el
 // indexado» o «lo que te encaja es justo eso» son consejos. El vigía también limpia la revisión automática del estándar
 const RECHAZO_TRAS_NOMBRADO_IA = /\bser[ií]a (ordenar|elegir|decidir|recomendar|aconsejar|asesorar)(te)?\b|\b(y )?eso no (te )?(lo )?(hago|puedo hacer)\b|\bes (justo|justamente|precisamente|exactamente) eso\b/i;
-const NOMBRA_EL_ACTO_IA = /(^|[^a-zñáéíóú])(decir|señalar|indicar|recomendar|aconsejar|elegir|escoger|ordenar|proponer)(te|le)?(?![a-zñáéíóú])/i;
+// (segunda revisión) el acto nombrado tiene que ser el sujeto: al empezar la frase o la cláusula y sin corte hasta la frase de
+// consejo («Decirte qué fondo te encaja…», «…, pero elegir cuál te conviene…»); «Puedo decirte que lo más recomendable para ti
+// sería elegir…» o «Si tengo que elegir, me quedaría con…» son consejos
+const NOMBRA_EL_ACTO_IA = /(^\s*(?:[-*•]\s*)?|[,;]\s*(?:pero |y |porque |aunque )?)(decir|señalar|indicar|recomendar|aconsejar|elegir|escoger|ordenar|proponer)(te|le)?(?![a-zñáéíóú])[^,;:]*$/i;
 // tras cerrar las comillas, lo citado «depende», «no existe», «no lo hay»…: lo nombra para decir que no lo da
 const CITA_NEGADA_IA = /^[^«»“”"]*[»”"]\s*(depende|no existe|no hay|no lo hay|no es algo)\b/i;
 /* el estándar puede contestar en inglés (parte E): lo mismo, lo justo, para una respuesta en inglés. Solo apunta al registro */

@@ -301,13 +301,15 @@ function dosCuentas(xs) {
       try {
         const tanda = [...vend, x], fuera = new Set(tanda.map((y) => y.f.pos));
         // (revisión aparte, C1) cada una con las que van antes en la tanda: lo que liberan de una venta anterior, una sola vez
-        const js = tanda.map((y, k) => { const rv = recompraDeVenta(y.f, y.uds, y.g, fuera, tanda.slice(0, k).map((z) => ({ pos: z.f.pos, u: z.uds }))); return Math.min(0, y.g + (rv ? rv.aplazada + rv.liberada : 0)); });
-        const total = sum(js, (v) => v), propia = js[js.length - 1], cuenta = total - acum;
+        const rvs = tanda.map((y, k) => recompraDeVenta(y.f, y.uds, y.g, fuera, tanda.slice(0, k).map((z) => ({ pos: z.f.pos, u: z.uds }))));
+        const js = tanda.map((y, k) => Math.min(0, y.g + (rvs[k] ? rvs[k].aplazada + rvs[k].liberada : 0)));
+        const total = sum(js, (v) => v), propia = js[js.length - 1], cuenta = total - acum, rvJ = rvs[rvs.length - 1];
         if (!(cuenta < -50)) continue;
         // (revisión aparte, C2) lo que de esta pérdida solo resta si se venden también las de antes (sola, sus compras recientes
-        // la aplazarían): se dice siempre, también cuando la primera no tenía nada aplazado
-        const sola = Math.min(0, x.cuenta);
-        x.depende = Math.max(0, sola - propia); x.dependeDe = [...new Set(vend.map((y) => y.f.pos.plataforma).filter(Boolean))];
+        // la aplazarían): se dice siempre, también cuando la primera no tenía nada aplazado. (Segunda revisión) solo lo que
+        // APLAZA: lo que libera de una venta anterior va aparte (deVenta); antes salía «de eso, 2.446 €» con una pérdida de 440 €
+        x.depende = Math.min(-x.g, Math.max(0, (x.rv ? x.rv.aplazada : 0) - (rvJ ? rvJ.aplazada : 0))); x.dependeDe = [...new Set(vend.map((y) => y.f.pos.plataforma).filter(Boolean))];
+        x.deVenta = rvJ ? Math.max(0, -rvJ.liberada) : 0;
         x.cuenta = cuenta; x.noResta = Math.max(0, propia - x.g); x.libera = Math.max(0, propia - cuenta);
         x.liberaDe = [...new Set(vend.filter((y) => y.noResta > 0.5).map((y) => y.f.pos.plataforma).filter(Boolean))];
         for (const y of vend) if (y.noResta > 0.5) y.tambien = [...new Set([...(y.tambien || []), x.f.pos.plataforma || ''])].filter(Boolean);
@@ -336,6 +338,8 @@ function conRecompra(x, pl) {
     }
   } catch (e) { cuenta = x.g; }
   x.cuenta = Math.min(0, cuenta);
+  // lo que vuelve a restar de una venta anterior de este año al vender esto (para decirlo en su frase)
+  x.deVenta = x.rv && !x.resto ? Math.max(0, -x.rv.liberada) : 0;
   x.noResta = Math.max(0, x.cuenta - x.g);
   // con resto: si la venta del plan tenía su pérdida aplazada por lo que ahora se vende, vender el resto la hace contar
   x.libera = x.resto ? Math.max(0, x.g - x.cuenta) : 0;

@@ -237,5 +237,53 @@ test('revisión aparte I2: la venta con ganancia que libera una pérdida aplazad
     return { html: htmlFiscalVenta(pl).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), imp: paso && String(paso.imp || '').replace(/<[^>]+>/g, '') };
   });
   expect(r.html).toContain('No vuelvas a comprar IAG hasta que pasen dos meses desde aquella venta');
-  if (r.imp) { expect(r.imp).not.toContain('puedes volver a comprarla cuando quieras'); expect(r.imp).toContain('No la recompres hasta que pasen dos meses desde aquella venta'); }
+  expect(r.imp, 'el paso de vender sale').toBeTruthy();
+  expect(r.imp).not.toContain('puedes volver a comprarla cuando quieras');
+  expect(r.imp).toContain('No la recompres hasta que pasen dos meses desde aquella venta');
+  // (segunda revisión) también si la ganancia es mayor que la pérdida que libera (paga impuesto, pero recomprando la vuelve a aplazar)
+  const r2 = await page.evaluate(() => {
+    const hoy = hoyIso();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    pos.lotes = [{ f: sumarDias(hoy, -20), u: 200, c: 200 * pr * 0.9 }]; pos.coste = pos.lotes[0].c;
+    S.cartera.movimientos = [{ tipo: 'venta', instrumento: 'iag', fecha: sumarDias(hoy, -30), uds: 200, resultado: -50, importe: 200 * pr }];
+    S.M = calcular();
+    const f = S.M.filas.find((x) => x.pos === pos);
+    const pl = planVenta0({ ...f, senal: { ...f.senal, nivel: 'vender' } }, S.M);
+    const c = cacheDe(S.M, '__plan'); c.set(f, pl); f.senal = { ...f.senal, nivel: 'vender' };
+    const P = pasosRuta0(S.M), paso = [...P.mes, ...P.seis].find((y) => y.id.startsWith(`venta:${pos.id}:`));
+    return { computa: pl.computa, liberada: pl.fiscal.recompra && pl.fiscal.recompra.liberada, imp: paso && String(paso.imp || '').replace(/<[^>]+>/g, '') };
+  });
+  expect(r2.computa).toBeGreaterThan(1);
+  expect(r2.liberada).toBeCloseTo(-50, 0);
+  expect(r2.imp).toContain('no la recompres hasta que pasen dos meses desde aquella venta');
+  expect(r2.imp).not.toContain('puedes volver a comprarla cuando quieras');
+});
+
+test('segunda revisión: lo que «depende» de vender la otra cuenta nunca pasa de la pérdida, y lo liberado de una venta anterior va en su frase', async ({ page }) => {
+  test.skip(new Date().getMonth() < 6, 'de enero a junio el Paso a paso no propone vender con pérdidas');
+  await fundador(page);
+  const r = await page.evaluate(() => {
+    const hoy = hoyIso();
+    const pos = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    const pr = S.M.filas.find((x) => x.pos === pos).precio;
+    // lotes de hace 90 y 95 días (fuera de los dos meses de hoy) y una venta de hace 100 días con 1.000 € de pérdida aplazada por ellos
+    pos.cantidad = 30; pos.lotes = [{ f: sumarDias(hoy, -95), u: 30, c: 30 * pr + 400 }]; pos.coste = pos.lotes[0].c;
+    const otra = { id: 'p-otra', instrumento: 'iag', plataforma: 'Openbank', cantidad: 20, coste: 20 * pr + 300, fecha: sumarDias(hoy, -90), lotes: [{ f: sumarDias(hoy, -90), u: 20, c: 20 * pr + 300 }] };
+    S.cartera.posiciones.push(otra);
+    S.cartera.movimientos = [{ tipo: 'venta', instrumento: 'iag', fecha: sumarDias(hoy, -100), uds: 40, resultado: -1000, importe: 40 * pr }];
+    S.cartera.aportaciones = [];
+    S.M = calcular();
+    const xs = restoEnPerdidas(S.M, []);
+    const ver = (x) => x && { g: x.g, cuenta: x.cuenta, depende: x.depende || 0, deVenta: x.deVenta || 0, noResta: x.noResta };
+    const P = pasosRuta0(S.M), todos = [...P.mes, ...P.seis].filter((y) => /^perdida:/.test(y.id) && (y.id.includes(`:${pos.id}:`) || y.id.includes(':p-otra:')));
+    return { a: ver(xs.find((y) => y.f.pos === pos)), b: ver(xs.find((y) => y.f.pos === otra)), pqs: todos.map((y) => y.pq.replace(/<[^>]+>/g, '')) };
+  });
+  // nadie ha comprado en los dos últimos meses: nada «depende» de vender la otra cuenta
+  for (const x of [r.a, r.b]) { expect(x.depende).toBe(0); expect(x.depende).toBeLessThanOrEqual(-x.g + 0.01); }
+  // entre las dos, sus pérdidas (700 €) más los 1.000 € de la venta anterior, una sola vez
+  expect(r.a.cuenta + r.b.cuenta).toBeCloseTo(-1700, 0);
+  expect(r.a.deVenta + r.b.deVenta).toBeCloseTo(1000, 0);
+  expect(r.pqs.join(' ')).toContain('vuelven a restar unos');
+  expect(r.pqs.join(' ')).not.toContain('solo restan este año si vendes también');
 });

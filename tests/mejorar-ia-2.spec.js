@@ -124,7 +124,7 @@ test('simular_compra sin freno: lo máximo que cabe en sus límites, con dinero 
   expect(q.acciones_sueltas_pct).toBeLessThanOrEqual(20); expect(q.esta_empresa_pct).toBeLessThanOrEqual(10);
   expect(r.justo.cabe_como_mucho.este_importe.con_dinero_nuevo).toBe('cabe');
   // con 60 € más no cabe, y dice cómo quedaría
-  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: quedaría en el 20,0\d % \(su límite, 20 %\)$/);
+  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: quedaría en el 20,0\d % \(su límite, 20 %\); como mucho, [\d.]+ €$/);
   // con el máximo, después ya no cabe casi nada
   expect(r.justo.cabe_como_mucho.este_importe.despues_aun_cabrian.si_era_dinero_nuevo.con_dinero_nuevo_eur).toBeLessThanOrEqual(1);
   expect(r.sin.precio_aprox_eur).toBeUndefined(); // sin importe, solo el máximo
@@ -177,7 +177,7 @@ test('las herramientas del estándar no cambian; las del fundador llevan las ven
   expect(c.input_schema.required).toEqual(['empresa']);
   expect(c.description).toContain('cabe_como_mucho');
   expect(r.f.map((h) => h.name)).toEqual(JSON.parse(r.e).map((h) => h.name));
-  for (const t of ['una sola llamada a simular_venta con «ventas»', 'cabe_como_mucho de simular_compra', 'orden_de_compensar de simular_venta', 'va con su fuente y su enlace al lado', 'una aerolínea no es una petrolera', 'un horizonte largo no se contradicen', 'Di de qué es cada porcentaje', 'le_quedan_despues_de_esta_venta de simular_venta', 'por traspaso desde uno de ellos sin tributar', 'dile además que lo apunte en la app', 'Su colchón es la cifra de sus datos']) {
+  for (const t of ['una sola llamada a simular_venta con «ventas»', 'cabe_como_mucho de simular_compra', 'orden_de_compensar de simular_venta', 'va con su fuente y su enlace al lado', 'una aerolínea no es una petrolera', 'un horizonte largo no se contradicen', 'Di de qué es cada porcentaje', 'le_quedan_despues_de_esta_venta de simular_venta', 'por traspaso desde uno de ellos sin tributar', 'dile además que lo apunte en la app como efectivo', 'Su colchón es la cifra de sus datos']) {
     expect(r.ins, t).toContain(t);
     expect(r.insE, t).not.toContain(t);
   }
