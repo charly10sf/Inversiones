@@ -76,6 +76,8 @@ function fichaTexto(f, corto = false, est = esPublico()) {
   if (f.pos.notas) L.push('Sus notas: ' + String(f.pos.notas).replace(/\s+/g, ' ').slice(0, 500));
   const ap = aportacionesActivas().filter(({ a }) => a.instrumento === i.id && (!a.plataforma || a.plataforma === f.pos.plataforma));
   if (ap.length) L.push(`Aportación automática: ${ap.map(({ a }) => `${a.importe} € al mes, el día ${a.dia || 1}`).join(', ')}.`);
+  // 19 nov (mejorar-ia-2, parte D) · sin freno, en lo que está en pérdidas, su plazo de recompra: la revisión ponía «dos meses» a un fondo
+  try { if (!est && f.valor - f.coste < -50) { const rr = reglaRecompra(f.inst); if (rr) L.push(rr.meses ? `Si vende con pérdidas: el plazo de recompra de esta posición es de ${rr.plazo}${/^Fondo/.test(f.inst.tipo || '') ? ' (es un fondo)' : rr.rcm ? ' (es un ETC)' : rr.meses === 12 ? ' (cotiza fuera de la UE)' : ''}, antes y después de vender; cada aportación automática cuenta como una compra.` : 'Si vende con pérdidas: en cripto no se aplica la regla de recompra de dos meses (hay quien defiende un año).'); } } catch (e) {}
   try { const lotes = lotesDe(f.pos); if (lotes.length) L.push(`Lotes de compra para FIFO: ${lotes.length}${lotes.some((l) => l.mezcla) ? ' (el primero es lo que tenía al empezar a usar Toisón, a precio medio)' : ''}; el más antiguo del ${lotes[0].f}.`); } catch (e) {}
   return L.join('\n');
 }

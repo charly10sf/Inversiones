@@ -150,7 +150,7 @@ test('las herramientas del estándar no cambian; las del fundador llevan las ven
 test('el pedido de la revisión del fundador lleva lo de Hacienda, las monedas, el relleno y la constancia; el del estándar, no', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: pedidoAnalisis(['repsol'], 'prueba', false, true, false), e: pedidoAnalisisPublico(['repsol'], 'prueba', false, true) }));
-  for (const t of ['el 19 % retenido es solo de las españolas', 'un fondo de inversión, un año; una acción o un ETF de una bolsa de la UE, dos meses', 'es de una venta que no ha hecho', 'no los pases a libras, peniques ni dólares', 'Sus metas y su colchón, solo si algo de hoy los cambia', 'Cada "por_que" lleva al menos una cifra', 'copia de la anterior el "nivel" de cada posición', '«Hoy corta dividendo»']) {
+  for (const t of ['el 19 % retenido es solo de las españolas', 'un fondo de inversión, un año; una acción o un ETF de una bolsa de la UE, dos meses', 'es de una venta que no ha hecho', 'no los pases a libras, peniques ni dólares', 'Sus metas y su colchón, solo si algo de hoy los cambia', 'Cada "por_que" lleva al menos una cifra', 'copia de la anterior el "nivel" de cada posición', '«Hoy corta dividendo»', 'son las del ex-dividendo', 'está por debajo (di el hueco que queda)', 'cada aportación es una compra', 'ninguna frase dirigida a ti', 'nunca «$» en un precio suyo']) {
     expect(r.f, t).toContain(t);
     expect(r.e, t).not.toContain(t);
   }
@@ -173,4 +173,22 @@ test('sin freno, «lo que más mueve» dice cuántas posiciones con precio de ho
   expect(+m[1]).toBe(r.n - 6);
   expect(Math.abs(+m[3].replace('−', '-').replace(/\./g, '') - r.resto)).toBeLessThanOrEqual(1);
   expect(r.e).not.toContain('más con precio de hoy');
+});
+
+test('sin freno, cada posición en pérdidas lleva su plazo de recompra; con las reglas del estándar, no', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    const pos = S.cartera.posiciones.find((x) => /^Fondo/.test(S.inst[x.instrumento].tipo || '')), iag = S.cartera.posiciones.find((x) => x.instrumento === 'iag');
+    S.M = calcular();
+    for (const p of [pos, iag]) { const f = S.M.filas.find((x) => x.pos === p); p.lotes = [{ f: '2024-01-10', u: f.uds, c: f.valor + 1000 }]; p.coste = f.valor + 1000; }
+    S.M = calcular();
+    const bloque = (t, f) => { const i = t.indexOf(`### ${f.inst.corto} (id "${f.pos.id}")`); return t.slice(i, t.indexOf('\n### ', i + 5) > 0 ? t.indexOf('\n### ', i + 5) : i + 4000); };
+    const ff = S.M.filas.find((x) => x.pos === pos), fi = S.M.filas.find((x) => x.pos === iag), gana = S.M.filas.find((x) => x.valor - x.coste > 500);
+    const f = contextoAsesor(S.M, 'chat', false), e = contextoAsesor(S.M, 'chat', true);
+    return { fondo: bloque(f, ff), iag: bloque(f, fi), gana: bloque(f, gana), e };
+  });
+  expect(r.fondo).toContain('Si vende con pérdidas: el plazo de recompra de esta posición es de un año (es un fondo)');
+  expect(r.iag).toContain('Si vende con pérdidas: el plazo de recompra de esta posición es de dos meses, antes y después de vender');
+  expect(r.gana).not.toContain('Si vende con pérdidas');
+  expect(r.e).not.toContain('Si vende con pérdidas');
 });
