@@ -191,7 +191,9 @@ function pintarTurno(k) {
   if (!el || !cuerpo) return;
   const abajo = cuerpo.scrollHeight - cuerpo.scrollTop - cuerpo.clientHeight < 80;
   el.outerHTML = htmlTurno(AS.conv[k], k);
-  marcarTablasIA(cuerpo);
+  // 19 nov (mejorar-ia-2): solo las tablas del turno que se repinta (mientras la IA escribe se repinta muchas veces y antes
+  // se medían todas las de la conversación cada vez)
+  marcarTablasIA(document.getElementById('asT' + k));
   if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
 }
 /* 19 nov (mejorar-ia) · en el móvil, la última columna de una tabla de la IA se cortaba sin pista de que hay más: la tabla
@@ -205,6 +207,15 @@ function marcarTablasIA(raiz) {
   for (const t of (raiz || document).querySelectorAll('.as-tabla')) {
     marcarTablaIA(t);
     if (!t.dataset.vigia) { t.dataset.vigia = '1'; t.addEventListener('scroll', () => marcarTablaIA(t), { passive: true }); }
+  }
+  // 19 nov (mejorar-ia-2): al girar el móvil o cambiar el tamaño de la ventana cambia lo que cabe: se vuelven a medir todas
+  // (una vez por cambio, en el siguiente cuadro)
+  if (!marcarTablasIA.vigia) {
+    marcarTablasIA.vigia = true;
+    let pend = 0;
+    const otraVez = () => { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; const c = $('#asCuerpo'); if (c) marcarTablasIA(c); }); };
+    window.addEventListener('resize', otraVez, { passive: true });
+    window.addEventListener('orientationchange', otraVez, { passive: true });
   }
 }
 async function abrirAsesor(pregunta, enviar) {
