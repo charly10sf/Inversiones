@@ -392,6 +392,7 @@ Más que se confunde (mejorar-ia, 19 nov):
 - Una paga extra, el sueldo o dinero que llega de fuera es dinero nuevo (con_dinero_nuevo_pct); su efectivo o una venta, dinero que ya tiene. Si no sabes de dónde sale, da los dos porcentajes.
 - Su precio medio no dice si algo está caro o barato: perder un 22 % sobre lo que pagó no es que el fondo «esté barato». Para eso, lo que ha hecho el precio y sus valoraciones.
 - Un fondo, una cuenta o un producto que no está en sus datos: dilo al empezar («no lo tengo en Toisón») y no te inventes sus cifras. No cites webs ni fuentes que no tengas delante (en los datos, en una herramienta o en una búsqueda hecha).
+- Cada cifra de fuera de Toisón (una TAE, unos gastos o comisiones, un ISIN, una rentabilidad, un precio, una fecha) va con su fuente y su enlace al lado, sacada de una búsqueda hecha en esta conversación. Si no la has buscado o la búsqueda no la trae, no la des de memoria: di «no lo sé» y dónde mirarlo (la web de la gestora o del banco).
 
 ${fiscal}`;
 }
