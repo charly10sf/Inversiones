@@ -1413,6 +1413,18 @@ function refrescarFoto(forzar, est = esPublico()) {
   if (forzar || !AS.foto || AS.fotoEst !== !!est || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M, 'chat', est); AS.fotoT = Date.now(); AS.fotoFichas = versionFichas(); AS.fotoEst = !!est; }
 }
 
+// ¿la pregunta está en inglés? Por las palabras más corrientes de cada idioma (hacen falta al menos dos inglesas y más que
+// españolas). Solo para la nota del idioma del fundador: en caso de duda, no
+function pareceInglesIA(t) {
+  const s = ` ${String(t || '').toLowerCase()} `;
+  const en = (s.match(/[^a-z'](the|what|should|my|your|is|are|do|does|i|this|how|much|with|and|of|to|it|in|month|buy|sell)(?=[^a-z'])/g) || []).length;
+  const es = (s.match(/[^a-záéíóúñü](el|la|los|las|que|qué|mi|mis|tu|es|y|de|en|con|para|un|una|cuánto|compro|vendo|este|mes)(?=[^a-záéíóúñü])/g) || []).length;
+  return en >= 2 && en > es;
+}
+function conNotaInglesIA(c) {
+  const nota = '\n\n(Answer in English.)';
+  return Array.isArray(c) ? c.map((p, i) => (i === c.length - 1 && typeof p.text === 'string' ? { ...p, text: p.text + nota } : p)) : `${c}${nota}`;
+}
 async function preguntarAsesor(texto) {
   texto = String(texto || '').trim();
   // lo que viaja con «Explícamela» y «Pregúntale» (43-modo.js, contextoIA): se gasta aquí, pase lo que pase, y solo vale
@@ -1454,7 +1466,10 @@ async function preguntarAsesor(texto) {
     const nueva = !AS.api.length || AS.fotoFichas !== versionFichas();
     // 0.7d: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera, en alto): contesta antes
     // 0.8.2: la foto y las instrucciones, cuando ya se sabe quién contesta (con Claude, las reglas del estándar)
-    const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };
+    // 19 nov (revisión de noche): sin freno, una pregunta en inglés con la app en español lleva una nota para que conteste en
+    // inglés (en el banco del fundador, Haiku contestaba en español una de cada dos veces solo con la regla del sistema)
+    const enIngles = (est) => !est && IDIOMA !== 'en' && pareceInglesIA(texto);
+    const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: enIngles(est) ? conNotaInglesIA(contenido) : contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };
     await conversar({ turno, preparar, alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
   } catch (e) {
     turno.codigo = e.codigo || null; turno.estadoErr = Number.isInteger(e.estado) ? e.estado : null;

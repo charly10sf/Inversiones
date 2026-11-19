@@ -209,3 +209,36 @@ test('la foto no cambia de un minuto a otro (va en la caché de Claude): hora al
   expect(a).not.toMatch(/\bhace \d+ (min|h)\b|ahora mismo/);
   expect(b).toBe(a);
 });
+
+test('sin freno, una pregunta en inglés lleva la nota «Answer in English»; en español o con las reglas del estándar, no', async ({ page, context }) => {
+  const ev = (tipo, datos) => `event: ${tipo}\ndata: ${JSON.stringify({ type: tipo, ...datos })}\n\n`;
+  const sse = ev('message_start', { message: { id: 'm', type: 'message', role: 'assistant', content: [], model: 'claude-haiku-5-5', stop_reason: null, usage: { input_tokens: 10, output_tokens: 1 } } })
+    + ev('content_block_start', { index: 0, content_block: { type: 'text', text: '' } }) + ev('content_block_delta', { index: 0, delta: { type: 'text_delta', text: 'Hold it.' } })
+    + ev('content_block_stop', { index: 0 }) + ev('message_delta', { delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 3 } }) + ev('message_stop', {});
+  const vistas = [];
+  const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Expose-Headers': 'X-Reglas' };
+  await context.route('https://growfolio.growfolio-web-app.workers.dev/claude', async (r) => {
+    if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+    const c = JSON.parse(r.request().postData() || '{}');
+    if (!c.messages) return r.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: '{"error":"peticion"}' });
+    vistas.push(c);
+    return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream', 'X-Reglas': c.reglas === 'fundador' ? 'fundador' : 'estandar' }, body: sse });
+  });
+  await conCartera(page);
+  const unidad = await page.evaluate(() => ['What should I do with my Bitcoin this month?', '¿Qué compro este mes?', '¿y Repsol?', 'Repsol?', 'Is the S&P 500 fund a good buy for me?'].map(pareceInglesIA));
+  expect(unidad).toEqual([true, false, false, false, true]);
+  const preguntar = async (q, modo) => {
+    await page.evaluate(async ([q, modo]) => {
+      guardarCfgAsesor({ auto: 'manual', web: false }); LS.set('inv-claude-ok', FB.user.uid); LS.del('inv-claude-pausa'); LS.del('inv-ia-fundador-no');
+      S.acceso = modo; LS.set('inv-acceso', { a: modo, uid: FB.user.uid, t: Date.now() });
+      await sondearClaude(); AS.conv = []; AS.api = []; AS.foto = null; AS.cargando = false;
+      await abrirAsesor(q, true);
+    }, [q, modo]);
+    await expect.poll(() => page.evaluate(() => !AS.cargando && AS.conv.length >= 2), { timeout: 20_000 }).toBe(true);
+    const c = vistas.at(-1), u = c.messages.at(-1).content;
+    return typeof u === 'string' ? u : u.map((b) => b.text || '').join(' ');
+  };
+  expect(await preguntar('What should I do with my Bitcoin this month?', 'privado')).toMatch(/\(Answer in English\.\)$/);
+  expect(await preguntar('¿Qué hago con mi bitcoin este mes?', 'privado')).not.toContain('Answer in English');
+  expect(await preguntar('What should I do with my Bitcoin this month?', 'publico')).not.toContain('Answer in English');
+});
