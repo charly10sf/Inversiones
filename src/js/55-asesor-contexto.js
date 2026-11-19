@@ -597,7 +597,9 @@ function pasoTxt(nombre, q = {}) {
 async function conversar(o) {
   try {
     // 0.8.2d (revisión aparte): o.soloHaiku (la revisión automática) va siempre con Haiku, aunque hayas elegido Sonnet
-    const tipo = o.tipo || 'pregunta', mc0 = modeloClaudeParaIA(tipo), mc = mc0 && o.soloHaiku ? HAIKU_IA : mc0;
+    // con «segun», lo que decide es su último mensaje (en un hilo, «¿y si lo vendo?» va con Sonnet)
+    const ultimoTexto = o.q != null ? String(o.q) : (() => { const u = [...(o.mensajes || [])].reverse().find((m) => m && m.role === 'user'); if (!u) return ''; return typeof u.content === 'string' ? u.content : (u.content || []).map((p) => (p && (p.text || '')) || '').join(' '); })();
+    const tipo = o.tipo || 'pregunta', mc0 = modeloClaudeParaIA(tipo, ultimoTexto), mc = mc0 && o.soloHaiku ? HAIKU_IA : mc0;
     const conClaude = !!(mc && await claudeAlcanzable(tipo, o.signal));
     // 0.8.2b: solo Claude. 17 nov (Carlos: «en el modo fundador no quiero que esté capada»): en el fundador, con las reglas
     // del fundador (recomendaciones directas) si el Worker lo deja (su lista); en el estándar, siempre las del estándar
@@ -876,7 +878,11 @@ const TXT_SI_CLAUDE = () => L('La IA contesta con Claude, de Anthropic. Tus preg
 // para lo suelto (el resumen de una noticia): el mismo sí, pedido al momento si aún no lo has dado
 function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return false; if (confirm(TXT_SI_CLAUDE())) { marcarClaudeOk(); return true; } AS.claudeNo = true; return false; }
 // 0.8.2b: sin «Solo Gemini» (quien lo tuviera elegido pasa a la opción recomendada)
-const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) ? m : 'auto'; };
+// 19 nov (mejorar-ia, parte 3): «segun», solo en el fundador y apagado por defecto: Sonnet para lo que va de vender,
+// traspasar o impuestos (pideSonnetIA) y Haiku para lo demás. En el estándar cuenta como «auto»
+const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) || (m === 'segun' && !esPublico()) ? m : 'auto'; };
+const SONNET_POR_TEMA = /vend|vent[ae]s?\b|traspas|impuest|hacienda|\brenta\b|tribut|compens|p[ée]rdid|fifo|retenc|retien|recompr|plusval|ganancia|\bsell|\btax|transfer|\bloss/i;
+function pideSonnetIA(q) { return SONNET_POR_TEMA.test(String(q || '')); }
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
 const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)
 const RED_CLAUDE = { primero: 30000, hilo: 60000, esperas: [2, 5] };
@@ -927,7 +933,7 @@ function marcarSinFreno(si) {
 /* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (el modo aún sin leer,
    sin cuenta o con el correo sin confirmar, o Claude apartado un rato). 0.8.2d: también en la cartera de prueba (Carlos,
    6 nov: «sí, con mis preguntas»): contesta con la cuenta de quien la abrió y sobre la cartera inventada */
-function modeloClaudeParaIA(tipo) {
+function modeloClaudeParaIA(tipo, q = null) {
   // el modo, el definitivo: mientras es provisional (dispositivo nuevo, sin haber leído tu cuenta) puede ser fundador sin saberlo
   const modo = LS.get('inv-acceso', null);
   // 0.8.2 (opción B): también en el fundador, y entonces con las reglas del estándar (ver conversar)
@@ -935,7 +941,7 @@ function modeloClaudeParaIA(tipo) {
   const m = motorElegido();
   // 0.8.2: Haiku por defecto (rápido y barato); Sonnet si eliges «A fondo» para tus preguntas o «Claude Sonnet para todo».
   // 0.8.2b: si hoy ya no te quedan «A fondo» (nivel reducido), Haiku sin intentarlo
-  const sonnet = m === 'sonnet' || (m !== 'haiku' && tipo === 'pregunta' && AS.aFondo);
+  const sonnet = m === 'sonnet' || (m !== 'haiku' && tipo === 'pregunta' && (AS.aFondo || (m === 'segun' && pideSonnetIA(q))));
   return sonnet && quedanFondoClaude() !== 0 ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
 }
 /* 0.8.2 · cuántas preguntas a Claude te quedan hoy: lo dice el Worker en cada respuesta (X-Quedan; su día es el de UTC) */
@@ -1470,7 +1476,7 @@ async function preguntarAsesor(texto) {
     // inglés (en el banco del fundador, Haiku contestaba en español una de cada dos veces solo con la regla del sistema)
     const enIngles = (est) => !est && IDIOMA !== 'en' && pareceInglesIA(texto);
     const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: enIngles(est) ? conNotaInglesIA(contenido) : contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };
-    await conversar({ turno, preparar, alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
+    await conversar({ turno, preparar, alCambiar, signal: AS.ctrl.signal, pensar: 'medium', q: texto });
   } catch (e) {
     turno.codigo = e.codigo || null; turno.estadoErr = Number.isInteger(e.estado) ? e.estado : null;
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? L('No hay conexión. Mira tu conexión y vuelve a probar.', 'No connection. Check your connection and try again.') : e.message;
