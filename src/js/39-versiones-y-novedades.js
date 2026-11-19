@@ -10,6 +10,10 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9g', f: '2026-11-19', h: '15:30', t: 'Varias capturas de una misma orden', arreglos: [
+    'Al rellenar una compra o una venta con capturas, ahora puedes elegir hasta 10 de la misma orden: todas a la vez o de una en una, con «Añadir otra de esta orden». Si la IA ve que la orden sigue en otra captura, te lo dice.',
+    'En la app de Android ya se pueden elegir varias capturas o archivos a la vez (antes solo dejaba uno). Llega con la actualización de la app.',
+  ] },
   { v: '0.9f', f: '2026-11-19', h: '15:10', t: 'La IA del fundador, más fina', arreglos: [
     { t: 'Al plantearte vender con pérdidas, la IA ya no te promete un ahorro en la renta que no existe: cuenta lo que compras con la aportación automática y la regla de recompra.', solo: 'dueno' },
     { t: 'La IA te avisa cuando el precio de un fondo lleva días sin actualizarse.', solo: 'dueno' },
