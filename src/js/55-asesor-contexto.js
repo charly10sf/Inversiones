@@ -363,7 +363,7 @@ Cómo respondes:
 - Contrasta: no recomiendes nada apoyándote en una sola fuente. Cruza el consenso y el rango de objetivos de los analistas, las cuentas (valoración, crecimiento, deuda), la tendencia del precio y las noticias. Si buscas en internet, busca al menos dos fuentes distintas y di si coinciden o no. Si las fuentes chocan, dilo. Si no puedes buscar, contrasta con los titulares que tienes en los datos y dilo.
 - Usa solo datos que tengas: los de abajo, los de las herramientas o los de internet. Si te falta algo de hoy, búscalo y di de dónde sale. Si algo no se puede saber, dilo.
 - Respeta sus reglas: el límite de acciones sueltas, su colchón (si lo tiene), sus aportaciones automáticas y las reglas que se haya puesto para sus acciones sueltas.
-- Antes de recomendar una acción, mira si ya tiene otra suelta del mismo negocio (dos aerolíneas, dos petroleras…): sería repetir la misma apuesta. Dilo claro y, si aun así compensa, explica qué añade que no tenga ya.
+- Antes de recomendar una acción, mira si ya tiene otra suelta del mismo negocio (dos aerolíneas, dos petroleras…): sería repetir la misma apuesta. Dilo claro y, si aun así compensa, explica qué añade que no tenga ya. Mismo negocio es el mismo sector de sus datos: una aerolínea no es una petrolera (el petróleo caro beneficia a una y perjudica a la otra).
 - Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
 - Sigue el hilo de la conversación. Si la pregunta es corta o depende de lo anterior («¿y si compro más?», «¿de dónde lo saco?», «¿y la otra?»), entiéndela sobre lo último que habéis hablado (la empresa, la cifra o el plan de tu respuesta anterior) y empieza nombrándolo: «Para comprar más HBX…». Si aun así es ambigua, contesta la interpretación más útil y di cuál has tomado.
 - Lo de abajo es un resumen. Del radar solo van las mejor contrastadas y de la prensa, lo más relevante: si la respuesta depende de una empresa, un sector o una noticia que no está ahí, pídelo con las herramientas (buscar_empresa, radar) antes de contestar en general. No inventes datos que podrías consultar.
@@ -400,6 +400,9 @@ Más que se confunde (mejorar-ia, 19 nov):
 - Una paga extra, el sueldo o dinero que llega de fuera es dinero nuevo (con_dinero_nuevo_pct); su efectivo o una venta, dinero que ya tiene. Si no sabes de dónde sale, da los dos porcentajes.
 - Su precio medio no dice si algo está caro o barato: perder un 22 % sobre lo que pagó no es que el fondo «esté barato». Para eso, lo que ha hecho el precio y sus valoraciones.
 - Un fondo, una cuenta o un producto que no está en sus datos: dilo al empezar («no lo tengo en Toisón») y no te inventes sus cifras. No cites webs ni fuentes que no tengas delante (en los datos, en una herramienta o en una búsqueda hecha).
+- Una meta con fecha cercana (un piso en cinco años) y un horizonte largo no se contradicen: la meta es la parte del dinero que necesita ese año y el resto sigue a largo plazo. No lo plantees como una contradicción de sus datos ni acabes preguntándole cuál vale.
+- Di de qué es cada porcentaje: «de tu bolsa» o «de tu cartera»; lo que pierde sobre lo que pagó no es lo que ha caído el fondo (viene aparte, en su rentabilidad); la mayor de sus acciones sueltas no es su mayor posición.
+- Tras una venta, lo que le queda de pérdidas de años anteriores es le_quedan_despues_de_esta_venta de simular_venta, no las que tenía; tras una compra, el hueco que queda es despues_aun_cabrian de simular_compra.
 - Cada cifra de fuera de Toisón (una TAE, unos gastos o comisiones, un ISIN, una rentabilidad, un precio, una fecha) va con su fuente y su enlace al lado, sacada de una búsqueda hecha en esta conversación. Si no la has buscado o la búsqueda no la trae, no la des de memoria: di «no lo sé» y dónde mirarlo (la web de la gestora o del banco).
 
 ${fiscal}`;
@@ -423,8 +426,8 @@ const HERRAMIENTAS_FUNDADOR = {
     input_schema: { type: 'object', properties: { posicion: { type: 'string', description: 'id o nombre de la posición, por ejemplo "repsol" o "S&P 500"' }, unidades: { type: 'number' }, importe: { type: 'number', description: 'euros a vender, en vez de unidades' }, porcentaje: { type: 'number', description: 'porcentaje de la posición a vender, en vez de unidades' }, precio: { type: 'number', description: 'precio de venta en euros; si no se pone, el actual' },
       ventas: { type: 'array', description: 'varias ventas calculadas juntas, en vez de «posicion»: cada una con su posición y, si no es entera, sus unidades, importe o porcentaje', items: { type: 'object', properties: { posicion: { type: 'string' }, unidades: { type: 'number' }, importe: { type: 'number' }, porcentaje: { type: 'number' }, precio: { type: 'number' } }, required: ['posicion'] } },
       todas: { type: 'boolean', description: 'true: vender todas sus posiciones enteras, calculadas juntas' } } } },
-  simular_compra: { description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de Toisón, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector, cuánto tiene ya de esa empresa dentro de sus fondos y, para una acción, lo máximo que cabe sin pasar sus límites de acciones sueltas y por empresa (cabe_como_mucho), con dinero nuevo y con el que ya tiene. Sin importe devuelve solo ese máximo. Si un plan junta varias compras de acciones, simula cada una y que la suma no pase del máximo.',
-    input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir; sin importe, solo lo máximo que cabe en sus límites' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa'] } },
+  simular_compra: { description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de Toisón, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector, cuánto tiene ya de esa empresa dentro de sus fondos y, para una acción, su cripto o su oro, lo máximo que cabe sin pasar sus límites (cabe_como_mucho: acciones sueltas y por empresa, o su límite de cripto o de oro), con dinero nuevo y con el que ya tiene, y lo que aún cabría después de esa compra. Sin importe devuelve solo ese máximo. Si un plan junta varias compras de acciones, simula cada una y que la suma no pase del máximo.',
+    input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir; sin importe, solo lo máximo que cabe en sus límites' }, dinero_nuevo: { type: 'number', description: 'de ese importe, los euros que son dinero nuevo (sueldo, una paga, dinero de fuera); el resto sale de lo que ya tiene (efectivo o una venta). Si no lo sabes, no lo pongas: devuelve los dos casos' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa'] } },
 };
 const herramientasPara = (fundador) => HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, input_schema: h.input_schema, ...(fundador && HERRAMIENTAS_FUNDADOR[h.name] ? HERRAMIENTAS_FUNDADOR[h.name] : {}) }));
 
@@ -547,7 +550,9 @@ function fichaVenta(c) {
 }
 const notasVenta = (c) => [/^Fondo/.test(c.f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', c.r.mezcla ? 'Lo que tenía antes de usar Toisón cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', c.f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined;
 // las pérdidas de años anteriores que usa, a la vista (solo sin freno)
-const pendientesVenta = (iv) => (iv.despues.pendientes || iv.despues.pendientesRcm ? { perdidas_de_anios_anteriores: { pendientes: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0)), usadas_sin_esta_venta: R2((iv.antes.usadas || 0) + (iv.antes.usadasRcm || 0)), usadas_con_esta_venta: R2((iv.despues.usadas || 0) + (iv.despues.usadasRcm || 0)), nota: 'Ya están restadas en cuota_despues: cuéntalo al explicar el impuesto.' } } : {});
+const pendientesVenta = (iv) => (iv.despues.pendientes || iv.despues.pendientesRcm ? { perdidas_de_anios_anteriores: { pendientes: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0)), usadas_sin_esta_venta: R2((iv.antes.usadas || 0) + (iv.antes.usadasRcm || 0)), usadas_con_esta_venta: R2((iv.despues.usadas || 0) + (iv.despues.usadasRcm || 0)),
+  // mejorar-ia-2 (pasada 1 de Haiku: «quedan 300 € pendientes» tras una venta que las gasta enteras, f36 y f40)
+  le_quedan_despues_de_esta_venta: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0) - (iv.despues.usadas || 0) - (iv.despues.usadasRcm || 0)), nota: 'Ya están restadas en cuota_despues: cuéntalo al explicar el impuesto. «pendientes» es lo que tenía antes de esta venta; lo que le queda después es le_quedan_despues_de_esta_venta.' } } : {});
 function hSimularVenta(q, est = esPublico()) {
   // 19 nov (mejorar-ia-2, parte C) · sin freno: varias ventas calculadas juntas (ventas: [...] o todas: true)
   if (!est && (Array.isArray(q.ventas) && q.ventas.length || q.todas === true)) return hSimularVentas(q);
@@ -589,8 +594,9 @@ function hSimularVentas(q) {
   const iv = impuestoDeVentas(cs.map((c) => ({ g: c.cuenta, inst: c.f.inst })), anio);
   const sueltas = cs.map((c) => impuestoDeVenta(c.cuenta, anio, c.f.inst).impuesto);
   const gan = sum(cs, (c) => c.gan), cuenta = sum(cs, (c) => c.cuenta), ganPos = sum(cs, (c) => Math.max(0, c.cuenta));
+  const ventas = cs.map((c, k) => ({ ...fichaVenta(c), lotes_usados: undefined, cuenta_este_anio: R2(c.cuenta), si_solo_vendiera_esta: sueltas[k] >= 0 ? { impuesto_extra: R2(sueltas[k]) } : { ahorro: R2(-sueltas[k]) }, ...(c.recompra ? { regla_de_recompra: c.recompra } : {}), te_quedan: R2(c.f.uds - c.u, 6), notas: notasVenta(c) }));
+  // lo de todas juntas va delante: es lo que hay que dar, y no se pierde si el resultado se recorta al guardarlo
   return {
-    ventas: cs.map((c, k) => ({ ...fichaVenta(c), lotes_usados: undefined, cuenta_este_anio: R2(c.cuenta), si_solo_vendiera_esta: sueltas[k] >= 0 ? { impuesto_extra: R2(sueltas[k]) } : { ahorro: R2(-sueltas[k]) }, ...(c.recompra ? { regla_de_recompra: c.recompra } : {}), te_quedan: R2(c.f.uds - c.u, 6), notas: notasVenta(c) })),
     todas_juntas: {
       cobras: R2(sum(cs, (c) => c.neto)), comisiones: R2(sum(cs, (c) => c.gastos)), ganancia_o_perdida: R2(gan), cuenta_este_anio: R2(cuenta),
       impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
@@ -599,6 +605,7 @@ function hSimularVentas(q) {
       renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra), ...pendientesVenta(iv) },
       nota: 'El impuesto de varias ventas es este, el de todas a la vez (las pérdidas de unas restan de las ganancias de otras, y la escala va por tramos): no sumes los de cada una por separado. Las ventas de ETC (su oro) van con dividendos e intereses y solo se cruzan con las ganancias hasta el 25 %; eso ya está contado.',
     },
+    ventas,
   };
 }
 function hSimularCompra(q, est = esPublico()) {
@@ -624,24 +631,39 @@ function hSimularCompra(q, est = esPublico()) {
      3.900 € de dinero nuevo en IAG «justo bajo el 20 %» y quedaba en el 20,05 % (f21): lo calculaba de cabeza. Con dinero
      nuevo la cartera crece (x ≤ (L·T − v) / (1 − L)); con el que ya tiene, no (x ≤ L·T − v). Se redondea hacia abajo */
   let cabe;
-  if (!est && tipo === 'Acción' && M.total > 0) {
-    const T = M.total, Ls = lim / 100, Le = limiteDe('empresa') / 100;
+  // mejorar-ia-2 (pasada 1 de Haiku): también para cripto y oro (su límite del 5 % y del 10 %; f43 daba mal el hueco que
+  // quedaba tras comprar), con la parte del importe que es dinero nuevo (dinero_nuevo; f21 mezclaba 240 € suyos con dinero
+  // nuevo y se pasaba por centésimas) y con lo que cabría después de esta compra
+  const grupo = f ? (f.inst.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'oro' : null) : null;
+  if (!est && (tipo === 'Acción' || grupo) && M.total > 0) {
+    const T = M.total, accion = tipo === 'Acción' && !grupo;
+    const Ls = lim / 100, Le = limiteDe(grupo || 'empresa') / 100;
     const vEmp = f ? (pesoLim(f, M) / 100) * T : 0;
     const max = (L, v) => ({ nuevo: Math.max(0, Math.floor((L * T - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T - v)) });
-    const s2 = max(Ls, sueltas), e2 = max(Le, vEmp);
-    const tras = (x, nuevo) => ({ acciones_sueltas_pct: R2(((sueltas + x) / (T + (nuevo ? x : 0))) * 100, 2), esta_empresa_pct: R2(((vEmp + x) / (T + (nuevo ? x : 0))) * 100, 2) });
+    const s2 = accion ? max(Ls, sueltas) : { nuevo: Infinity, tiene: Infinity }, e2 = max(Le, vEmp);
+    const nomLim = grupo === 'cripto' ? 'cripto' : grupo === 'oro' ? 'oro y materias primas' : 'esta_empresa';
+    const tras = (x, nuevo) => ({ ...(accion ? { acciones_sueltas_pct: R2(((sueltas + x) / (T + nuevo)) * 100, 2) } : {}), [`${nomLim.replace(/ /g, '_')}_pct`]: R2(((vEmp + x) / (T + nuevo)) * 100, 2) });
     const mN = Math.min(s2.nuevo, e2.nuevo), mT = Math.min(s2.tiene, e2.tiene);
+    // el importe que se mira: de él, cuánto es dinero nuevo (si lo dice); cabe si no pasa ningún límite con la cartera que queda
+    const nuevoDe = q.dinero_nuevo != null && isFinite(+q.dinero_nuevo) ? Math.max(0, Math.min(imp, +q.dinero_nuevo)) : null;
+    const cabeCon = (x, n) => (!accion || sueltas + x <= Ls * (T + n) + 1e-6) && vEmp + x <= Le * (T + n) + 1e-6;
+    const sobra = (x, n) => Math.max(accion ? sueltas + x - Ls * (T + n) : 0, vEmp + x - Le * (T + n));
+    const veredicto = (x, n) => (cabeCon(x, n) ? 'cabe' : `no cabe: se pasa por ${E0(Math.ceil(sobra(x, n)))}`);
+    // después de esta compra, lo que aún cabría (con dinero nuevo y con el que ya tiene)
+    const despues = (x, n) => { const T2 = T + n, m = (L, v) => ({ nuevo: Math.max(0, Math.floor((L * T2 - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T2 - v)) }); const a2 = accion ? m(Ls, sueltas + x) : { nuevo: Infinity, tiene: Infinity }, b2 = m(Le, vEmp + x); return { con_dinero_nuevo_eur: Math.min(a2.nuevo, b2.nuevo), con_dinero_que_ya_tiene_eur: Math.min(a2.tiene, b2.tiene) }; };
     cabe = {
       con_dinero_nuevo_eur: mN, con_dinero_que_ya_tiene_eur: mT,
-      lo_que_frena: (s2.nuevo <= e2.nuevo ? `su límite de acciones sueltas (${fmtNum(lim, 0)} %)` : `su límite por empresa (${fmtNum(limiteDe('empresa'), 0)} %)`),
-      por_acciones_sueltas: { limite_pct: lim, ahora_pct: R2((sueltas / T) * 100, 2), con_dinero_nuevo_eur: s2.nuevo, con_dinero_que_ya_tiene_eur: s2.tiene },
-      por_empresa: { limite_pct: limiteDe('empresa'), ahora_pct: R2((vEmp / T) * 100, 2), con_dinero_nuevo_eur: e2.nuevo, con_dinero_que_ya_tiene_eur: e2.tiene },
-      asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, true), con_dinero_que_ya_tiene: tras(mT, false) },
-      ...(imp > 0 ? { este_importe: { con_dinero_nuevo: imp <= mN ? 'cabe' : `no cabe: se pasa por ${E0(imp - mN)}`, con_dinero_que_ya_tiene: imp <= mT ? 'cabe' : `no cabe: se pasa por ${E0(imp - mT)}`, asi_quedaria: { con_dinero_nuevo: tras(imp, true), con_dinero_que_ya_tiene: tras(imp, false) } } } : {}),
-      nota: 'Importes en euros enteros, redondeados hacia abajo: es lo más que puede comprar de esta empresa sin pasar ninguno de sus dos límites. Si propones un importe, que no pase de aquí; no lo calcules de cabeza.',
+      lo_que_frena: (!accion ? `su límite de ${grupo === 'cripto' ? 'cripto' : 'oro'} (${fmtNum(Le * 100, 0)} %)` : s2.nuevo <= e2.nuevo ? `su límite de acciones sueltas (${fmtNum(lim, 0)} %)` : `su límite por empresa (${fmtNum(limiteDe('empresa'), 0)} %)`),
+      ...(accion ? { por_acciones_sueltas: { limite_pct: lim, ahora_pct: R2((sueltas / T) * 100, 2), con_dinero_nuevo_eur: s2.nuevo, con_dinero_que_ya_tiene_eur: s2.tiene } } : {}),
+      [accion ? 'por_empresa' : `por_su_limite_de_${grupo}`]: { limite_pct: Le * 100, ahora_pct: R2((vEmp / T) * 100, 2), con_dinero_nuevo_eur: e2.nuevo, con_dinero_que_ya_tiene_eur: e2.tiene },
+      asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, mN), con_dinero_que_ya_tiene: tras(mT, 0) },
+      ...(imp > 0 ? { este_importe: nuevoDe != null
+        ? { de_los_que_son_dinero_nuevo: R2(nuevoDe), resultado: veredicto(imp, nuevoDe), asi_quedaria: tras(imp, nuevoDe), ...(cabeCon(imp, nuevoDe) ? { despues_aun_cabrian: despues(imp, nuevoDe) } : {}) }
+        : { con_dinero_nuevo: veredicto(imp, imp), con_dinero_que_ya_tiene: veredicto(imp, 0), asi_quedaria: { con_dinero_nuevo: tras(imp, imp), con_dinero_que_ya_tiene: tras(imp, 0) }, despues_aun_cabrian: { si_era_dinero_nuevo: cabeCon(imp, imp) ? despues(imp, imp) : 'no cabe', si_era_dinero_que_ya_tiene: cabeCon(imp, 0) ? despues(imp, 0) : 'no cabe' } } } : {}),
+      nota: `Importes en euros enteros, redondeados hacia abajo: es lo más que puede comprar sin pasar ${accion ? 'ninguno de sus dos límites' : 'su límite'}. Si propones un importe, que no pase de aquí; no lo calcules de cabeza. Si el dinero es en parte suyo (efectivo, una venta) y en parte nuevo, vuelve a llamar con dinero_nuevo (la parte nueva): los dos máximos no se suman. El hueco que queda tras una compra es despues_aun_cabrian, no el máximo de antes.`,
     };
   }
-  if (soloMax) return cabe ? { empresa: nombre, plataforma: plat, ya_la_tiene: !!f, cabe_como_mucho: cabe, nota: 'Sin importe: solo lo máximo que cabe en sus límites. Para la comisión, la tasa y las unidades, vuelve a llamar con el importe.' } : { error: tipo === 'Acción' ? 'Falta el importe en euros.' : 'Falta el importe en euros (los límites de acciones sueltas y por empresa solo cuentan para acciones).' };
+  if (soloMax) return cabe ? { empresa: nombre, plataforma: plat, ya_la_tiene: !!f, cabe_como_mucho: cabe, nota: 'Sin importe: solo lo máximo que cabe en sus límites. Para la comisión, la tasa y las unidades, vuelve a llamar con el importe.' } : { error: 'Falta el importe en euros (los límites solo cuentan para acciones, cripto y oro).' };
   return {
     empresa: nombre, plataforma: plat, precio_aprox_eur: R2(precio, 4), unidades_aprox: precio ? R2(imp / precio, 4) : null,
     importe: R2(imp), comision: R2(comision), tasa_de_compra: tasa ? { tipo_pct: tasa.tipo * 100, nombre: tasa.nombre, importe: R2(t) } : 'no paga',

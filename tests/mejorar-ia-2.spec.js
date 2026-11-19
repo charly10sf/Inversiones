@@ -52,6 +52,9 @@ test('simular_venta sin freno: el orden de compensar una pérdida, con sus cifra
   expect(r.f.renta.perdidas_para_anios_siguientes).toBeCloseTo(o.pasa_a_los_4_anios_siguientes + 300, 2);
   expect(r.e.renta.orden_de_compensar).toBeUndefined();
   expect(r.gan.orden_de_compensar).toBeUndefined();
+  // lo que le queda de las de años anteriores tras cada venta (la que gana las gasta enteras; la que pierde, ninguna)
+  expect(r.gan.perdidas_de_anios_anteriores).toMatchObject({ pendientes: 300, usadas_con_esta_venta: 300, le_quedan_despues_de_esta_venta: 0 });
+  expect(r.f.renta.perdidas_de_anios_anteriores).toMatchObject({ pendientes: 300, usadas_con_esta_venta: 0, le_quedan_despues_de_esta_venta: 300 });
 });
 
 test('simular_venta sin freno: varias ventas juntas dan el impuesto de todas a la vez, no la suma', async ({ page }) => {
@@ -78,6 +81,7 @@ test('simular_venta sin freno: varias ventas juntas dan el impuesto de todas a l
   expect(r.otra.ganancia_o_perdida).toBeLessThan(-990);
   const j = r.juntas.todas_juntas;
   expect(r.juntas.ventas).toHaveLength(2);
+  expect(Object.keys(r.juntas)[0]).toBe('todas_juntas'); // delante: es lo que hay que dar
   expect(j.ganancia_o_perdida).toBeCloseTo(r.una.ganancia_o_perdida + r.otra.ganancia_o_perdida, 1);
   expect(j.impuesto_extra_en_la_renta).toBeCloseTo(Math.max(0, r.motor), 2);
   // la pérdida de una resta de la ganancia de la otra: menos que el impuesto de la que gana, sola
@@ -119,13 +123,47 @@ test('simular_compra sin freno: lo máximo que cabe en sus límites, con dinero 
   const q = c.asi_quedaria_con_el_maximo.con_dinero_nuevo;
   expect(q.acciones_sueltas_pct).toBeLessThanOrEqual(20); expect(q.esta_empresa_pct).toBeLessThanOrEqual(10);
   expect(r.justo.cabe_como_mucho.este_importe.con_dinero_nuevo).toBe('cabe');
-  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: se pasa por 60 €/);
+  // con 60 € más no cabe; lo que se pasa del límite es lo que sobra con la cartera ya más grande (60 € × 0,8 = 48 €, más el redondeo)
+  expect(r.pasa.cabe_como_mucho.este_importe.con_dinero_nuevo).toMatch(/^no cabe: se pasa por (48|49) €/);
+  // con el máximo, después ya no cabe casi nada
+  expect(r.justo.cabe_como_mucho.este_importe.despues_aun_cabrian.si_era_dinero_nuevo.con_dinero_nuevo_eur).toBeLessThanOrEqual(1);
   expect(r.sin.precio_aprox_eur).toBeUndefined(); // sin importe, solo el máximo
   expect(r.justo.total_a_pagar).toBeGreaterThan(0);
   // el estándar, como estaba: sin importe es un error y con importe no lleva el máximo; un fondo tampoco
   expect(r.est.error).toBe('Falta el importe en euros.');
   expect(r.estCon.cabe_como_mucho).toBeUndefined();
   expect(r.fondo.cabe_como_mucho).toBeUndefined();
+});
+
+test('simular_compra sin freno: dinero suyo y dinero nuevo mezclados, el hueco que queda después y el límite de cripto', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => {
+    S.cartera.limite_acciones = 20; S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_empresa: 10, limite_cripto: 5 };
+    S.M = calcular();
+    const T = S.M.total, sueltas = S.M.filas.filter((y) => y.inst.tipo === 'Acción').reduce((a, y) => a + y.valor, 0);
+    const c0 = ejecutarHerramienta('simular_compra', { empresa: 'iag' }, false).cabe_como_mucho;
+    // 240 € suyos más dinero nuevo hasta el máximo «con dinero nuevo»: con la mezcla no cabe (los dos máximos no se suman)
+    const mezcla = ejecutarHerramienta('simular_compra', { empresa: 'iag', importe: c0.con_dinero_nuevo_eur, dinero_nuevo: c0.con_dinero_nuevo_eur - 240 }, false).cabe_como_mucho.este_importe;
+    // lo más que cabe con 240 € suyos: x nuevo con (sueltas + 240 + x) ≤ 0,2 (T + x)
+    const xMax = Math.floor((0.2 * T - sueltas - 240) / 0.8);
+    const justo = ejecutarHerramienta('simular_compra', { empresa: 'iag', importe: 240 + xMax, dinero_nuevo: xMax }, false).cabe_como_mucho.este_importe;
+    const btc = S.M.filas.find((x) => x.inst.clase === 'Cripto'), vB = btc ? btc.valor : 0;
+    const cr = btc ? ejecutarHerramienta('simular_compra', { empresa: btc.pos.id, importe: 300 }, false).cabe_como_mucho : null;
+    return { T, sueltas, mezcla, justo, xMax, vB, cr, crEst: btc ? ejecutarHerramienta('simular_compra', { empresa: btc.pos.id, importe: 300 }, true).cabe_como_mucho : undefined };
+  });
+  expect(r.mezcla.resultado).toMatch(/^no cabe: se pasa por \d+ €/);
+  expect(r.mezcla.asi_quedaria.acciones_sueltas_pct).toBeGreaterThan(20);
+  expect(r.justo.resultado).toBe('cabe');
+  expect(r.justo.asi_quedaria.acciones_sueltas_pct).toBeLessThanOrEqual(20);
+  expect(r.justo.despues_aun_cabrian.con_dinero_nuevo_eur).toBeLessThanOrEqual(1);
+  // cripto: su límite del 5 %, y lo que cabría después de meter 300 €
+  expect(r.cr).toBeTruthy();
+  const maxT = Math.max(0, Math.floor(0.05 * r.T - r.vB));
+  expect(r.cr.con_dinero_que_ya_tiene_eur).toBe(maxT);
+  expect(r.cr.por_acciones_sueltas).toBeUndefined();
+  expect(r.cr.lo_que_frena).toContain('cripto');
+  if (maxT >= 300) expect(r.cr.este_importe.despues_aun_cabrian.si_era_dinero_que_ya_tiene.con_dinero_que_ya_tiene_eur).toBe(maxT - 300);
+  expect(r.crEst).toBeUndefined();
 });
 
 test('las herramientas del estándar no cambian; las del fundador llevan las ventas juntas y el máximo que cabe', async ({ page }) => {
@@ -139,7 +177,7 @@ test('las herramientas del estándar no cambian; las del fundador llevan las ven
   expect(c.input_schema.required).toEqual(['empresa']);
   expect(c.description).toContain('cabe_como_mucho');
   expect(r.f.map((h) => h.name)).toEqual(JSON.parse(r.e).map((h) => h.name));
-  for (const t of ['una sola llamada a simular_venta con «ventas»', 'cabe_como_mucho de simular_compra', 'orden_de_compensar de simular_venta', 'va con su fuente y su enlace al lado']) {
+  for (const t of ['una sola llamada a simular_venta con «ventas»', 'cabe_como_mucho de simular_compra', 'orden_de_compensar de simular_venta', 'va con su fuente y su enlace al lado', 'una aerolínea no es una petrolera', 'un horizonte largo no se contradicen', 'Di de qué es cada porcentaje', 'le_quedan_despues_de_esta_venta de simular_venta']) {
     expect(r.ins, t).toContain(t);
     expect(r.insE, t).not.toContain(t);
   }
