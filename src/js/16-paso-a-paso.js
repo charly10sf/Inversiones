@@ -112,9 +112,11 @@ function pasosRuta0(M) {
   // 6. fin de año: compensar pérdidas
   // 0.3.9: cuentan todas las ventas que propone GrowFolio, también las que dan pérdida; y si ya propone vender una
   // parte de una posición en pérdidas, lo que se sugiere aquí es el resto (antes salía la pérdida entera dos veces)
-  const ganPrevista = sum(planes, (pl) => pl.ganancia);
+  // 19 nov (mejorar-ia): lo que cuenta en la renta de este año (computa), con la regla de recompra
+  const gComp = (pl) => (pl.computa != null ? pl.computa : pl.ganancia);
+  const ganPrevista = sum(planes, gComp);
   // lo de los ETC es rendimiento del capital, no ganancia: se suma aparte
-  const ganPrevR = sum(planes.filter((pl) => esRCMVenta(pl.f.inst)), (pl) => pl.ganancia), ganPrevG = ganPrevista - ganPrevR;
+  const ganPrevR = sum(planes.filter((pl) => esRCMVenta(pl.f.inst)), gComp), ganPrevG = ganPrevista - ganPrevR;
   const perdidas = restoEnPerdidas(M, planes);
   if (perdidas.length && new Date().getMonth() >= 6) {
     for (const x of perdidas) { const o = pasoPerdida(x, { anio, hoy, fa, planes, ganPrevista, ganPrevG, ganPrevR }); if (o) add('seis', o); }
@@ -209,7 +211,8 @@ function diaLimitePerdida(inst, anio, hoy) {
 function pasoPerdida(x, c) {
   const { anio, hoy, fa, planes, ganPrevista, ganPrevG, ganPrevR } = c;
   const f = x.f, inst = f.inst, esR = esRCMVenta(inst), base = esR ? fa.rcmT + ganPrevR : fa.gp + ganPrevG;
-  const cuota = fiscalAnio(anio, ganPrevG, ganPrevR).cuota, ahorro = cuota - fiscalAnio(anio, ganPrevG + (esR ? 0 : x.g), ganPrevR + (esR ? x.g : 0)).cuota;
+  const gc = x.cuenta != null ? x.cuenta : x.g; // con la regla de recompra (conRecompra, 22-impuestos.js)
+  const cuota = fiscalAnio(anio, ganPrevG, ganPrevR).cuota, ahorro = cuota - fiscalAnio(anio, ganPrevG + (esR ? 0 : gc), ganPrevR + (esR ? gc : 0)).cuota;
   if (ahorro < 15) return null;
   const cripto = inst.clase === 'Cripto' && !esR, fondo = /^Fondo/.test(inst.tipo || ''), accion = inst.tipo === 'Acción';
   const uds = x.uds != null ? x.uds : f.uds, valor = uds * (f.precio || 0), n = oc(fmtNum(uds, esEntero(uds) ? 0 : cripto ? 4 : 2));
@@ -241,7 +244,7 @@ function pasoPerdida(x, c) {
   const recompra = cripto ? L(' En cripto Hacienda no fija un plazo para volver a comprar.', ' For crypto the tax office sets no waiting period to buy back.') : L(` Si vuelves a comprar ${nom} antes del ${libreL}, esa rebaja no cuenta este año.`, ` If you buy ${nom} back before ${libreL}, that saving doesn't count this year.`);
   return { id: `perdida:${f.pos.id}:${anio}`, d: lim, cuando: L(`hasta el ${diaSemCorto(lim)}`, `by ${diaSemCorto(lim)}`), opcion: true,
     t: x.resto ? L(`Vender las ${n} ${ud} que te quedan de ${nom} (unos ${cobras})`, `Sell the remaining ${n} ${ud} of ${nom} (about ${cobras})`) : L(`Vender tus ${n} ${ud} de ${nom} (unos ${cobras})`, `Sell your ${n} ${ud} of ${nom} (about ${cobras})`),
-    pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`,
+    pq: `Pierde ${eur(-x.g, 0)}.${x.noResta > 0.5 ? ` De eso, unos ${eur(x.noResta, 0)} no restan este año por la regla de recompra: tienes ${nom} en otra cuenta comprado ${rr.plazo === 'un año' ? 'en el último año' : 'en los dos últimos meses'}, y eso sigue en tu cartera (cuentan ${eur(-gc, 0)}).` : ''} Venderlo este año ${base > 0 ? `resta de ${esR ? 'tus rendimientos del capital (dividendos, intereses y otros ETC)' : 'tus ganancias'}${ganPrevista && !esR ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} Toisón)` : ''}` : (comunidadUsuario() === 'paisvasco' ? `quedaría para compensar ${esR ? 'rendimientos del capital' : 'ganancias'} de los 4 años siguientes` : esR ? 'compensa hasta un 25 % de tus ganancias' : 'compensa hasta un 25 % de tus dividendos')}.`,
     pasos, como: `<ol class="t-pasos">${pasos.map((p) => `<li>${p} </li>`).join('')}</ol>`, imp: renta + recompra,
     donde: fondo ? L(`${bro}: reembolso, no traspaso`, `${bro}: redemption, not transfer`) : bro, uds, valor, cuota, queda, lim, recompra: libre,
     acc: `<button class="enlace" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué supondría en mi renta vender ${inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.` : `¿Me compensa vender ${inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>`, ref: { f, x, ahorro, ganPrevG, ganPrevR } };

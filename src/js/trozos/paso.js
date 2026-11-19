@@ -149,7 +149,7 @@ function fichaPaso(x, M) {
   const o = { datos: null, compr: [], conf: null, porq: '', cambia: '', hist: 'Sin historial todavía: el registro de aciertos guarda cada mes lo que dijo.', vis: null, hc: null };
   if (/^venta:/.test(x.id) && r.pl) {
     const pl = r.pl, f = pl.f, a = (f.p && f.p.analistas) || {}, k = f.inst.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'oro' : 'empresa';
-    const pg0 = pesoLim(f, M) || f.peso, ud = pl.accion ? 'acción' : 'participación', medio = pl.fiscal.coste / pl.uds, rg = impuestoRango(pl.ganancia, anio, f.inst);
+    const pg0 = pesoLim(f, M) || f.peso, ud = pl.accion ? 'acción' : 'participación', medio = pl.fiscal.coste / pl.uds, rg = impuestoRango(pl.computa ?? pl.ganancia, anio, f.inst);
     o.datos = [datoPrecio(f), ['Tu coste', `${precioFmt(medio)} por ${ud}`, 'lo metiste tú', 'ok', 'tuyo']];
     if (a.objetivo) o.datos.push(['Precio objetivo medio', precioFmt(a.objetivo), `${a.num || 'varios'} analistas · Yahoo`, (a.num || 0) >= 3 ? 'ok' : 'flojo', 'analistas']);
     if (pl.nivel === 'reducir' || pg0 > limiteDe(k)) o.datos.push([`Tu límite por ${k === 'empresa' ? 'empresa' : k}`, `${fmtNum(limiteDe(k), 0)} % de la cartera`, 'Objetivos · lo pusiste tú', 'ok', 'tuyo']);
@@ -159,7 +159,7 @@ function fichaPaso(x, M) {
     o.compr = ppComprobar([
       [`${fmtNum(pl.uds, pl.accion ? 0 : 4)} × ${precioFmt(f.precio)} = ${eur(pl.importe, 2)}`, ppCuadra(pl.uds * f.precio, pl.importe)],
       [`ganancia: ${eur(pl.neto, 2)} − ${eur(pl.fiscal.coste, 2)} = ${eurS(pl.ganancia, 2)}`, ppCuadra(pl.neto - pl.fiscal.coste, pl.ganancia)],
-      ...(pl.ganancia > 0 ? [[`impuesto: ${eur(pl.impuesto, 2)} con tu escala del ahorro`, ppCuadra(Math.max(0, impuestoDeVenta(pl.ganancia, anio, f.inst).impuesto), pl.impuesto, 0.02)]] : []),
+      ...(pl.ganancia > 0 ? [[`impuesto: ${eur(pl.impuesto, 2)} con tu escala del ahorro`, ppCuadra(Math.max(0, impuestoDeVenta(pl.computa ?? pl.ganancia, anio, f.inst).impuesto), pl.impuesto, 0.02)]] : []),
       [`no vendes más de las ${fmtNum(f.uds, pl.accion ? (esEntero(f.uds) ? 0 : 2) : 4)} que tienes`, pl.uds <= f.uds + 1e-9],
       ...(pl.accion ? [['acciones enteras', esEntero(pl.uds)]] : []),
       [dias <= 1 ? 'el precio es del último día de bolsa' : `el precio es de hace ${dias} días hábiles`, dias <= 5 || sinRed()],
