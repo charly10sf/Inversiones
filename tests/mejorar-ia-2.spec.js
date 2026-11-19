@@ -200,7 +200,10 @@ test('sin freno, «lo que más mueve» dice cuántas posiciones con precio de ho
   const r = await page.evaluate(() => {
     const hoy = hoyIso(), I = S.precios.instrumentos;
     // todas las posiciones con precio de hoy y un movimiento distinto
-    S.cartera.posiciones.forEach((p, k) => { const x = I[p.instrumento]; if (x && x.precio) I[p.instrumento] = { ...x, fecha: hoy, cierre_anterior: x.precio / (1 + (k + 1) / 100) }; });
+    // sin precios en vivo y con un precio propio: los de los datos de prueba llevan la hora en que se bajaron y, con la bolsa
+    // cerrada, el precio es el del último cierre (de noche, casi nada se movía «hoy» y la prueba fallaba)
+    S.live = {};
+    S.cartera.posiciones.forEach((p, k) => { const x = I[p.instrumento]; if (x && x.precio) I[p.instrumento] = { ...x, fecha: hoy, precio: x.precio * (1 + (k + 1) / 100), cierre_anterior: x.precio }; });
     S.M = calcular();
     const con = S.M.filas.filter((f) => f.varDia != null && Math.abs(f.dia) >= 0.5).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia));
     return { n: con.length, resto: Math.round(con.slice(6).reduce((a, f) => a + f.dia, 0)), f: contextoAsesor(S.M, 'chat', false), e: contextoAsesor(S.M, 'chat', true) };
