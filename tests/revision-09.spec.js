@@ -15,12 +15,15 @@ const test = base.extend({
   }, { auto: true }],
 });
 
-// una cuenta en fundador con la cartera de prueba, Repsol y BAT por encima de su límite (5 %)
+// una cuenta en fundador con la cartera de prueba, Repsol y BAT por encima de su límite (5 %). BAT va doblada: con sus
+// cifras de siempre rondaba el 5,5 % y, según el precio del día, no pasaba del margen y el mes solo traía una venta
 async function fundador(page) {
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
   await page.evaluate(async () => {
     LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); S.recienCreada = false;
     S.acceso = 'privado';
+    const bat = S.cartera.posiciones.find((p) => p.instrumento === 'bat');
+    if (bat) { bat.cantidad *= 2; bat.coste *= 2; bat.lotes = (bat.lotes || []).map((l) => ({ ...l, u: l.u * 2, c: l.c * 2 })); }
     S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_empresa: 5 };
     await guardarCarteraCallada('prueba');
     S.M = calcular(); pintar();
