@@ -42,7 +42,7 @@ test('una pregunta en inglés lleva la nota delante y detrás', async ({ page })
 test('las instrucciones del fundador llevan lo que se confundía en el banco; el estándar no cambia', async ({ page }) => {
   await conCartera(page);
   const r = await page.evaluate(() => ({ f: instruccionesAsesor(false), e: instruccionesAsesor(true), ne: NOTA_CLAUDE, nf: NOTA_CLAUDE_FUNDADOR, anio: String(new Date().getFullYear()) }));
-  for (const t of ['Una acción, un ETF o un ETC (su oro) no se traspasan', 'pérdidas de años anteriores pendientes', 'nunca «la mayor parte»', '«Ese dinero»', 'simular_compra del importe total', 'retiene a cuenta el 19 % de la ganancia', '«no lo tengo en Toisón»']) {
+  for (const t of ['Una acción, un ETF o un ETC (su oro) no se traspasan', 'pérdidas de años anteriores pendientes', 'nunca «la mayor parte»', '«Ese dinero»', 'simular_compra del importe total', 'retiene a cuenta el 19 % de la ganancia', '«no lo tengo en Toisón»', 'Acaba siempre con tu recomendación clara', 'nunca digas que no tiene pérdidas que compensar', 'tras apartar el impuesto', 'Una paga extra', 'Su precio medio no dice si algo está caro']) {
     expect(r.f, t).toContain(t);
     expect(r.e, t).not.toContain(t);
   }

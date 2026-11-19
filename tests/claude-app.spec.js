@@ -775,6 +775,25 @@ test('la revisión automática pide con esfuerzo bajo, y sus datos van sin las i
   expect(r).toEqual({ priv: true, completo: true, corto: true });
 });
 
+// 19 nov (mejorar-ia, parte 4): la automática del fundador va sin pensar desde el principio (con su foto completa, pensando
+// poco se quedaba sin espacio 6 de 7 veces y se repetía); la que pides tú, como antes
+test('la revisión automática del fundador va sin pensar desde la primera petición; la que pides tú piensa', async ({ page }) => {
+  await preparada(page);
+  await fundador(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  const w = await worker(page.context(), () => ({ sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]), cabeceras: CON_REGLAS }));
+  await page.evaluate(() => generarAnalisisIA('revisión de la mañana'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  expect(w.peticiones.length).toBe(1);
+  expect(w.peticiones[0].cuerpo).toMatchObject({ reglas: 'fundador', tarea: 'revision', thinking: { type: 'disabled' } });
+  await page.evaluate(() => { S.iaPropio = null; IA.ultimoIntento = 0; LS.set('inv-claude-quedan', { ...(LS.get('inv-claude-quedan') || {}), rv: null }); return generarAnalisisIA('la pides tú'); });
+  await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(2);
+  expect(w.peticiones[1].cuerpo.reglas).toBe('fundador');
+  expect(w.peticiones[1].cuerpo).not.toHaveProperty('thinking');
+});
+
 test('si en la revisión se cuela un «te conviene», se pide reescrito en la misma revisión; si no llega bien, se quita la frase', async ({ page }) => {
   await preparada(page);
   await page.evaluate(() => LS.set('inv-claude-ok', true));

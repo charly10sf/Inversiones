@@ -220,8 +220,11 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // 0.8.3: los datos sin las ideas del radar (contextoAsesor «revision») y la automática pensando poco (esfuerzo bajo): con
     // esfuerzo medio, Haiku 5.5 se iba a 16.000–24.000 tokens de salida y a veces se quedaba sin sitio y repetía entera. Sin
     // pensar del todo sale aún más barata y rápida, pero se dejaba cosas (banco de la revisión, 7 nov): pensar poco las ve
+    // 19 nov (mejorar-ia, parte 4): la automática del fundador, sin pensar desde el principio. Con su foto completa, pensando
+    // poco, 6 de 7 días del banco de la revisión se quedaban sin espacio (24.000 de salida) y se repetían sin pensar: el
+    // doble de tiempo (unos 140 s) y de gasto para acabar igual. El estándar, como estaba
     let pedido = null;
-    const preparar = (est) => (pedido = { mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }] });
+    const preparar = (est) => (pedido = { mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }], ...(auto && !est ? { pensar: false } : {}) });
     const idPregunta = nuevoIdPregunta();
     await conversar({ tipo: 'análisis', tarea: 'revision', soloHaiku: auto, turno, preparar, idPregunta, ...(auto ? { esfuerzo: 'low' } : {}), maxTokens: REVISION_SALIDA / 2, alCambiar, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
