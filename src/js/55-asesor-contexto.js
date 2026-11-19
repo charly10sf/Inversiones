@@ -370,9 +370,9 @@ Cuentas que se confunden (banco del fundador, 19 nov):
 - Lo que ahorra en la renta una venta con pérdidas es el ahorro_en_la_renta de simular_venta, y lo que pasa a años siguientes, su perdidas_para_anios_siguientes: no lo estimes tú. El orden: la pérdida del año compensa primero las ganancias del año; lo que sobre, hasta el 25 % de los dividendos e intereses; y lo que quede, los 4 años siguientes. Las pérdidas de años anteriores van después de las del año.
 - La regla de recompra solo mira el mismo valor (el mismo ISIN): comprar otro fondo, otra acción u otra cripto no la activa. Una pérdida aplazada no se libera al pasar el plazo: cuenta cuando vende las participaciones recompradas que la bloquean.
 - En un traspaso entre fondos no cuenta ni la ganancia ni la pérdida (pasan al fondo nuevo): para que una pérdida reste en la renta hay que vender (reembolsar). Los impuestos de vender una parte, también con simular_venta, nunca de cabeza: cuenta lo que ya lleva en el año y las pérdidas de años anteriores.
-- Si junta una venta con pérdidas y otra con ganancias, simula las dos: lo que ahorra la pérdida nunca pasa del impuesto de la ganancia que compensa (el resto pasa a años siguientes). No multipliques la pérdida por el tipo.
+- Varias ventas a la vez (dos posiciones, una con pérdidas y otra con ganancias, «venderlo todo»): una sola llamada a simular_venta con «ventas» (o «todas»: true) y da el impuesto de todas_juntas. Nunca sumes a mano el impuesto de cada una. No multipliques la pérdida por el tipo: lo que ahorra una pérdida nunca pasa del impuesto de la ganancia que compensa (el resto pasa a años siguientes).
 - Las pérdidas y ganancias de un ETC (su oro) van con los dividendos e intereses: se compensan enteras con ellos, y con las ganancias de vender acciones o fondos solo hasta el 25 % de esas ganancias.
-- Para su límite de acciones sueltas, si el dinero sale de lo que ya tiene (su efectivo o una venta), usa con_dinero_que_ya_tiene_pct de simular_compra; si es dinero nuevo, con_dinero_nuevo_pct. Su efectivo cuenta para su colchón: si propones gastarlo, mira que el colchón siga cubierto.
+- Para su límite de acciones sueltas, si el dinero sale de lo que ya tiene (su efectivo o una venta), usa con_dinero_que_ya_tiene_pct de simular_compra; si es dinero nuevo, con_dinero_nuevo_pct. Cuánto cabe como mucho en una acción (por acciones sueltas y por empresa) lo da cabe_como_mucho de simular_compra, en euros: si propones un importe, que no pase de ahí, y no lo calcules de cabeza ni digas «justo por debajo del límite» sin haberlo simulado. Su efectivo cuenta para su colchón: si propones gastarlo, mira que el colchón siga cubierto.
 - Dividendos: cada cifra de la lista es un pago, por toda la posición; al año es la suma de los pagos de esa empresa.
 - No atribuyas un fondo a un bróker si no lo sabes (cada fondo lo comercializa una gestora; si no sabes si está en MyInvestor, dilo).
 
@@ -381,11 +381,11 @@ Más que se confunde (mejorar-ia, 19 nov):
 - Cuando des el impuesto de una venta, di en una frase de qué sale: lo que ya lleva en el año y cuánto lo rebajan sus pérdidas de años anteriores pendientes (vienen en sus datos), con la renta que devuelve simular_venta.
 - Las cifras de la regla de recompra, las de los datos o las de simular_venta (cuántos euros de una pérdida no restarían), nunca «la mayor parte» ni «casi toda». Una pérdida ya aplazada no se libera cambiando la aportación a otro fondo: solo al vender lo recomprado.
 - «Ese dinero», «eso», «lo que saque»: lo que saldría de lo que acabáis de hablar (la venta de la respuesta anterior), no dinero nuevo. Da el impuesto de esa venta y lo que pierde por hacerla (por ejemplo, un dividendo con fecha cercana).
-- Si un plan junta dinero de varios sitios, comprueba con simular_compra del importe total cómo quedan sus acciones sueltas y esa empresa: nunca por encima de su límite. Da una cifra, no un rango.
+- Si un plan junta dinero de varios sitios, comprueba con simular_compra del importe total cómo quedan sus acciones sueltas y esa empresa (este_importe dice si cabe): nunca por encima de su límite. Da una cifra, no un rango.
 - Al reembolsar un fondo, la gestora retiene a cuenta el 19 % de la ganancia; no es un impuesto de más: se descuenta en la renta.
 - Acaba siempre con tu recomendación clara (sí, no, cuánto o cuál) y su porqué. Puedes ofrecer más detalle después, pero nunca en lugar de recomendar.
 - Si sus datos dicen que tiene pérdidas de años anteriores pendientes, nunca digas que no tiene pérdidas que compensar. Lo que ahorra una pérdida depende de las ganancias del año: si solo ahorra si vende además otra cosa, dilo así.
-- El orden de compensar: una pérdida de este año resta primero de las ganancias de este año; las pérdidas de años anteriores, después. Nunca digas que las de años anteriores «ya cubren» las ganancias del año si propones vender con pérdidas.
+- El orden de compensar: una pérdida de este año resta primero de las ganancias de este año; las pérdidas de años anteriores, después. Cuando expliques una venta con pérdidas, cuenta el orden con las cifras de orden_de_compensar de simular_venta (cuánto resta de las ganancias del año, cuánto de dividendos, cuánto pasa a años siguientes y cuánto queda de las de años anteriores). Nunca digas que las de años anteriores «ya cubren» las ganancias del año si propones vender con pérdidas.
 - Un mismo euro no cuenta dos veces: si su efectivo es su colchón, no lo sumes también para una meta o para una compra; si lo usas para una cosa, di cómo queda la otra.
 - En cada compra o venta que propongas, el bróker donde la hace (el suyo si ya lo tiene allí; si es un fondo nuevo y no sabes si está en su bróker, dilo) y cuándo (un día o «antes del…»).
 - Si propones reinvertir lo que saca de una venta, reinvierte lo que queda tras apartar el impuesto, y di las dos cifras.
@@ -405,6 +405,19 @@ const HERRAMIENTAS = [
   { name: 'proyectar', description: 'Simula 2.000 escenarios de su cartera con otra aportación mensual, subida anual de la aportación o rentabilidad de la bolsa.', input_schema: { type: 'object', properties: { aportacion_mensual: { type: 'number' }, anios: { type: 'integer', description: 'de 1 a 30' }, subida_anual_aportacion: { type: 'number', description: '% al año' }, rentabilidad_bolsa: { type: 'number', description: '% anual a largo plazo, por defecto 7' } }, required: ['aportacion_mensual'] } },
   { name: 'historico', description: 'Evolución de una de sus posiciones o de un índice entre dos fechas: precio inicial y final, cambio, máximo, mínimo y peor caída. Índices: Ibex 35, Euro Stoxx 50, DAX, S&P 500, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX, Bono EEUU 10 años.', input_schema: { type: 'object', properties: { activo: { type: 'string' }, desde: { type: 'string', description: 'AAAA-MM-DD' }, hasta: { type: 'string', description: 'AAAA-MM-DD, por defecto hoy' } }, required: ['activo', 'desde'] } },
 ];
+
+/* 19 nov (mejorar-ia-2, parte C) · sin freno, simular_venta también calcula varias ventas juntas y simular_compra da lo
+   máximo que cabe en sus límites. Las del estándar se quedan como estaban (HERRAMIENTAS): estas solo van con las reglas
+   del fundador (conversarClaude) */
+const HERRAMIENTAS_FUNDADOR = {
+  simular_venta: { description: 'Calcula una venta de una de sus posiciones con el motor de Toisón: unidades, importe, comisión, valor de compra por FIFO, ganancia o pérdida, el impuesto extra en la renta de este año contando lo que ya lleva y, si es una pérdida, el orden en que se compensa con sus cifras (orden_de_compensar). Úsala siempre que se plantee vender algo. Si son varias ventas (dos posiciones, «vender todo», una con pérdidas y otra con ganancias), pásalas juntas en «ventas» (o «todas»: true para venderlo todo): el impuesto de varias no es la suma de cada una.',
+    input_schema: { type: 'object', properties: { posicion: { type: 'string', description: 'id o nombre de la posición, por ejemplo "repsol" o "S&P 500"' }, unidades: { type: 'number' }, importe: { type: 'number', description: 'euros a vender, en vez de unidades' }, porcentaje: { type: 'number', description: 'porcentaje de la posición a vender, en vez de unidades' }, precio: { type: 'number', description: 'precio de venta en euros; si no se pone, el actual' },
+      ventas: { type: 'array', description: 'varias ventas calculadas juntas, en vez de «posicion»: cada una con su posición y, si no es entera, sus unidades, importe o porcentaje', items: { type: 'object', properties: { posicion: { type: 'string' }, unidades: { type: 'number' }, importe: { type: 'number' }, porcentaje: { type: 'number' }, precio: { type: 'number' } }, required: ['posicion'] } },
+      todas: { type: 'boolean', description: 'true: vender todas sus posiciones enteras, calculadas juntas' } } } },
+  simular_compra: { description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de Toisón, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector, cuánto tiene ya de esa empresa dentro de sus fondos y, para una acción, lo máximo que cabe sin pasar sus límites de acciones sueltas y por empresa (cabe_como_mucho), con dinero nuevo y con el que ya tiene. Sin importe devuelve solo ese máximo. Si un plan junta varias compras de acciones, simula cada una y que la suma no pase del máximo.',
+    input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir; sin importe, solo lo máximo que cabe en sus límites' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa'] } },
+};
+const herramientasPara = (fundador) => HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, input_schema: h.input_schema, ...(fundador && HERRAMIENTAS_FUNDADOR[h.name] ? HERRAMIENTAS_FUNDADOR[h.name] : {}) }));
 
 /* 19 nov (revisión de noche; revisión aparte I1 e I2) · la regla de recompra de una venta que se plantea (art. 33.5 LIRPF;
    para los ETC, 25.2.b), con la misma cuenta que perdidaAplazada (22-impuestos.js) para las ya apuntadas: se aplaza la parte
@@ -455,7 +468,38 @@ function recompraDeVenta(f, u, gan, fuera) {
   if (!(gan < 0) && !liberada) return null;
   return { rr, aplazada, porAntes, porFuturas, primera, liberada, auto };
 }
-function hSimularVenta(q, est = esPublico()) {
+/* 19 nov (mejorar-ia-2, parte C) · el orden de compensar una pérdida, en cifras (solo sin freno). En el banco, Haiku lo
+   contaba al revés (f05, f47): «tus pérdidas de años anteriores ya cubren los 120 € de ganancias del año». Sale de las dos
+   cuentas de fiscalAnio (sin la venta y con ella): la pérdida del año resta primero de lo suyo del año (ganancias, o
+   rendimientos si es un ETC), luego de lo otro hasta el 25 %, y lo que quede pasa a los 4 años siguientes; las pérdidas de
+   años anteriores van después */
+function ordenCompensar(a, b, cuenta, esR) {
+  if (!(cuenta < -0.005)) return null;
+  const P = -cuenta;
+  const suyoAntes = esR ? a.rcmT : a.gp, otroAntes = esR ? a.gp : a.rcmT;
+  const c1 = Math.max(0, Math.min(P, suyoAntes));
+  const cruce = (x) => ((esR ? x.rcmT : x.gp) < 0 && (esR ? x.gp : x.rcmT) > 0 ? x.cruzado : 0);
+  const c2 = Math.max(0, Math.min(P - c1, cruce(b) - cruce(a)));
+  const c3 = Math.max(0, P - c1 - c2);
+  const pend = esR ? a.pendientesRcm : a.pendientes, uA = esR ? a.usadasRcm : a.usadas, uB = esR ? b.usadasRcm : b.usadas;
+  const suyo = esR ? 'rendimientos del capital (dividendos, intereses y otros ETC) de este año' : 'ganancias de este año', otro = esR ? 'ganancias de este año' : 'dividendos e intereses de este año';
+  const o = {
+    perdida_que_cuenta_este_anio: R2(P),
+    [esR ? 'primero_resta_de_sus_rendimientos_del_anio' : 'primero_resta_de_sus_ganancias_del_anio']: R2(c1),
+    [esR ? 'despues_de_sus_ganancias_hasta_el_25_pct' : 'despues_de_sus_dividendos_e_intereses_hasta_el_25_pct']: R2(c2),
+    pasa_a_los_4_anios_siguientes: R2(c3),
+  };
+  let nota = `Orden: esta pérdida resta primero de sus ${suyo} (${E0(c1)} de ${E0(Math.max(0, suyoAntes))})${c2 > 0.5 ? `, después de sus ${otro} hasta el 25 % (${E0(c2)})` : otroAntes > 0.5 && P - c1 > 0.5 ? `, después de sus ${otro} hasta el 25 %` : ''}${c3 > 0.5 ? `, y ${E0(c3)} pasan a los 4 años siguientes` : ''}.`;
+  if (pend > 0.5) {
+    o.perdidas_de_anios_anteriores = { pendientes: R2(pend), se_usaban_sin_esta_venta: R2(uA), se_usan_con_esta_venta: R2(uB), quedan_para_despues: R2(pend - uB) };
+    nota += ` Sus pérdidas de años anteriores (${E0(pend)}) van DESPUÉS de las de este año: sin esta venta se usaban ${E0(uA)}; con ella, ${E0(uB)}, y quedan ${E0(pend - uB)} para años siguientes. No digas que las de años anteriores «ya cubren» las ganancias del año: con esta venta las cubre esta pérdida y aquellas se guardan.`;
+  }
+  o.nota = nota;
+  return o;
+}
+/* una venta, sin el impuesto: lo que sale, lo que cuesta por FIFO y lo que cuenta este año con la regla de recompra.
+   fuera: posiciones del mismo valor que se venden enteras a la vez (varias ventas juntas) */
+function calcVenta(q, fuera) {
   const f = buscarFila(q.posicion);
   if (!f) return { error: `No encuentro "${q.posicion}" en su cartera. Tiene: ${S.M.filas.map((x) => `${x.inst.corto} (id "${x.pos.id}")`).join(', ')}.` };
   if (!f.uds || !f.precio) return { error: 'Esa posición no tiene unidades o precio.' };
@@ -466,11 +510,10 @@ function hSimularVenta(q, est = esPublico()) {
   const bruto = u * pr, neto = bruto - gastos;
   const r = fifo(lotesDe(f.pos), u);
   const gan = neto - r.coste;
-  const anio = new Date().getFullYear();
   /* 19 nov (revisión de noche): la regla de recompra (recompraDeVenta). Antes, una venta con pérdidas daba siempre su
      «ahorro en la renta» con la pérdida entera, aunque hubiera compras del mismo valor dentro del plazo */
   let aplazada = 0, liberada = 0, recompra;
-  const rv = recompraDeVenta(f, u, gan);
+  const rv = recompraDeVenta(f, u, gan, fuera);
   if (rv) {
     aplazada = rv.aplazada; liberada = rv.liberada;
     recompra = {
@@ -481,25 +524,79 @@ function hSimularVenta(q, est = esPublico()) {
       nota: `${rv.porAntes ? `Ha comprado ${f.inst.corto} en ${rv.rr.plazo} antes y eso seguiría en su cartera: esa parte de la pérdida se aplaza hasta que venda lo recomprado y no resta este año. ` : ''}${rv.porFuturas ? `Su aportación automática compraría más en ${rv.rr.plazo}: esa parte tampoco restaría este año (ya está descontada); si para la aportación, sí restaría. ` : rv.auto ? 'Tiene una aportación automática a este valor: cada compra de ese plazo aplazaría también la pérdida. ' : ''}Si recompra ${f.inst.corto} antes de esa fecha, la pérdida de lo recomprado tampoco resta este año.${liberada ? ' Al vender participaciones que bloqueaban la pérdida de una venta anterior de este año, esa pérdida vuelve a restar (ya está sumada).' : ''}`,
     };
   }
-  const iv = impuestoDeVenta(gan + aplazada + liberada, anio, f.inst);
+  return { f, u, pr, gastos, bruto, neto, r, gan, cuenta: gan + aplazada + liberada, recompra };
+}
+// lo que devuelve una venta, sin la parte de la renta
+function fichaVenta(c) {
+  const { f, u, pr, gastos, bruto, neto, r, gan } = c;
   return {
     posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
     importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
     lotes_usados: r.usados.map((l) => ({ fecha: l.f, unidades: R2(l.u, 6), coste: R2(l.c) })),
-    ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial', impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
+    ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial',
+  };
+}
+const notasVenta = (c) => [/^Fondo/.test(c.f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', c.r.mezcla ? 'Lo que tenía antes de usar Toisón cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', c.f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined;
+// las pérdidas de años anteriores que usa, a la vista (solo sin freno)
+const pendientesVenta = (iv) => (iv.despues.pendientes || iv.despues.pendientesRcm ? { perdidas_de_anios_anteriores: { pendientes: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0)), usadas_sin_esta_venta: R2((iv.antes.usadas || 0) + (iv.antes.usadasRcm || 0)), usadas_con_esta_venta: R2((iv.despues.usadas || 0) + (iv.despues.usadasRcm || 0)), nota: 'Ya están restadas en cuota_despues: cuéntalo al explicar el impuesto.' } } : {});
+function hSimularVenta(q, est = esPublico()) {
+  // 19 nov (mejorar-ia-2, parte C) · sin freno: varias ventas calculadas juntas (ventas: [...] o todas: true)
+  if (!est && (Array.isArray(q.ventas) && q.ventas.length || q.todas === true)) return hSimularVentas(q);
+  const c = calcVenta(q);
+  if (c.error) return c;
+  const { f, u, gan } = c;
+  const anio = new Date().getFullYear();
+  const iv = impuestoDeVenta(c.cuenta, anio, f.inst);
+  const orden = est ? null : ordenCompensar(iv.antes, iv.despues, c.cuenta, esRCMVenta(f.inst));
+  return {
+    ...fichaVenta(c), impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
     tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
     renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra),
       /* 19 nov (mejorar-ia) · sin freno, las pérdidas de años anteriores que usa, a la vista: en el banco, Haiku decía «no tienes
          pérdidas que compensen» con 300 € pendientes (ya restadas en el impuesto) en 6 preguntas */
-      ...(!est && (iv.despues.pendientes || iv.despues.pendientesRcm) ? { perdidas_de_anios_anteriores: { pendientes: R2((iv.despues.pendientes || 0) + (iv.despues.pendientesRcm || 0)), usadas_sin_esta_venta: R2((iv.antes.usadas || 0) + (iv.antes.usadasRcm || 0)), usadas_con_esta_venta: R2((iv.despues.usadas || 0) + (iv.despues.usadasRcm || 0)), nota: 'Ya están restadas en cuota_despues: cuéntalo al explicar el impuesto.' } } : {}) },
-    ...(recompra ? { regla_de_recompra: recompra } : {}),
+      ...(!est ? pendientesVenta(iv) : {}),
+      ...(orden ? { orden_de_compensar: orden } : {}) },
+    ...(c.recompra ? { regla_de_recompra: c.recompra } : {}),
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
-    notas: [/^Fondo/.test(f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', r.mezcla ? 'Lo que tenía antes de usar Toisón cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined,
+    notas: notasVenta(c),
   };
 }
-function hSimularCompra(q) {
-  const imp = +q.importe;
-  if (!(imp > 0)) return { error: 'Falta el importe en euros.' };
+/* 19 nov (mejorar-ia-2, parte C) · varias ventas calculadas juntas (solo sin freno). En el banco, Sonnet sumaba a mano el
+   impuesto de venderlo todo (f33: «unos 2.600 €», cuando con las pérdidas que se compensan entre sí queda en menos de la
+   mitad). Cada venta con su ficha, y el impuesto de todas a la vez (impuestoDeVentas), que no es la suma de cada una */
+function hSimularVentas(q) {
+  const lista = q.todas === true ? S.M.filas.filter((f) => f.uds && f.precio).map((f) => ({ posicion: f.pos.id })) : q.ventas;
+  if (lista.length > 30) return { error: 'Como mucho 30 ventas a la vez.' };
+  // la misma posición dos veces no vale (el FIFO de la segunda dependería de la primera)
+  const filas = lista.map((v) => buscarFila(v && v.posicion));
+  const rep = filas.find((f, k) => f && filas.indexOf(f) !== k);
+  if (rep) return { error: `${rep.inst.corto} sale dos veces: pon cada posición una sola vez, con el total que vende.` };
+  // el mismo valor en dos cuentas, vendidas enteras a la vez: ninguna queda en la cartera para la regla de recompra
+  const enteras = new Set(lista.map((v, k) => { const f = filas[k]; if (!f) return null; const pr = +v.precio > 0 ? +v.precio : f.precio; const u = +v.unidades > 0 ? +v.unidades : +v.importe > 0 ? v.importe / pr : +v.porcentaje > 0 ? (f.uds * v.porcentaje) / 100 : f.uds; return u >= f.uds - 1e-9 ? f.pos : null; }).filter(Boolean));
+  const cs = lista.map((v) => calcVenta(v || {}, enteras));
+  const mal = cs.find((c) => c.error);
+  if (mal) return mal;
+  const anio = new Date().getFullYear();
+  const iv = impuestoDeVentas(cs.map((c) => ({ g: c.cuenta, inst: c.f.inst })), anio);
+  const sueltas = cs.map((c) => impuestoDeVenta(c.cuenta, anio, c.f.inst).impuesto);
+  const gan = sum(cs, (c) => c.gan), cuenta = sum(cs, (c) => c.cuenta), ganPos = sum(cs, (c) => Math.max(0, c.cuenta));
+  return {
+    ventas: cs.map((c, k) => ({ ...fichaVenta(c), lotes_usados: undefined, cuenta_este_anio: R2(c.cuenta), si_solo_vendiera_esta: sueltas[k] >= 0 ? { impuesto_extra: R2(sueltas[k]) } : { ahorro: R2(-sueltas[k]) }, ...(c.recompra ? { regla_de_recompra: c.recompra } : {}), te_quedan: R2(c.f.uds - c.u, 6), notas: notasVenta(c) })),
+    todas_juntas: {
+      cobras: R2(sum(cs, (c) => c.neto)), comisiones: R2(sum(cs, (c) => c.gastos)), ganancia_o_perdida: R2(gan), cuenta_este_anio: R2(cuenta),
+      impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
+      tipo_efectivo_sobre_las_ganancias_pct: ganPos > 0 && iv.impuesto > 0 ? R2((iv.impuesto / ganPos) * 100, 1) : 0,
+      queda_tras_apartar_el_impuesto: R2(sum(cs, (c) => c.neto) - Math.max(0, iv.impuesto)),
+      renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra), ...pendientesVenta(iv) },
+      nota: 'El impuesto de varias ventas es este, el de todas a la vez (las pérdidas de unas restan de las ganancias de otras, y la escala va por tramos): no sumes los de cada una por separado. Las ventas de ETC (su oro) van con dividendos e intereses y solo se cruzan con las ganancias hasta el 25 %; eso ya está contado.',
+    },
+  };
+}
+function hSimularCompra(q, est = esPublico()) {
+  // 19 nov (mejorar-ia-2, parte C) · sin freno, sin importe devuelve lo máximo que cabe en sus límites (importe 0)
+  const soloMax = !est && !(+q.importe > 0);
+  const imp = soloMax ? 0 : +q.importe;
+  if (!(imp > 0) && !soloMax) return { error: 'Falta el importe en euros.' };
   const M = S.M;
   const f = buscarFila(q.empresa), x = f ? null : buscarRadar(q.empresa);
   if (!f && !x) return { error: `"${q.empresa}" no está en su cartera ni en el radar de Toisón. Busca sus datos en internet. Tasa de compra por país: España 0,2 % y Francia 0,4 % (empresas de más de 1.000 millones), Italia 0,1 %, Reino Unido 0,5 %; fondos y ETF no pagan.` };
@@ -514,11 +611,34 @@ function hSimularCompra(q) {
   const sueltas = sum(M.filas.filter((y) => y.inst.tipo === 'Acción'), (y) => y.valor);
   const lim = +(S.cartera.limite_acciones ?? 20);
   const sect = sector ? (reparto(M, 'sector', 'rv').filas.find((s) => s.k === sector) || {}).pct || 0 : null;
+  /* 19 nov (mejorar-ia-2, parte C) · lo máximo que cabe sin pasar sus límites (solo sin freno). En el banco, Sonnet propuso
+     3.900 € de dinero nuevo en IAG «justo bajo el 20 %» y quedaba en el 20,05 % (f21): lo calculaba de cabeza. Con dinero
+     nuevo la cartera crece (x ≤ (L·T − v) / (1 − L)); con el que ya tiene, no (x ≤ L·T − v). Se redondea hacia abajo */
+  let cabe;
+  if (!est && tipo === 'Acción' && M.total > 0) {
+    const T = M.total, Ls = lim / 100, Le = limiteDe('empresa') / 100;
+    const vEmp = f ? (pesoLim(f, M) / 100) * T : 0;
+    const max = (L, v) => ({ nuevo: Math.max(0, Math.floor((L * T - v) / (1 - L))), tiene: Math.max(0, Math.floor(L * T - v)) });
+    const s2 = max(Ls, sueltas), e2 = max(Le, vEmp);
+    const tras = (x, nuevo) => ({ acciones_sueltas_pct: R2(((sueltas + x) / (T + (nuevo ? x : 0))) * 100, 2), esta_empresa_pct: R2(((vEmp + x) / (T + (nuevo ? x : 0))) * 100, 2) });
+    const mN = Math.min(s2.nuevo, e2.nuevo), mT = Math.min(s2.tiene, e2.tiene);
+    cabe = {
+      con_dinero_nuevo_eur: mN, con_dinero_que_ya_tiene_eur: mT,
+      lo_que_frena: (s2.nuevo <= e2.nuevo ? `su límite de acciones sueltas (${fmtNum(lim, 0)} %)` : `su límite por empresa (${fmtNum(limiteDe('empresa'), 0)} %)`),
+      por_acciones_sueltas: { limite_pct: lim, ahora_pct: R2((sueltas / T) * 100, 2), con_dinero_nuevo_eur: s2.nuevo, con_dinero_que_ya_tiene_eur: s2.tiene },
+      por_empresa: { limite_pct: limiteDe('empresa'), ahora_pct: R2((vEmp / T) * 100, 2), con_dinero_nuevo_eur: e2.nuevo, con_dinero_que_ya_tiene_eur: e2.tiene },
+      asi_quedaria_con_el_maximo: { con_dinero_nuevo: tras(mN, true), con_dinero_que_ya_tiene: tras(mT, false) },
+      ...(imp > 0 ? { este_importe: { con_dinero_nuevo: imp <= mN ? 'cabe' : `no cabe: se pasa por ${E0(imp - mN)}`, con_dinero_que_ya_tiene: imp <= mT ? 'cabe' : `no cabe: se pasa por ${E0(imp - mT)}`, asi_quedaria: { con_dinero_nuevo: tras(imp, true), con_dinero_que_ya_tiene: tras(imp, false) } } } : {}),
+      nota: 'Importes en euros enteros, redondeados hacia abajo: es lo más que puede comprar de esta empresa sin pasar ninguno de sus dos límites. Si propones un importe, que no pase de aquí; no lo calcules de cabeza.',
+    };
+  }
+  if (soloMax) return cabe ? { empresa: nombre, plataforma: plat, ya_la_tiene: !!f, cabe_como_mucho: cabe, nota: 'Sin importe: solo lo máximo que cabe en sus límites. Para la comisión, la tasa y las unidades, vuelve a llamar con el importe.' } : { error: tipo === 'Acción' ? 'Falta el importe en euros.' : 'Falta el importe en euros (los límites de acciones sueltas y por empresa solo cuentan para acciones).' };
   return {
     empresa: nombre, plataforma: plat, precio_aprox_eur: R2(precio, 4), unidades_aprox: precio ? R2(imp / precio, 4) : null,
     importe: R2(imp), comision: R2(comision), tasa_de_compra: tasa ? { tipo_pct: tasa.tipo * 100, nombre: tasa.nombre, importe: R2(t) } : 'no paga',
     total_a_pagar: R2(imp + comision + t), nota_fiscal: 'La comisión y la tasa suman al precio de compra para Hacienda.',
     acciones_sueltas: tipo === 'Acción' ? { ahora_pct: R2((sueltas / M.total) * 100, 1), con_dinero_nuevo_pct: R2(((sueltas + imp) / (M.total + imp)) * 100, 1), con_dinero_que_ya_tiene_pct: R2(((sueltas + imp) / M.total) * 100, 1), limite_pct: lim } : null,
+    ...(cabe ? { cabe_como_mucho: cabe } : {}),
     peso_de_su_sector_en_su_bolsa_pct: sect != null ? R2(sect, 1) : null,
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(nombre), 0),
     divisa: moneda && moneda !== 'EUR' ? `Cotiza en ${moneda}: el cambio con el euro también cuenta.` : undefined,
@@ -631,8 +751,9 @@ function ejecutarHerramienta(nombre, input, est = esPublico()) {
   } catch (e) { console.warn(e); return { error: 'Falló el cálculo: ' + e.message }; }
 }
 function pasoTxt(nombre, q = {}) {
+  if (nombre === 'simular_venta' && (q.todas === true || (Array.isArray(q.ventas) && q.ventas.length))) return q.todas === true ? 'Calcula la venta de todo, con FIFO e impuestos' : `Calcula ${q.ventas.length === 1 ? 'la venta' : `las ${q.ventas.length} ventas juntas`}${q.ventas.length <= 4 ? ` de ${yLista(q.ventas.map((v) => String((v && v.posicion) || '')).filter(Boolean))}` : ''}, con FIFO e impuestos`;
   if (nombre === 'simular_venta') return `Calcula la venta${q.unidades ? ` de ${fmtNum(q.unidades, 0)}` : q.porcentaje ? ` del ${fmtNum(q.porcentaje, 0)} %` : q.importe ? ` de ${E0(q.importe)}` : ''}${q.posicion ? ` de ${q.posicion}` : ''}, con FIFO e impuestos`;
-  if (nombre === 'simular_compra') return `Calcula una compra${q.importe ? ` de ${E0(q.importe)}` : ''}${q.empresa ? ` en ${q.empresa}` : ''}, con su tasa`;
+  if (nombre === 'simular_compra') return q.importe ? `Calcula una compra de ${E0(q.importe)}${q.empresa ? ` en ${q.empresa}` : ''}, con su tasa` : `Calcula cuánto cabe${q.empresa ? ` de ${q.empresa}` : ''} en tus límites`;
   if (nombre === 'buscar_empresa') return `Mira los datos de ${q.consulta || 'una empresa'}`;
   if (nombre === 'radar') return `Busca en el radar${q.sector ? ` empresas de ${q.sector}` : ''}${q.zona ? ` en ${q.zona}` : ''}`;
   if (nombre === 'proyectar') return `Proyecta tu cartera${q.aportacion_mensual != null ? ` aportando ${E0(q.aportacion_mensual)} al mes` : ''}`;
@@ -1353,7 +1474,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   sis[sis.length - 1].cache_control = { type: 'ephemeral' };
   const msgs = mensajes.map(aMensajeClaude).filter(Boolean);
   let conWeb = usarWeb;
-  const propias = herramientas ? HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, input_schema: h.input_schema })) : [];
+  const propias = herramientas ? herramientasPara(reglas === 'fundador') : [];
   const herrs = () => [...propias, ...(conWeb ? [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxBusquedas }] : [])];
   // esfuerzo medio siempre: con «alto» y dos búsquedas, Haiku se gastó todo el espacio pensando y el JSON salió cortado (2 nov).
   // Si aun así se queda sin sitio en un análisis, se repite una vez con esfuerzo bajo y sin búsqueda (maxRepetido)
