@@ -229,6 +229,15 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-imp-t small { color: var(--texto-2); font-size: 12.5px; line-height: 1.45; }
 .op-imp-ir { color: var(--primario); font-size: 26px; line-height: 1; }
 .op-ayuda { margin: 10px 0 4px; color: var(--tenue); font-size: 13px; line-height: 1.5; }
+.op-cap { margin: 4px 0 2px; padding: 10px 12px; grid-template-columns: auto minmax(0, 1fr); border-style: dashed; }
+.op-cap .op-imp-ic { width: 34px; height: 34px; border-radius: 10px; }
+.op-cap .op-imp-t b { font-size: 14.5px; }
+.op-cap:disabled { opacity: .6; cursor: progress; }
+.op-cap-est { font-size: 13px; line-height: 1.5; margin: 4px 0 0; }
+.op-cap-est:empty { display: none; }
+.op-leida { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start; padding: 10px 12px; margin: 8px 0; border-radius: 10px; background: var(--primario-fondo); color: var(--texto); font-size: 13px; line-height: 1.5; }
+.op-leida svg, .op-cap-est svg { width: 18px; height: 18px; }
+#opLeida .op-raro { margin: 0 0 8px; }
 .op-paso { display: grid; gap: 8px; margin: 14px 0; }
 .hoja form .op-paso { margin: 0; }
 .op-lbl { color: var(--texto-2); font-size: 13.5px; font-weight: 500; }

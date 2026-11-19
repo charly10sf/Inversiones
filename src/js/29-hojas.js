@@ -215,6 +215,10 @@ function operacion(tipo, id, sim, cand) {
       <div class="op-modo" role="group" aria-label="Qué quieres apuntar"><button type="button" data-t="compra">${ICONOS.compra}${L('Compra', 'Buy')}</button><button type="button" data-t="venta">${ICONOS.venta}${L('Venta', 'Sell')}</button><button type="button" data-t="tengo">${ICONOS.cartera}${L('Ya la tenías', 'Already had it')}</button></div>
       <button type="button" class="op-imp" id="opImp" data-accion="importar" hidden><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>Importar todo de tu bróker o banco</b><small>Capturas, el PDF de un extracto o los movimientos en CSV o Excel. La IA lo lee y tú lo revisas: mucho más rápido que meterlas una a una.</small></span><span class="op-imp-ir" aria-hidden="true">›</span></button>
       <p class="op-ayuda" id="opAyuda"></p>
+      <button type="button" class="op-imp op-cap" id="opCap"><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>${L('Rellenar con una captura', 'Fill in from a screenshot')}</b><small>${L('La del detalle de la orden en tu bróker: la IA la lee y tú lo revisas antes de apuntar.', 'The order detail from your broker: the AI reads it and you check it before recording.')}</small></span></button>
+      <input type="file" id="opCapArch" accept="image/*,application/pdf" multiple hidden>
+      <div class="op-cap-est" id="opCapEst" aria-live="polite"></div>
+      <div id="opLeida"></div>
       <div class="op-paso"><span class="op-lbl">Qué</span><div id="opQue"></div></div>
       <div class="op-paso" id="cPlat"><span class="op-lbl">Dónde</span><div class="op-plats" id="opPlat" role="group" aria-label="Plataforma"></div></div>
       <div class="form-grid op-num">
@@ -245,7 +249,7 @@ function operacion(tipo, id, sim, cand) {
   const unidad = () => { const i = S.inst[inst] || {}; return i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : /^Fondo/.test(i.tipo || '') ? 'participaciones' : 'unidades'; };
   // el precio que se propone es el del día de la operación (el de hoy si es hoy); si lo cambias tú, se respeta
   // los dos últimos que escribe la persona (de total, cuántas y precio): el tercero sale de ellos
-  let precioTocado = false, ultimos = [], efTocado = false;
+  let precioTocado = false, ultimos = [], efTocado = false, leida = null;
   const toca = (k) => { ultimos = [k, ...ultimos.filter((x) => x !== k)].slice(0, 2); };
   const precioSale = () => ultimos.includes('importe') && ultimos.includes('uds');
   const precioDia = () => {
@@ -264,6 +268,9 @@ function operacion(tipo, id, sim, cand) {
     if (ultimos.includes('uds')) q('importe').value = u > 0 ? String(+(u * pr).toFixed(2)).replace('.', ',') : '';
     else q('uds').value = imp > 0 ? String(+(imp / pr).toFixed(6)).replace('.', ',') : '';
   };
+  // 0.9e: el total que hay escrito (el tuyo o el de la captura) manda si cuadra con cuántas por el precio: así no se
+  // pierden céntimos por redondear las participaciones (4,226 × 118,18 = 499,43, y el bróker dice 499,42)
+  const brutoDe = (uds, pr) => { const imp = numero(q('importe').value), b = uds * pr; return imp > 0 && Math.abs(imp - b) <= Math.max(0.05, b * 0.002) ? imp : b; };
   const efectivoDe = (pl) => { const e = (S.cartera.efectivo || []).find((x) => x.plataforma === pl); return e ? +e.importe || 0 : 0; };
   // lo que tenías ese día (los lotes sin fecha segura cuentan siempre)
   const tenidasEn = (lotes, f) => sum(lotes.filter((l) => l.mezcla || !l.f || l.f <= f), (l) => l.u);
@@ -313,7 +320,7 @@ function operacion(tipo, id, sim, cand) {
     const c = $('#calc', h.el);
     if (!inst) { c.innerHTML = '<div><span class="k">Elige primero qué.</span></div>'; return; }
     if (!(uds > 0) || !(pr > 0)) { c.innerHTML = `<div><span class="k">${t === 'tengo' ? 'Pon cuántas tienes y tu precio medio (o lo invertido).' : 'Rellena dos de estos tres: el total, el precio o cuántas. El tercero sale solo.'}</span></div>`; return; }
-    const bruto = uds * pr;
+    const bruto = brutoDe(uds, pr);
     // ¿cuadra el precio con lo que valía ese día? Si no, casi seguro que es otro fondo u otra clase
     const h0 = histDe(inst), fch = q('fecha').value || hoyIso(), real = h0 && fch < hoyIso() ? precioEn(h0, fch, 'antes') : null;
     const raro = real && (pr / real > 1.25 || pr / real < 0.8) ? `<div class="op-raro">${ICONOS.alerta}<span>El ${fechaLarga(fch)} ${esc((S.inst[inst] || {}).nombre || '')} valía ${precioFmt(real)} y tú pones ${precioFmt(pr)}. Si no cuadra, seguramente el tuyo es otro fondo u otra clase: búscalo por su ISIN (sale en tu bróker).</span></div>` : '';
@@ -336,16 +343,19 @@ function operacion(tipo, id, sim, cand) {
         const r = fifo(copia.lotes, Math.min(uds, copia.cantidad));
         const res = bruto - gastos - r.coste;
         const imp = res > 0 ? impuestoDeVenta(res, undefined, S.inst[copia.instrumento]).impuesto : 0;
-        extra = `<div><span>Lo que te costaron (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>${res >= 0 ? 'Ganas' : 'Pierdes'}</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado en la renta</span><span>${eur(imp)}</span></div>` : res < 0 ? `<div><span class="k">Esa pérdida resta de ${esRCMVenta(S.inst[copia.instrumento]) ? 'tus rendimientos del capital del año, por ser un ETC' : 'tus ganancias del año'} (y si sobra, de los 4 siguientes).${(() => { const ins = S.inst[copia.instrumento], l = libreRecompra(ins, q('fecha').value || hoyIso()); return l ? ` Para que cuente, no la recompres hasta el ${fechaLarga(l)}: es la regla de ${reglaRecompra(ins).plazo} de Hacienda.` : ''; })()}</span></div>` : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
+        const lr = leida && leida.tipo === 'venta' && leida.resultado != null ? leida.resultado : null;
+        const delBroker = lr == null ? '' : Math.abs(res - lr) <= 1 ? `<div><span class="k">${L(`Cuadra con lo que dice tu bróker (${eurS(lr)}).`, `It matches what your broker says (${eurS(lr)}).`)}</span></div>` : `<div class="op-raro">${ICONOS.alerta}<span>${L(`Tu bróker dice ${eurS(lr)} y Toisón, con las compras que tiene apuntadas, ${eurS(res)}. Si el bróker tiene razón, el coste de esta posición en Toisón no está bien: corrígelo en Editar.`, `Your broker says ${eurS(lr)} and Toisón, with the purchases it has recorded, ${eurS(res)}. If the broker is right, this position's cost in Toisón is wrong: fix it in Edit.`)}</span></div>`;
+        extra = delBroker + `<div><span>Lo que te costaron (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>${res >= 0 ? 'Ganas' : 'Pierdes'}</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado en la renta</span><span>${eur(imp)}</span></div>` : res < 0 ? `<div><span class="k">Esa pérdida resta de ${esRCMVenta(S.inst[copia.instrumento]) ? 'tus rendimientos del capital del año, por ser un ETC' : 'tus ganancias del año'} (y si sobra, de los 4 siguientes).${(() => { const ins = S.inst[copia.instrumento], l = libreRecompra(ins, q('fecha').value || hoyIso()); return l ? ` Para que cuente, no la recompres hasta el ${fechaLarga(l)}: es la regla de ${reglaRecompra(ins).plazo} de Hacienda.` : ''; })()}</span></div>` : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
       } catch (e) { extra = `<div><span class="down">${esc(e.message)}</span></div>`; }
     }
-    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobras</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
+    const ret = leida && leida.tipo === 'venta' && leida.retencion > 0 ? leida.retencion : 0;
+    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobras</b><b>${eur(bruto - gastos)}</b></div>${ret ? `<div><span>${L('Retención de tu bróker (se resta en la renta)', 'Withheld by your broker (deducted in your tax return)')}</span><span>${eur(-ret)}</span></div><div><span>${L('Llega a tu cuenta', 'Reaches your account')}</span><span>${eur(bruto - gastos - ret)}</span></div>` : ''}${extra}`;
   };
   const pintarTodo = () => {
     for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
     const tengo = t === 'tengo';
     // en «Ya la tenía», importar va arriba y bien grande; en compra y venta, abajo como siempre
-    $('#opImp', h.el).hidden = t !== 'tengo'; $('.enlace-imp', h.el).hidden = t === 'tengo';
+    $('#opImp', h.el).hidden = t !== 'tengo'; $('.enlace-imp', h.el).hidden = t === 'tengo'; $('#opCap', h.el).hidden = t === 'tengo';
     $('#opAyuda', h.el).textContent = t === 'tengo' ? 'O mete una a mano: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.' : t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: Toisón calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar Toisón: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
     $('#lUds', h.el).textContent = `Cuántas ${inst ? unidad() : ''}${tengo ? ' tienes' : t === 'venta' ? ' vendiste' : ''}`.replace(/\s+/g, ' ');
     $('#lPrecio', h.el).textContent = tengo ? 'Tu precio medio (€)' : 'Precio de cada una (€)';
@@ -373,6 +383,46 @@ function operacion(tipo, id, sim, cand) {
   q('fecha').onchange = () => { ponerPrecio(); recalcular(); if (inst && (q('fecha').value || hoyIso()) < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(() => { ponerPrecio(); recalcular(); }).catch(() => {}); };
   q('efectivo').onchange = () => { efTocado = true; };
   if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : '';
+  // 0.9e · rellenar con la captura del justificante: qué, dónde, cuándo y las cifras; Toisón calcula el resto como siempre
+  const pintarLeida = () => {
+    const c = $('#opLeida', h.el);
+    c.innerHTML = !leida ? '' : `<div class="op-leida">${ICONOS.ok}<span>${esc(L('Rellenado con tu captura', 'Filled in from your screenshot'))}${leida.nombre || leida.isin ? `: ${esc(leida.nombre || leida.isin)}` : ''}. ${esc(L('Revisa las cifras antes de apuntar.', 'Check the figures before recording.'))}</span></div>${leida.dudas.map((d) => `<div class="op-raro">${ICONOS.alerta}<span>${esc(d)}</span></div>`).join('')}`;
+  };
+  const rellenarConLectura = (op) => {
+    leida = op;
+    if (op.tipo === 'traspaso') { pintarLeida(); return; }
+    if (op.tipo === 'compra' || op.tipo === 'venta') t = op.tipo;
+    const x = { nombre: op.nombre, isin: op.isin, ticker: op.ticker, tipo: op.tipoActivo }, nom = op.nombre || op.isin || '?';
+    if (t === 'venta') {
+      const ps = S.cartera.posiciones.filter((p) => calcularPos(p, hoyIso()).uds > 0);
+      let cand = op.isin ? ps.filter((p) => String((S.inst[p.instrumento] || {}).isin || '').toUpperCase() === op.isin) : [];
+      if (!cand.length) { const m = emparejar(x); if (m) cand = ps.filter((p) => p.instrumento === m.id); }
+      posSel = cand.find((p) => op.plataforma && p.plataforma === op.plataforma) || cand[0] || null;
+      if (posSel) { inst = posSel.instrumento; plat = posSel.plataforma; }
+      else op.dudas.unshift(L(`No encuentro «${nom}» entre lo que tienes en Toisón: elige abajo qué vendiste.`, `I can't find "${nom}" among your holdings in Toisón: choose below what you sold.`));
+    } else {
+      const m = emparejar(x);
+      if (m) inst = m.id; else { inst = null; op.dudas.unshift(L(`No encuentro «${nom}»: búscalo abajo por su nombre o su ISIN.`, `I can't find "${nom}": search for it below by name or ISIN.`)); }
+      if (op.plataforma) { if (!plats.includes(op.plataforma)) plats.push(op.plataforma); plat = op.plataforma; } else if (inst) plat = platPor(inst);
+    }
+    const pon = (n, v, dec) => { q(n).value = v > 0 ? String(+(+v).toFixed(dec)).replace('.', ',') : ''; };
+    if (op.fecha) q('fecha').value = op.fecha;
+    pon('uds', op.uds, 6); pon('precio', op.precio, 6); pon('importe', op.bruto, 2);
+    q('gastos').value = op.gastos > 0 ? String(+op.gastos.toFixed(2)).replace('.', ',') : '0'; q('gastos').dataset.tocado = '1';
+    precioTocado = true; ultimos = ['uds', 'precio']; delete fm.dataset.confirmado; err('');
+    pintarLeida(); pintarTodo();
+    if (inst && op.fecha && op.fecha < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(recalcular).catch(() => {});
+  };
+  const capEst = (x, mal) => { $('#opCapEst', h.el).innerHTML = x ? `<span class="${mal ? 'down' : 'k'}">${esc(x)}</span>` : ''; };
+  $('#opCap', h.el).onclick = () => $('#opCapArch', h.el).click();
+  $('#opCapArch', h.el).onchange = async (ev) => {
+    const files = [...ev.target.files]; ev.target.value = '';
+    if (!files.length) return;
+    const b = $('#opCap', h.el); b.disabled = true; err('');
+    try { const op = await leerOperacionCaptura(files, (x) => capEst(x)); capEst(''); rellenarConLectura(op); }
+    catch (e) { capEst((e && e.message) || L('No se ha podido leer la captura.', "The screenshot couldn't be read."), true); }
+    finally { b.disabled = false; }
+  };
   if (t === 'venta' && !posSel && inst) posSel = S.cartera.posiciones.find((p) => p.instrumento === inst) || null;
   ponerPrecio(); pintarTodo();
   // en el ordenador, el cursor al total; en el móvil no, que abría el teclado nada más entrar
@@ -409,9 +459,14 @@ function operacion(tipo, id, sim, cand) {
       toast(`${nombre} añadida a tu cartera`, 3500);
       return;
     }
+    // 0.9e: la misma operación ya apuntada (pasa al subir dos veces la misma captura): se avisa y, si se insiste, se apunta
+    if ((S.cartera.movimientos || []).some((m) => m.tipo === t && m.instrumento === inst && m.fecha === fecha && Math.abs(+m.uds - uds) < 1e-6) && fm.dataset.dupConf !== `${fecha}|${uds}`) {
+      fm.dataset.dupConf = `${fecha}|${uds}`;
+      return err(L(`Ya tienes apuntada esta ${t} (el ${fechaLarga(fecha)}, ${fmtNum(uds, 4)}). Si es otra igual, pulsa otra vez el botón.`, `You already have this ${t === 'compra' ? 'purchase' : 'sale'} recorded (${fechaLarga(fecha)}, ${fmtNum(uds, 4)}). If it's another identical one, press the button again.`));
+    }
     const mov = { id: nuevoId('m-'), fecha, tipo: t, instrumento: inst, plataforma: plat, uds, precio: pr, gastos };
     if (t === 'compra' && q('efectivo').checked) {
-      const ta0 = tasaDe(inst), total = uds * pr + gastos + (ta0 ? uds * pr * ta0.tipo : 0), hay = efectivoDe(plat);
+      const ta0 = tasaDe(inst), b0 = brutoDe(uds, pr), total = b0 + gastos + (ta0 ? b0 * ta0.tipo : 0), hay = efectivoDe(plat);
       if (hay < total - 0.005 && fm.dataset.efConf !== String(total)) {
         fm.dataset.efConf = String(total);
         return err(`En ${plat} tienes ${eur(hay)} de efectivo y la compra son ${eur(total)}. Si pagaste el resto con dinero de fuera, pulsa otra vez: el efectivo se quedará en 0. Si no, quita la casilla de pagar con el efectivo.`);
@@ -420,8 +475,9 @@ function operacion(tipo, id, sim, cand) {
     try {
       if (t === 'compra') {
         const ta = tasaDe(inst);
-        mov.tasa = ta ? +(uds * pr * ta.tipo).toFixed(2) : 0;
-        mov.importe = +(uds * pr + gastos + mov.tasa).toFixed(2);
+        const b = brutoDe(uds, pr);
+        mov.tasa = ta ? +(b * ta.tipo).toFixed(2) : 0;
+        mov.importe = +(b + gastos + mov.tasa).toFixed(2);
         const lote = { f: fecha, u: uds, c: mov.importe };
         if (pos) { fijarPosicion(pos); pos.lotes = [...(pos.lotes || []), lote]; pos.cantidad = +(pos.cantidad + uds).toFixed(8); pos.coste = +(pos.coste + mov.importe).toFixed(2); }
         else { pos = { id: nuevoId('p-'), instrumento: inst, plataforma: plat, cantidad: uds, fecha, coste: mov.importe, lotes: [lote] }; S.cartera.posiciones.push(pos); }
@@ -431,7 +487,7 @@ function operacion(tipo, id, sim, cand) {
         if (uds > pos.cantidad + 1e-6) return err(`Solo tienes ${fmtNum(pos.cantidad, 4)}.`);
         const nt = noTenias(pos.lotes, fecha, uds); if (nt) return err(nt);
         const r = fifo(pos.lotes, uds);
-        mov.importe = +(uds * pr - gastos).toFixed(2);
+        mov.importe = +(brutoDe(uds, pr) - gastos).toFixed(2);
         mov.coste_vendido = +r.coste.toFixed(2);
         mov.resultado = +(mov.importe - mov.coste_vendido).toFixed(2);
         mov.fifo = r.usados.map((l) => ({ f: l.f, u: +l.u.toFixed(8), c: +l.c.toFixed(2) }));
@@ -448,11 +504,15 @@ function operacion(tipo, id, sim, cand) {
       S.cartera.efectivo = S.cartera.efectivo || [];
       let e = S.cartera.efectivo.find((x) => x.plataforma === plat);
       if (!e) { e = { plataforma: plat, importe: 0 }; S.cartera.efectivo.push(e); }
-      e.importe = Math.max(0, +((+e.importe || 0) + (t === 'compra' ? -mov.importe : mov.importe)).toFixed(2));
+      // en una venta leída de la captura, entra lo que de verdad llegó a la cuenta: el neto, ya sin la retención
+      const cobro = t === 'venta' && leida && leida.tipo === 'venta' && leida.neto > 0 && leida.retencion > 0 && Math.abs(mov.importe - leida.retencion - leida.neto) <= 0.05 ? leida.neto : mov.importe;
+      e.importe = Math.max(0, +((+e.importe || 0) + (t === 'compra' ? -mov.importe : cobro)).toFixed(2));
     }
+    if (leida && leida.tipo === t) { mov.captura = true; if (t === 'venta' && leida.retencion > 0) mov.retenido = +leida.retencion.toFixed(2); }
     (S.cartera.movimientos = S.cartera.movimientos || []).push(mov);
     await guardarYPintar(`${t === 'compra' ? 'Compra' : 'Venta'} de ${nombre}`, h);
     celebrarOperacion(t, nombre, mov, pos.id);
+    if (mov.retenido) setTimeout(() => toast(L(`Tu bróker te retuvo ${eur(mov.retenido)}: en la renta se restan. Súmalos en Fiscalidad, en «Datos fiscales», a lo ya retenido de ${fecha.slice(0, 4)}.`, `Your broker withheld ${eur(mov.retenido)}: it's deducted in your tax return. Add it in Taxes, under "Tax data", to what was already withheld in ${fecha.slice(0, 4)}.`), 8000), 2600);
   };
 }
 
