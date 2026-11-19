@@ -3,7 +3,7 @@
 // entrada (el doble en las rondas siguientes) y de peticiones por pregunta; y el coste con costeUso, con Haiku más caro
 // por encima de 100.000 tokens. Sin red: el count_tokens y la API, de imitación.
 import { test, expect } from '@playwright/test';
-import { delWorker, prepararComoWorker, imitarWorker, FUENTE_WORKER } from './banco/worker-imitacion.js';
+import { delWorker, prepararComoWorker, imitarWorker, falloComoWorker, FUENTE_WORKER } from './banco/worker-imitacion.js';
 
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'una vez, en el móvil'));
 
@@ -70,5 +70,32 @@ test('el manejador suma lo que cuesta cada respuesta con costeUso del Worker', a
     expect(mandado).toBeNull();
     expect(respuesta.status).toBe(400);
     expect(gasto.rechazadas).toBe(1);
+  } finally { globalThis.fetch = fetch0; }
+});
+
+// mejorar-ia-2 (19 nov): un fallo de Anthropic llega a la app convertido como lo hace el Worker
+test('los errores de Anthropic se convierten como en el Worker: sin-creditos, clave y claude', async () => {
+  // las tres líneas del Worker siguen ahí (si cambian, hay que revisar falloComoWorker)
+  for (const t of ["return res({ error: 'sin-creditos' }, 402)", "return res({ error: 'clave', estado: r.status }, 502)", "return res({ error: 'claude', estado: r.status, tipo: String(e.type || ''), motivo: msg.slice(0, 200) }, r.status >= 500 ? 502 : r.status)", '/credit balance|usage limits?|spend(ing)? limit/i']) expect(FUENTE_WORKER, t).toContain(t);
+  const err = (type, message) => JSON.stringify({ type: 'error', error: { type, message } });
+  expect(falloComoWorker(400, err('invalid_request_error', 'Your credit balance is too low to access the Anthropic API.'))).toEqual([402, { error: 'sin-creditos' }]);
+  expect(falloComoWorker(429, err('rate_limit_error', 'You have reached your specified workspace API usage limits.'))).toEqual([402, { error: 'sin-creditos' }]);
+  expect(falloComoWorker(401, err('authentication_error', 'invalid x-api-key'))).toEqual([502, { error: 'clave', estado: 401 }]);
+  expect(falloComoWorker(403, err('permission_error', 'no'))).toEqual([502, { error: 'clave', estado: 403 }]);
+  expect(falloComoWorker(529, err('overloaded_error', 'Overloaded'))).toEqual([502, { error: 'claude', estado: 529, tipo: 'overloaded_error', motivo: 'Overloaded' }]);
+  expect(falloComoWorker(429, err('rate_limit_error', 'Too many requests'))).toEqual([429, { error: 'claude', estado: 429, tipo: 'rate_limit_error', motivo: 'Too many requests' }]);
+  expect(falloComoWorker(500, 'no es JSON')).toEqual([502, { error: 'claude', estado: 500, tipo: '', motivo: '' }]);
+  // y el manejador los devuelve así, sin sumar gasto
+  const W = delWorker(), gasto = {}, fetch0 = globalThis.fetch;
+  globalThis.fetch = async () => new Response(err('invalid_request_error', 'Your credit balance is too low'), { status: 400, headers: { 'content-type': 'application/json' } });
+  try {
+    const h = imitarWorker({ clave: 'x', gasto, cors: { 'Access-Control-Allow-Origin': '*' }, W });
+    let respuesta = null;
+    await h({ request: () => ({ method: () => 'POST', postData: () => pide({}) }), fulfill: (x) => { respuesta = x; } });
+    expect(respuesta.status).toBe(402);
+    expect(JSON.parse(respuesta.body)).toEqual({ error: 'sin-creditos' });
+    expect(respuesta.headers['content-type']).toBe('application/json');
+    expect(respuesta.headers['X-Reglas']).toBeUndefined();
+    expect(gasto.dolares).toBe(0);
   } finally { globalThis.fetch = fetch0; }
 });

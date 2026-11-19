@@ -133,6 +133,15 @@ export function contadorAnthropic(clave) {
   };
 }
 
+/** Un fallo de Anthropic, como lo devuelve el Worker: [estado, cuerpo] (las mismas tres líneas que el final de su manejador) */
+export function falloComoWorker(estado, texto) {
+  let fallo = {}; try { fallo = JSON.parse(texto); } catch (e) { fallo = {}; }
+  const e = (fallo && fallo.error) || {}, msg = String(e.message || '');
+  if ((estado === 400 || estado === 429) && /credit balance|usage limits?|spend(ing)? limit/i.test(msg)) return [402, { error: 'sin-creditos' }];
+  if (estado === 401 || estado === 403) return [502, { error: 'clave', estado }];
+  return [estado >= 500 ? 502 : estado, { error: 'claude', estado, tipo: String(e.type || ''), motivo: msg.slice(0, 200) }];
+}
+
 /**
  * El manejador de la ruta del Worker para Playwright (context.route(WORKER, …)): prepara la petición como el Worker, la
  * manda a Anthropic y suma lo que ha costado con costeUso del Worker. gasto: { peticiones, entrada, cache_lee,
@@ -158,7 +167,11 @@ export function imitarWorker({ clave, gasto, cors, alPedir = null, W = delWorker
       gasto.entrada += n(u.input_tokens); gasto.cache_lee += n(u.cache_read_input_tokens); gasto.cache_escribe += n(u.cache_creation_input_tokens); gasto.salida += n(u.output_tokens);
       gasto.dolares += W.costeUso(p.cuerpo.model, u);
     }
-    const extra = res.ok ? { 'X-Nivel': 'alto', 'X-Reglas': p.conFundador ? 'fundador' : 'estandar' } : {};
+    // 19 nov (mejorar-ia-2) · un fallo de Anthropic llega a la app como lo manda el Worker (su mismo final): sin saldo o con el
+    // tope de gasto del workspace, 402 «sin-creditos»; la clave mal, 502 «clave»; lo demás, «claude» con su estado y su tipo.
+    // Antes pasaba el error de Anthropic tal cual y la app no lo entendía como en producción
+    if (!res.ok) return r.fulfill(json(...falloComoWorker(res.status, sse)));
+    const extra = { 'X-Nivel': 'alto', 'X-Reglas': p.conFundador ? 'fundador' : 'estandar' };
     return r.fulfill({ status: res.status, headers: { ...cors, 'content-type': res.headers.get('content-type') || 'text/event-stream', ...extra }, body: sse });
   };
 }
