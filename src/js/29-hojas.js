@@ -215,7 +215,7 @@ function operacion(tipo, id, sim, cand) {
       <div class="op-modo" role="group" aria-label="Qué quieres apuntar"><button type="button" data-t="compra">${ICONOS.compra}${L('Compra', 'Buy')}</button><button type="button" data-t="venta">${ICONOS.venta}${L('Venta', 'Sell')}</button><button type="button" data-t="tengo">${ICONOS.cartera}${L('Ya la tenías', 'Already had it')}</button></div>
       <button type="button" class="op-imp" id="opImp" data-accion="importar" hidden><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>Importar todo de tu bróker o banco</b><small>Capturas, el PDF de un extracto o los movimientos en CSV o Excel. La IA lo lee y tú lo revisas: mucho más rápido que meterlas una a una.</small></span><span class="op-imp-ir" aria-hidden="true">›</span></button>
       <p class="op-ayuda" id="opAyuda"></p>
-      <button type="button" class="op-imp op-cap" id="opCap"><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>${L('Rellenar con una captura', 'Fill in from a screenshot')}</b><small>${L('La del detalle de la orden en tu bróker: la IA la lee y tú lo revisas antes de apuntar.', 'The order detail from your broker: the AI reads it and you check it before recording.')}</small></span></button>
+      <button type="button" class="op-imp op-cap" id="opCap"><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>${L('Rellenar con capturas', 'Fill in from screenshots')}</b><small>${L('Las del detalle de la orden en tu bróker; si no cabe en una, elige todas (hasta 10). La IA las lee y tú lo revisas antes de apuntar.', "Your broker's order detail; if it doesn't fit in one, pick them all (up to 10). The AI reads them and you check before recording.")}</small></span></button>
       <input type="file" id="opCapArch" accept="image/*,application/pdf" multiple hidden>
       <div class="op-cap-est" id="opCapEst" aria-live="polite"></div>
       <div id="opLeida"></div>
@@ -386,7 +386,8 @@ function operacion(tipo, id, sim, cand) {
   // 0.9e · rellenar con la captura del justificante: qué, dónde, cuándo y las cifras; Toisón calcula el resto como siempre
   const pintarLeida = () => {
     const c = $('#opLeida', h.el);
-    c.innerHTML = !leida ? '' : `<div class="op-leida">${ICONOS.ok}<span>${esc(L('Rellenado con tu captura', 'Filled in from your screenshot'))}${leida.nombre || leida.isin ? `: ${esc(leida.nombre || leida.isin)}` : ''}. ${esc(L('Revisa las cifras antes de apuntar.', 'Check the figures before recording.'))}</span></div>${leida.dudas.map((d) => `<div class="op-raro">${ICONOS.alerta}<span>${esc(d)}</span></div>`).join('')}`;
+    const n = leida && leida.nCapturas > 1 ? leida.nCapturas : 0;
+    c.innerHTML = !leida ? '' : `<div class="op-leida">${ICONOS.ok}<span>${esc(n ? L(`Rellenado con tus ${n} capturas`, `Filled in from your ${n} screenshots`) : L('Rellenado con tu captura', 'Filled in from your screenshot'))}${leida.nombre || leida.isin ? `: ${esc(leida.nombre || leida.isin)}` : ''}. ${esc(L('Revisa las cifras antes de apuntar.', 'Check the figures before recording.'))}</span></div>${leida.dudas.map((d) => `<div class="op-raro">${ICONOS.alerta}<span>${esc(d)}</span></div>`).join('')}`;
   };
   const rellenarConLectura = (op) => {
     leida = op;
@@ -418,14 +419,34 @@ function operacion(tipo, id, sim, cand) {
     pintarLeida(); ponerPrecio(); pintarTodo();
     if (inst && op.fecha && op.fecha < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(() => { ponerPrecio(); recalcular(); }).catch(() => {});
   };
-  const capEst = (x, mal) => { $('#opCapEst', h.el).innerHTML = x ? `<span class="${mal ? 'down' : 'k'}">${esc(x)}</span>` : ''; };
-  $('#opCap', h.el).onclick = () => $('#opCapArch', h.el).click();
+  // 0.9f: hasta 10 capturas de la misma orden, todas a la vez o de una en una («Añadir otra de esta orden»); cada vez se
+  // vuelven a leer todas juntas, que la IA vea la orden entera
+  let capturas = [], sumar = false;
+  const capEst = (x, mal) => {
+    const n = capturas.length;
+    $('#opCapEst', h.el).innerHTML = (x ? `<span class="${mal ? 'down' : 'k'}">${esc(x)}</span> ` : '')
+      + (n && !(x && !mal) ? `<span class="op-cap-n">${n === 1 ? L('1 captura leída.', '1 screenshot read.') : L(`${n} capturas leídas.`, `${n} screenshots read.`)}</span>${n < MAX_CAP_OP ? ` <button type="button" class="enlace acento" data-cap="mas">${L('Añadir otra de esta orden', 'Add another from this order')}</button>` : ''} <button type="button" class="enlace" data-cap="cero">${L('Empezar de cero', 'Start over')}</button>` : '');
+  };
+  const MAX_CAP_OP = 10;
+  $('#opCap', h.el).onclick = () => { sumar = false; $('#opCapArch', h.el).click(); };
+  $('#opCapEst', h.el).onclick = (ev) => {
+    const d = ev.target.closest('[data-cap]'); if (!d) return;
+    if (d.dataset.cap === 'mas') { sumar = true; $('#opCapArch', h.el).click(); }
+    else { capturas = []; sumar = false; leida = null; capEst(''); pintarLeida(); recalcular(); }
+  };
   $('#opCapArch', h.el).onchange = async (ev) => {
-    const files = [...ev.target.files]; ev.target.value = '';
-    if (!files.length) return;
+    const nuevas = [...ev.target.files]; ev.target.value = '';
+    if (!nuevas.length) return;
+    const antes = capturas, todas = [...(sumar ? capturas : []), ...nuevas], sobran = todas.length > MAX_CAP_OP;
+    sumar = false;
+    const usar = todas.slice(0, MAX_CAP_OP);
     const b = $('#opCap', h.el); b.disabled = true; err('');
-    try { const op = await leerOperacionCaptura(files, (x) => capEst(x)); capEst(''); rellenarConLectura(op); }
-    catch (e) { capEst((e && e.message) || L('No se ha podido leer la captura.', "The screenshot couldn't be read."), true); }
+    try {
+      const op = await leerOperacionCaptura(usar, (x) => capEst(x));
+      capturas = usar; op.nCapturas = usar.length;
+      capEst(sobran ? L(`Como mucho ${MAX_CAP_OP}: he leído las ${MAX_CAP_OP} primeras.`, `At most ${MAX_CAP_OP}: I read the first ${MAX_CAP_OP}.`) : '', sobran);
+      rellenarConLectura(op);
+    } catch (e) { capturas = antes; capEst((e && e.message) || L('No se ha podido leer la captura.', "The screenshot couldn't be read."), true); }
     finally { b.disabled = false; }
   };
   if (t === 'venta' && !posSel && inst) posSel = S.cartera.posiciones.find((p) => p.instrumento === inst) || null;

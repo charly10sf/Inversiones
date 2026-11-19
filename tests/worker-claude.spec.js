@@ -113,7 +113,7 @@ test('rechaza lo que gastaría de más o no es una pregunta', async () => {
     }
     expect((await pedir('uid-f', '{no es json')).status).toBe(400);
     expect((await pedir('uid-f', '[1,2]')).status).toBe(400);
-    expect((await pedir('uid-f', { ...PEDIDO, messages: [{ role: 'user', content: 'x'.repeat(600e3) }] })).status).toBe(413);
+    expect((await pedir('uid-f', { ...PEDIDO, messages: [{ role: 'user', content: 'x'.repeat(2.5e6) }] })).status).toBe(413);
     expect((await worker.fetch(new Request('https://w.prueba/claude'), ENV, { waitUntil() {} })).status).toBe(405);
     expect(vistas.length).toBe(0);
     // el Haiku vale, y la lista de modelos se puede cambiar

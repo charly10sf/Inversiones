@@ -1,6 +1,7 @@
 package es.inversiones.app;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -148,7 +149,10 @@ public class Principal extends Activity {
                 if (archivos != null) archivos.onReceiveValue(null);
                 archivos = cb;
                 try {
-                    startActivityForResult(p.createIntent(), ELEGIR_ARCHIVO);
+                    // 0.9f: createIntent() no deja elegir varios aunque la web lo pida (multiple): se activa a mano
+                    Intent i = p.createIntent();
+                    if (p.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    startActivityForResult(i, ELEGIR_ARCHIVO);
                 } catch (Exception e) {
                     archivos = null;
                     return false;
@@ -484,7 +488,14 @@ public class Principal extends Activity {
             return;
         }
         if (pedido == ELEGIR_ARCHIVO && archivos != null) {
-            archivos.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultado, datos));
+            // con varios elegidos llegan en ClipData, que parseResult no mira (solo devuelve uno)
+            Uri[] elegidos = null;
+            ClipData cd = resultado == RESULT_OK && datos != null ? datos.getClipData() : null;
+            if (cd != null && cd.getItemCount() > 0) {
+                elegidos = new Uri[cd.getItemCount()];
+                for (int k = 0; k < elegidos.length; k++) elegidos[k] = cd.getItemAt(k).getUri();
+            } else elegidos = WebChromeClient.FileChooserParams.parseResult(resultado, datos);
+            archivos.onReceiveValue(elegidos);
             archivos = null;
             return;
         }

@@ -521,7 +521,7 @@ async function historicoRuta(url, req, env, res, deFuera) {
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
-const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 20, CLAUDE_RONDAS_POR_DIA = 60;
+const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 2.5e6, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 20, CLAUDE_RONDAS_POR_DIA = 60;
 // 0.8.2b: el nivel reducido (todo el que no está en CLAUDE_EMAILS). Cifras de Carlos (6 nov, 18:15): 5 preguntas al día para
 // el resto, 20 para el nivel alto (arriba) y 4 US$ al día de techo para todo el reducido. Se cambian aquí o con la variable
 // del mismo nombre en el Worker

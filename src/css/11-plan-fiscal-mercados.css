@@ -233,7 +233,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-cap .op-imp-ic { width: 34px; height: 34px; border-radius: 10px; }
 .op-cap .op-imp-t b { font-size: 14.5px; }
 .op-cap:disabled { opacity: .6; cursor: progress; }
-.op-cap-est { font-size: 13px; line-height: 1.5; margin: 4px 0 0; }
+.op-cap-est { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; font-size: 13px; line-height: 1.5; margin: 4px 0 0; }
 .op-cap-est:empty { display: none; }
 .op-leida { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start; padding: 10px 12px; margin: 8px 0; border-radius: 10px; background: var(--primario-fondo); color: var(--texto); font-size: 13px; line-height: 1.5; }
 .op-leida svg, .op-cap-est svg { width: 18px; height: 18px; }
@@ -259,3 +259,5 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-raro { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; padding: 10px 12px; margin-bottom: 8px; border-radius: 10px; background: var(--baja-fondo); color: var(--texto); font-size: 13px; line-height: 1.5; }
 .op-raro svg { width: 18px; height: 18px; color: var(--baja); }
 
+.op-cap-est .enlace { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; min-height: 32px; }
+.op-cap-n { color: var(--tenue); }

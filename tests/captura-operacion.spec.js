@@ -191,3 +191,66 @@ test('revisión aparte: la tasa no se cuenta dos veces y una venta que no se enc
   await expect(page.locator('.op-pos[aria-pressed="true"]')).toHaveCount(0);
   await expect(page.locator('#calc')).toContainText('Elige primero qué');
 });
+
+test('0.9f: varias capturas de la misma orden, a la vez o de una en una, hasta 10, y aviso si falta la otra', async ({ page, context }) => {
+  await preparada(page);
+  // la primera lectura dice que falta parte (como la primera pantalla de MyInvestor); las siguientes, ya completa
+  let n = 0;
+  const visto = { peticiones: [] };
+  await context.route(WORKER, async (r) => {
+    const q = r.request();
+    if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+    const texto = q.postData() || '';
+    if (texto === '{}') return r.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: 'peticion', motivo: 'modelo' }) });
+    visto.peticiones.push(JSON.parse(texto));
+    const resp = n++ === 0 ? { ...VENTA_NB, precio: null, retencion: null, neto: null, resultado: null, falta: 'el valor liquidativo y la retención' } : { ...VENTA_NB, falta: null };
+    return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream' }, body: stream(JSON.stringify(resp)) });
+  });
+  const imagenes = (k) => (visto.peticiones[k].messages || []).flatMap((m) => (Array.isArray(m.content) ? m.content : [])).filter((b) => b && b.type === 'image').length;
+  const png = (i) => ({ name: `orden-${i}.png`, mimeType: 'image/png', buffer: PNG });
+  await page.evaluate(() => operacion('venta'));
+  await expect(page.locator('#opCap')).toContainText('hasta 10');
+  // una sola: lee y avisa de que la orden sigue en otra captura
+  await page.locator('#opCapArch').setInputFiles([png(1)]);
+  await expect(page.locator('#opLeida')).toContainText('sigue en otra captura', { timeout: 20_000 });
+  await expect(page.locator('#opCapEst')).toContainText('1 captura leída');
+  // «Añadir otra de esta orden»: se leen las dos juntas y el aviso se va
+  await page.locator('#opCapEst [data-cap="mas"]').click();
+  await page.locator('#opCapArch').setInputFiles([png(2)]);
+  await expect(page.locator('#opLeida')).toContainText('Rellenado con tus 2 capturas', { timeout: 20_000 });
+  await expect(page.locator('#opLeida')).not.toContainText('sigue en otra captura');
+  expect(imagenes(1)).toBe(2);
+  await expect(page.locator('#fOp [name="precio"]')).toHaveValue('118,18');
+  // «Empezar de cero» y 11 de golpe: se leen las 10 primeras y lo dice
+  await page.locator('#opCapEst [data-cap="cero"]').click();
+  await expect(page.locator('#opLeida')).toBeEmpty();
+  await page.locator('#opCapArch').setInputFiles(Array.from({ length: 11 }, (_, i) => png(i)));
+  await expect(page.locator('#opCapEst')).toContainText('10 capturas leídas', { timeout: 20_000 });
+  await expect(page.locator('#opCapEst')).toContainText('Como mucho 10');
+  await expect(page.locator('#opCapEst [data-cap="mas"]')).toHaveCount(0);
+  expect(imagenes(2)).toBe(10);
+  // el botón grande empieza otra tanda (no suma a las de antes)
+  const [elegir] = await Promise.all([page.waitForEvent('filechooser'), page.locator('#opCap').click()]);
+  expect(elegir.isMultiple()).toBe(true);
+  await elegir.setFiles([png(1), png(2)]);
+  await expect(page.locator('#opCapEst')).toContainText('2 capturas leídas', { timeout: 20_000 });
+});
+
+test('0.9f: diez capturas grandes se encogen hasta caber en lo que admite el Worker', async ({ page }) => {
+  await preparada(page);
+  const r = await page.evaluate(async () => {
+    await cargarTrozo('importar');
+    // una captura de móvil «ruidosa» de 1200×2600 (las de verdad pesan menos: es el peor caso)
+    const c = document.createElement('canvas'); c.width = 1200; c.height = 2600;
+    const x = c.getContext('2d'), d = x.createImageData(1200, 2600);
+    for (let i = 0; i < d.data.length; i += 4) { d.data[i] = (i * 13) % 251; d.data[i + 1] = (i * 7) % 241; d.data[i + 2] = (i * 3) % 239; d.data[i + 3] = 255; }
+    x.putImageData(d, 0, 0);
+    const data = c.toDataURL('image/jpeg', 0.95).split(',')[1];
+    const arch = Array.from({ length: 10 }, () => ({ mime: 'image/jpeg', data }));
+    const antes = arch.reduce((n, a) => n + a.data.length, 0);
+    const despues = (await capturasQueCaben(arch)).reduce((n, a) => n + a.data.length, 0);
+    return { antes, despues };
+  });
+  expect(r.antes).toBeGreaterThan(2.2e6);
+  expect(r.despues).toBeLessThanOrEqual(2.2e6);
+});
