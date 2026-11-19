@@ -104,6 +104,13 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     L.push(`Precios: ${edTxt}. Datos de Toisón ${gen && !isNaN(gen) ? `del ${diaConSemana(iso(gen))} a las ${gen.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'sin fecha'}.`);
     L.push('', '## Resumen');
     L.push(`Patrimonio ${E2(M.total)}. Coste de lo que tiene ${E2(M.invertido)}. Ganancia latente ${eurP(M.pl)} (${P1(M.plPct)}). Hoy ${eurP(M.dia)} (${P1(M.diaPct)}).`);
+    /* 19 nov (mejorar-ia, parte 4) · sin freno, de dónde sale lo de hoy: en el banco de la revisión, la IA atribuía la caída
+       de hoy a fondos sin precio de hoy (que no cuentan) en 5 de 7 días */
+    if (!est) {
+      const conHoy = M.filas.filter((f) => f.varDia != null && Math.abs(f.dia) >= 0.5).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia));
+      const sinHoy = [...new Set(M.filas.filter((f) => f.varDia == null && !f.sinPrecio).map((f) => f.inst.corto))];
+      if (conHoy.length || sinHoy.length) L.push(`Lo de hoy sale solo de lo que tiene precio de hoy${conHoy.length ? `: ${conHoy.slice(0, 6).map((f) => `${f.inst.corto} ${eurP(f.dia, 0)} (${P1(f.varDia)})`).join(', ')}` : ''}.${sinHoy.length ? ` Sin precio de hoy (no cuentan en lo de hoy, aunque su índice se mueva): ${sinHoy.join(', ')}.` : ''}`);
+    }
     L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
     try {
       const R = rentabilidadCartera(M);

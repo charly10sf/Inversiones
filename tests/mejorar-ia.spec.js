@@ -61,3 +61,12 @@ test('el pedido de la revisión del fundador lleva lo que fallaba en su banco; e
   const huella = createHash('sha256').update(r.e.split(r.anio).join('AAAA')).digest('hex').slice(0, 16);
   expect(huella).toBe('beca2a7f8d7ceefe');
 });
+
+test('sin freno, la foto dice de dónde sale lo de hoy y qué no tiene precio de hoy; con las reglas del estándar, no', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => { S.M = calcular(); const sin = S.M.filas.filter((f) => f.varDia == null && !f.sinPrecio).map((f) => f.inst.corto); return { f: contextoAsesor(S.M, 'chat', false), rev: contextoAsesor(S.M, 'revision', false), e: contextoAsesor(S.M, 'chat', true), sin }; });
+  expect(r.f).toContain('Lo de hoy sale solo de lo que tiene precio de hoy');
+  expect(r.rev).toContain('Lo de hoy sale solo de lo que tiene precio de hoy');
+  expect(r.e).not.toContain('Lo de hoy sale solo');
+  for (const n of r.sin) expect(r.f).toMatch(new RegExp(`Sin precio de hoy[^\\n]*${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+});
