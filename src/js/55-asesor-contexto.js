@@ -143,6 +143,12 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
       // 14 nov (auditoría): pago a pago, con su fecha y de quién es. Antes iba el total de cada mes con los nombres detrás («2026-12:
       // 78 € (BAT, IAG)») y la revisión se liaba: «ex-dividendo de IAG: unos 26 € brutos al año por acción» (eran 26 € netos de junio)
       if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12; cada cifra es lo que cobraría por todo lo que tiene de esa posición, no por acción; las fechas son aproximadas, las del año pasado más doce meses, salvo el próximo ex-dividendo de cada una si ya está anunciado): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos. Pago a pago, por fecha del ex-dividendo: ${D.meses.filter((m) => m.bruto).flatMap((m) => m.de).sort((a, b) => (a.d < b.d ? -1 : 1)).map((x) => `${x.d} ${x.n} ${E0(x.neto)} netos (${E0(x.bruto)} brutos)`).join('; ')}.`);
+      /* 19 nov (mejorar-ia-2, parte D) · sin freno, el corte de dividendo de hoy a la vista: en el banco de la revisión (r7),
+         la IA no relacionaba la bajada de IAG con su dividendo */
+      if (!est) {
+        const hoyD = hoyIso(), cortan = D.meses.flatMap((m) => m.de).filter((x) => x.d === hoyD && x.bruto > 0.5);
+        if (cortan.length) L.push(`Hoy corta dividendo (ex-dividendo; importes aproximados, por todo lo que tiene): ${cortan.map((x) => { const f = M.filas.find((y) => (y.inst.corto || y.inst.nombre) === x.n); return `${x.n} ${E0(x.bruto)} brutos (${E0(x.neto)} netos)${f && f.valor > 0 ? `, un ${fmtNum((x.bruto / f.valor) * 100, 1)} % de su valor` : ''}`; }).join('; ')}. Esa parte de su bajada de hoy es el dividendo, que cobrará en unos días o semanas: no es una mala noticia.`);
+      }
       const SO = solapamientos(M);
       if (SO.pares.length) L.push('Fondos que se pisan (llevan las mismas grandes empresas de una zona): ' + SO.pares.map((x) => `${x.a.inst.corto} y ${x.b.inst.corto} en un ${fmtNum(x.pct, 0)} %`).join('; ') + '.');
       const sg = siguiendo();

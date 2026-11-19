@@ -144,3 +144,14 @@ test('las herramientas del estándar no cambian; las del fundador llevan las ven
     expect(r.insE, t).not.toContain(t);
   }
 });
+
+// Parte D: la revisión diaria del fundador. Lo que seguía fallando en su banco (0 de 7) va en su pedido; el del estándar no cambia
+// (su huella está en tests/mejorar-ia.spec.js)
+test('el pedido de la revisión del fundador lleva lo de Hacienda, las monedas, el relleno y la constancia; el del estándar, no', async ({ page }) => {
+  await conCartera(page);
+  const r = await page.evaluate(() => ({ f: pedidoAnalisis(['repsol'], 'prueba', false, true, false), e: pedidoAnalisisPublico(['repsol'], 'prueba', false, true) }));
+  for (const t of ['el 19 % retenido es solo de las españolas', 'un fondo de inversión, un año; una acción o un ETF de una bolsa de la UE, dos meses', 'es de una venta que no ha hecho', 'no los pases a libras, peniques ni dólares', 'Sus metas y su colchón, solo si algo de hoy los cambia', 'Cada "por_que" lleva al menos una cifra', 'copia de la anterior el "nivel" de cada posición', '«Hoy corta dividendo»']) {
+    expect(r.f, t).toContain(t);
+    expect(r.e, t).not.toContain(t);
+  }
+});
