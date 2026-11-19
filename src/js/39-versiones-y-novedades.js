@@ -10,6 +10,16 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9h', f: '2026-11-20', h: '00:25', t: 'La IA, más fina con Hacienda', arreglos: [
+    'Si le escribes a la IA en inglés, te contesta en inglés.',
+    'En el móvil, cuando una tabla de la IA no cabe en la pantalla, se difumina por el lado por el que sigue.',
+    { t: 'En el Paso a paso, al vender con pérdidas ya cuenta lo que compraste antes: te dice cuánto de esa pérdida no resta este año y hasta qué día no comprar más.', solo: 'dueno' },
+    { t: 'Si tienes el mismo valor en dos cuentas y las dos están en pérdidas, el Paso a paso las cuenta juntas.', solo: 'dueno' },
+    { t: 'La IA calcula de una vez el impuesto de vender varias cosas, te dice cuánto cabe como mucho en tus límites y en qué orden se compensan las pérdidas.', solo: 'dueno' },
+    { t: 'En «Quién contesta» viene ya elegido lo recomendado: Sonnet para vender, traspasar e impuestos y Haiku para lo demás.', solo: 'dueno' },
+    { t: 'Cada dato que la IA saca de internet viene con su fuente y su enlace.', solo: 'dueno' },
+    { t: 'La revisión diaria de la IA falla menos con Hacienda, las monedas y las fechas de dividendo.', solo: 'dueno' },
+  ] },
   { v: '0.9g', f: '2026-11-19', h: '15:30', t: 'Varias capturas de una misma orden', arreglos: [
     'Al rellenar una compra o una venta con capturas, ahora puedes elegir hasta 10 de la misma orden: todas a la vez o de una en una, con «Añadir otra de esta orden». Si la IA ve que la orden sigue en otra captura, te lo dice.',
     'En la app de Android ya se pueden elegir varias capturas o archivos a la vez (antes solo dejaba uno). Llega con la actualización de la app.',

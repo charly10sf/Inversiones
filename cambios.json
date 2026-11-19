@@ -1,6 +1,199 @@
 {
  "versiones": [
   {
+   "v": "0.9h",
+   "f": "2026-11-20",
+   "h": "00:25",
+   "t": "La IA, más fina con Hacienda",
+   "commits": [
+    {
+     "cuando": "2026-11-19 17:35",
+     "asunto": "Paso a paso y plan de venta: la regla de recompra con lo comprado antes (recompraDeVenta)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 17:38",
+     "asunto": "Bancos de la IA: la imitación del Worker con su mismo código (topes y coste de verdad)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 17:42",
+     "asunto": "Banco del fundador: 22 preguntas nuevas (f34–f55) y hilos de hasta tres mensajes",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 17:47",
+     "asunto": "Banco de la revisión diaria del fundador (7 días) y su paso en la Action",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 17:53",
+     "asunto": "IA del fundador: opción «Sonnet para vender, traspasar e impuestos; Haiku para lo demás» (apagada)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 17:59",
+     "asunto": "Foto del chat del fundador: sin los temas de la semana ni los titulares del mercado si hay informe",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:11",
+     "asunto": "IA del fundador: lo que fallaba en su banco (traspasos, impuestos, recompra, hilo, límites) y la búsqueda con ticker",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:13",
+     "asunto": "IA del fundador: lo que fallaba en f34–f55 y la revisión automática sin pensar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:20",
+     "asunto": "Revisión del fundador: lo que fallaba en su banco (0 de 7)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:22",
+     "asunto": "IA: en el móvil, la tabla que no cabe se difumina por el lado al que queda algo; texto del fundador al día",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:27",
+     "asunto": "Foto sin freno: de dónde sale lo de hoy y qué no tiene precio de hoy",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:27",
+     "asunto": "IA del fundador: el orden de compensar pérdidas, el mismo euro dos veces y el bróker de cada paso",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:45",
+     "asunto": "Lo importante de la revisión aparte: el resto por FIFO, la pérdida aplazada del plan, la repetición estándar y buscarRadar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 18:46",
+     "asunto": "Tablas de la IA: el difuminado con currentColor (sin colores sueltos en el CSS)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 19:03",
+     "asunto": "simular_venta sin freno: las pérdidas de años anteriores que usa, a la vista",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 19:08",
+     "asunto": "«segun»: «renta fija» o «renta variable» no cuentan como pregunta de impuestos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 20:50",
+     "asunto": "Plan de venta y regla de recompra: hasta qué día no comprar más, lo liberado de otra venta aparte y el ahorro de una ganancia que libera una pérdida mayor",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 20:50",
+     "asunto": "Paso a paso: el mismo valor en dos cuentas, las dos en pérdidas, se cuenta junto",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:01",
+     "asunto": "IA del fundador: el orden de compensar en cifras, varias ventas juntas y lo máximo que cabe, en las herramientas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:01",
+     "asunto": "IA del fundador: cada cifra de internet, con su fuente y su enlace; si no la ha buscado, que diga que no lo sabe",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:06",
+     "asunto": "«Quién contesta»: sin freno, «segun» por defecto; en un hilo de Sonnet sigue Sonnet y el botón dice «Según la pregunta»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:07",
+     "asunto": "Banco del fundador: las cifras de las comprobaciones f01–f34, con la foto del 19 nov por la noche",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:12",
+     "asunto": "Revisión diaria del fundador: Hacienda, monedas, relleno, constancia y el corte de dividendo de hoy",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:12",
+     "asunto": "Banco de la revisión: sus propios fallos (la caída desde el último cierre y sin el informe de la mañana; el corte del dividendo, hoy)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:17",
+     "asunto": "Vigía del estándar: las frases negadas o citadas ya no saltan, y mira también las respuestas en inglés",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:17",
+     "asunto": "Estándar: si le escriben en inglés, contesta en inglés con las mismas reglas (huella cambiada a propósito)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:20",
+     "asunto": "Tablas de la IA: se vuelven a medir al girar el móvil o cambiar el tamaño, y al repintar un turno solo las suyas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:20",
+     "asunto": "Bancos de la IA: la imitación del Worker convierte los errores de Anthropic como él (sin-creditos, clave, claude)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:20",
+     "asunto": "Foto sin freno: «lo que más mueve» dice cuántas posiciones con precio de hoy quedan fuera de la lista y lo que suman",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:35",
+     "asunto": "Vigía del estándar: las cuatro falsas alarmas de la pasada de después con Sonnet (rechazos y títulos, no consejos)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:35",
+     "asunto": "Banco de la revisión: el día «ayer» no recibía la revisión de ayer",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:35",
+     "asunto": "Revisión diaria del fundador, segunda ronda: fechas de ex-dividendo, límites, aportación y recompra, y el plazo de cada posición en pérdidas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 21:44",
+     "asunto": "IA del fundador: lo que se repetía en la pasada de Haiku (lo que queda tras vender o comprar, mezcla de dinero suyo y nuevo, meta frente a horizonte)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 22:16",
+     "asunto": "Revisión aparte de mejorar-ia-2: lo crítico y lo importante",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 22:29",
+     "asunto": "IA del fundador: entrar en un fondo por traspaso, apuntar lo que no está en Toisón y el colchón entero",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-19 22:49",
+     "asunto": "Segunda revisión de los arreglos: lo que «depende» de la otra cuenta, el aviso de no recomprar y dos coladeros del vigía",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-20 00:25",
+     "asunto": "Versión 0.9h: La IA, más fina con Hacienda",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.9g",
    "f": "2026-11-19",
    "h": "15:30",
