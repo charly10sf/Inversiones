@@ -311,6 +311,23 @@ def serie_cierres(simbolo, periodo="max"):
     return t, al_dia(s, meta), meta
 
 
+HORA_PUBLICACION_FONDO = 12
+
+
+def dia_del_valor_liquidativo(dia, cuando, meta):
+    """23 nov: el valor liquidativo de un fondo se calcula al cierre, así que una hora de la mañana no es la de su
+    cálculo sino la de su publicación, y ese valor es el del día hábil anterior. Los de Luxemburgo (.LU) llegan así: el
+    Amundi MSCI Europe, con 375,55 «del lunes 23 a las 7:55» y su histórico hasta el jueves; era el valor del viernes
+    (−2,17 %, como el ETF del MSCI Europe ese día) y salía como el cambio de hoy, con Europa subiendo un 2 %. Los .F
+    (22:00), los 0P….L de Londres (16:30) y los de Nueva York (16:00) traen la hora de cierre del mismo día."""
+    if (meta or {}).get("instrumentType") != "MUTUALFUND" or cuando.hour >= HORA_PUBLICACION_FONDO:
+        return dia
+    dia = dia - pd.Timedelta(days=1)
+    while dia.weekday() >= 5:
+        dia = dia - pd.Timedelta(days=1)
+    return dia
+
+
 def al_dia(s, meta):
     """Con el histórico «max», Yahoo a veces aún no trae la vela del último día (de madrugada salía el cierre de
     anteayer: IAG a 4,886 € del 19 cuando el 20 cerró a 4,94). Su último precio y su hora sí vienen en los
@@ -328,6 +345,7 @@ def al_dia(s, meta):
         if pd.Timestamp.now(tz=tz) - cuando > pd.Timedelta(days=6):
             return s
         dia = pd.Timestamp(cuando.date())
+        dia = dia_del_valor_liquidativo(dia, cuando, meta)
         ultimo = s.index[-1]
         salto = abs(float(p) / float(s.iloc[-1]) - 1)
         if (dia > ultimo and salto < 0.5) or (dia == ultimo and salto < 0.2):
