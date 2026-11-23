@@ -1,6 +1,28 @@
 {
  "versiones": [
   {
+   "v": "0.9i",
+   "f": "2026-11-23",
+   "h": "19:45",
+   "t": "Tus fondos, al día",
+   "commits": [
+    {
+     "cuando": "2026-11-23 19:05",
+     "asunto": "Fondos: el valor publicado por la mañana es del día hábil anterior",
+     "detalle": [
+      "Yahoo da el valor liquidativo de los fondos de Luxemburgo (.LU) con la hora de publicación: el Amundi MSCI Europe salía con el cambio del viernes como si fuera del lunes."
+     ]
+    },
+    {
+     "cuando": "2026-11-23 19:45",
+     "asunto": "Fondos indexados: su valor de ahora, estimado con su índice hasta que llega el valor liquidativo",
+     "detalle": [
+      "estimacion() en scripts/precios.py, p.estimado en precios.json, intradía estimada, widget, calcularPos, «≈» en la lista, el mapa, la ficha y lo que lee la IA."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.9h",
    "f": "2026-11-20",
    "h": "00:25",

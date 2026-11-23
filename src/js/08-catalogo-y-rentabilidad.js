@@ -185,6 +185,14 @@ function calcularPos(pos, hoy) {
   if (precio == null && inst.yahoo) { const r = radarPorSim(inst.yahoo); if (r && r.pe) { precio = r.pe; varDia = r.v != null ? r.v : null; prev = varDia != null ? precio / (1 + varDia / 100) : null; } }
   const vivo = S.live[pos.instrumento];
   if (vivo) { precio = vivo.precio; varDia = vivo.var; prev = varDia != null ? precio / (1 + varDia / 100) : prev; }
+  /* 23 nov (Carlos: «hay muchos valores que llevan sin actualizarse varios días»): Yahoo da el valor liquidativo un día
+     hábil tarde o más, y casi todo el día se veía el de dos sesiones antes. La Action estima lo que vale ahora con lo que
+     se ha movido su índice desde ese valor (p.estimado, ver estimacion() en scripts/precios.py). Si es de después que el
+     valor liquidativo, manda: su precio, su día y su cierre anterior; el valor liquidativo queda en est. */
+  const pe = !vivo && p && p.estimado;
+  const est = pe && pe.precio > 0 && pe.fecha && (!fechaPrecio || pe.fecha > fechaPrecio) && /^Fondo/.test(inst.tipo || '')
+    ? { precio: pe.precio, prev: pe.cierre_anterior, fecha: pe.fecha, vl: p.precio, vlFecha: fechaPrecio, nombre: pe.nombre || '', sim: pe.simbolo, puntos: pe.puntos || [] } : null;
+  if (est) { precio = est.precio; prev = est.prev; varDia = prev > 0 ? (precio / prev - 1) * 100 : null; fechaPrecio = est.fecha; }
 
   let uds = pos.cantidad === '' || pos.cantidad == null ? null : +pos.cantidad;
   let estimada = !!pos.estimada;
@@ -218,7 +226,8 @@ function calcularPos(pos, hoy) {
   const tVivo = vivo && vivo.t ? (vivo.t < 1e12 ? vivo.t * 1000 : vivo.t) : 0;
   const fechaMov = vivo ? (tVivo ? iso(new Date(tVivo)) : hoy) : fechaPrecio;
   const deHoyP = !!fechaMov && fechaMov >= hoy;
-  const ref = deHoyP ? (cierreAntes(hist, hoy) ?? prev) : null;
+  // con la estimación, desde su propio cierre anterior (el de la sesión de antes del índice, estimado también si hace falta)
+  const ref = deHoyP ? (est ? est.prev : cierreAntes(hist, hoy) ?? prev) : null;
   let dia = deHoyP && uds != null && precio != null && ref > 0 ? uds * (precio - ref) : 0;
   const varHoy = deHoyP && precio != null && ref > 0 ? (precio / ref - 1) * 100 : null;
   let ajHoy = 0;
@@ -228,9 +237,9 @@ function calcularPos(pos, hoy) {
     dia += ajHoy;
   }
   // un fondo con el último valor de hace más de dos sesiones (un dato atascado): en la lista, raya en vez de su cambio
-  const diaViejo = !vivo && fechaPrecio && /^Fondo/.test(inst.tipo || '') && fechaPrecio < habilAntes(habilAntes(hoy)) ? fechaPrecio : null;
+  const diaViejo = !vivo && !est && fechaPrecio && /^Fondo/.test(inst.tipo || '') && fechaPrecio < habilAntes(habilAntes(hoy)) ? fechaPrecio : null;
   // varDia: lo de hoy en % (null si hoy no ha cotizado); varUlt: el último cambio de su precio, sea del día que sea
-  return { pos, inst, p, hist, uds, estimada, precio, varDia: varHoy, varUlt: varDia, diaViejo, fecha: fechaPrecio, fechaMov, valor, dia, ajHoy, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
+  return { pos, inst, p, hist, uds, estimada, precio, varDia: varHoy, varUlt: varDia, diaViejo, fecha: fechaPrecio, fechaMov, est, valor, dia, ajHoy, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
 }
 
 function calcular() {
@@ -330,6 +339,9 @@ function serieCartera(M, dias) {
   const H = items.map((f) => {
     const h = f.hist, ud = h[h.length - 1][0];
     if (f.precio == null || !f.fechaMov || f.fechaMov < ud) return h;
+    // 23 nov: un fondo con estimación lleva un punto por sesión desde su valor liquidativo (el viernes estimado y el lunes
+    // estimado, si el valor es del jueves): así el viernes cae en el viernes y en hoy queda solo lo de hoy, como en «Hoy»
+    if (f.est) { const pts = f.est.puntos.filter(([d, v]) => d > ud && d < f.fechaMov && v > 0); return [...h, ...pts, [f.fechaMov, f.precio]]; }
     return f.fechaMov === ud ? [...h.slice(0, -1), [ud, f.precio]] : [...h, [f.fechaMov, f.precio]];
   });
   const fechas = new Set();

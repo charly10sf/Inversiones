@@ -10,6 +10,11 @@
    15 nov publicar como 0.9 lo que llevaba la rama v0.9-rediseno, tras la revisión aparte (claude/sesion-revision-09.md).
    El Paso a paso es del modo fundador: aquí lo ve solo el dueño */
 const NOVEDADES = [
+  { v: '0.9i', f: '2026-11-23', h: '19:45', t: 'Tus fondos, al día', arreglos: [
+    'Los fondos indexados ya no se quedan en el valor de hace dos días: hasta que llega su valor liquidativo (uno o dos días después), su valor y lo de hoy se estiman con lo que se mueve su índice. Van con «≈» delante.',
+    'El fondo de Europa de Amundi salía cada mañana con el cambio del día anterior como si fuera de hoy (el lunes 23, −2,17 % con Europa subiendo un 2 %). Ya va en su día.',
+    'En «Tu cartera de un vistazo», un fondo sin estimación dice de qué día es su valor en vez de «sin precio de hoy».',
+  ] },
   { v: '0.9h', f: '2026-11-20', h: '00:25', t: 'La IA, más fina con Hacienda', arreglos: [
     'Si le escribes a la IA en inglés, te contesta en inglés.',
     'En el móvil, cuando una tabla de la IA no cabe en la pantalla, se difumina por el lado por el que sigue.',

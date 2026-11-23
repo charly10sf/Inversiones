@@ -77,5 +77,44 @@ class FechaFondos(unittest.TestCase):
         self.assertEqual(r.index[-1], pd.Timestamp("2026-11-23"))
 
 
+class Estimacion(unittest.TestCase):
+    """estimacion(): el valor de ahora de un fondo con lo que se ha movido su índice desde su valor liquidativo"""
+    INST = {"id": "ishares-us", "tipo": "Fondo indexado", "estima": {"s": "^GSPC", "n": "el S&P 500"}}
+
+    def test_del_jueves_al_lunes_con_el_viernes_en_medio(self):
+        propio = serie([("2026-11-18", 12.251), ("2026-11-19", 11.997)])
+        indice = serie([("2026-11-19", 1000.0), ("2026-11-20", 960.0), ("2026-11-23", 1008.0)])
+        e = P.estimacion(self.INST, propio, {}, {"^GSPC": indice})
+        self.assertEqual(e["desde"], "2026-11-19")
+        self.assertEqual(e["fecha"], "2026-11-23")
+        self.assertEqual([d for d, _ in e["puntos"]], ["2026-11-20", "2026-11-23"])
+        self.assertAlmostEqual(e["precio"], 11.997 * 1.008, places=5)
+        self.assertAlmostEqual(e["cierre_anterior"], 11.997 * 0.96, places=5)   # el viernes, estimado
+        self.assertAlmostEqual(e["variacion_dia"], 5.0, places=2)
+        self.assertEqual(e["valor_liquidativo"], 11.997)
+        self.assertEqual(e["nombre"], "el S&P 500")
+
+    def test_con_el_valor_de_la_ultima_sesion_no_hay_estimacion(self):
+        propio = serie([("2026-11-20", 11.561)])
+        indice = serie([("2026-11-19", 1000.0), ("2026-11-20", 960.0)])
+        self.assertIsNone(P.estimacion(self.INST, propio, {}, {"^GSPC": indice}))
+
+    def test_un_valor_atascado_no_se_estima(self):
+        propio = serie([("2026-11-16", 12.368)])
+        indice = serie([(d, 1000.0) for d in ("2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20")])
+        self.assertIsNone(P.estimacion(self.INST, propio, {}, {"^GSPC": indice}))
+
+    def test_sin_indice_o_sin_estima(self):
+        propio = serie([("2026-11-19", 11.997)])
+        self.assertIsNone(P.estimacion({"id": "x", "tipo": "Fondo indexado"}, propio, {}, {}))
+        self.assertIsNone(P.estimacion(self.INST, propio, {}, {"^GSPC": None}))
+
+    def test_un_festivo_del_indice_el_dia_del_valor_usa_su_cierre_de_antes(self):
+        propio = serie([("2026-11-26", 12.0)])   # Acción de Gracias: Nueva York cerrada
+        indice = serie([("2026-11-25", 1000.0), ("2026-11-27", 1010.0)])
+        e = P.estimacion(self.INST, propio, {}, {"^GSPC": indice})
+        self.assertAlmostEqual(e["precio"], 12.12, places=5)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,5 @@
 {
-  "nota": "Lista pública de instrumentos (sin cantidades). La GitHub Action descarga sus precios, analistas y noticias. Las cantidades van cifradas en cartera.enc.json. 'proxy' es un ETF del mismo índice con el que se completa el histórico de los fondos más jóvenes.",
+  "nota": "Lista pública de instrumentos (sin cantidades). La GitHub Action descarga sus precios, analistas y noticias. Las cantidades van cifradas en cartera.enc.json. 'proxy' es un ETF del mismo índice con el que se completa el histórico de los fondos más jóvenes. 'estima': con qué se estima lo que vale hoy un fondo hasta que llega su valor liquidativo (s: símbolo de Yahoo; n: cómo se nombra en la app).",
   "referencia": "ishares-us",
   "instrumentos": [
     {
@@ -19,7 +19,11 @@
       },
       "proxy": "SXR8.DE",
       "dominio": "ishares.com",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "^GSPC",
+        "n": "el S&P 500"
+      }
     },
     {
       "id": "amundi-europe",
@@ -38,7 +42,11 @@
       },
       "proxy": "IMAE.AS",
       "dominio": "amundi.com",
-      "pais": "LU"
+      "pais": "LU",
+      "estima": {
+        "s": "IMAE.AS",
+        "n": "un ETF del MSCI Europe"
+      }
     },
     {
       "id": "vanguard-em",
@@ -57,7 +65,11 @@
       },
       "proxy": "EUNM.DE",
       "dominio": "vanguard.com",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "EUNM.DE",
+        "n": "un ETF del MSCI Emergentes"
+      }
     },
     {
       "id": "vanguard-smallcap",
@@ -80,7 +92,11 @@
         "SCZ": 0.39
       },
       "dominio": "vanguard.com",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "IUSN.DE",
+        "n": "un ETF de pequeñas empresas del mundo"
+      }
     },
     {
       "id": "nb-short",
@@ -216,7 +232,11 @@
       },
       "dominio": "fidelity.es",
       "pais": "IE",
-      "yahoo": "0P0001CLDM.F"
+      "yahoo": "0P0001CLDM.F",
+      "estima": {
+        "s": "^GSPC",
+        "n": "el S&P 500"
+      }
     },
     {
       "id": "fidelity-world",
@@ -237,7 +257,11 @@
         "URTH": 1
       },
       "dominio": "fidelity.es",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "URTH",
+        "n": "un ETF del MSCI World"
+      }
     },
     {
       "id": "vanguard-global",
@@ -258,7 +282,11 @@
         "URTH": 1
       },
       "dominio": "vanguard.com",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "URTH",
+        "n": "un ETF del MSCI World"
+      }
     },
     {
       "id": "vanguard-us500",
@@ -275,7 +303,11 @@
         "IVV": 1
       },
       "dominio": "vanguard.com",
-      "pais": "IE"
+      "pais": "IE",
+      "estima": {
+        "s": "^GSPC",
+        "n": "el S&P 500"
+      }
     }
   ]
 }

@@ -8,9 +8,10 @@ function piezasCartera(M) {
   const por = new Map();
   for (const f of M.filas) {
     if (!(f.valor > 0)) continue;
-    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, dom: f.inst.dominio || null, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false };
+    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, dom: f.inst.dominio || null, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false, est: null, fondo: /^Fondo/.test(f.inst.tipo || ''), fecha: f.fecha || null };
     x.valor += f.valor; x.coste += f.coste || 0;
     if (f.varDia != null && !f.diaViejo) { x.dia += f.dia || 0; x.conDia = true; }
+    if (f.est) x.est = f.est;
     if (f.sinPrecio) x.sinPrecio = true;
     por.set(k, x);
   }
@@ -54,6 +55,9 @@ function trozosMc(M, W, H) {
 }
 // cómo va, con los decimales justos: hoy, dos si es poco; desde que la compraste, ninguno a partir de +100 %
 const pctMc = (v, modo) => pctS(v, modo === 'hoy' ? (Math.abs(v) < 10 ? 2 : 1) : Math.abs(v) >= 100 ? 0 : 1);
+/* 23 nov: «vie 20», el día del valor liquidativo de un fondo sin estimación (antes «sin precio de hoy», que parecía un
+   dato atascado aunque fuera el último que hay) */
+const diaMc = (s) => { const d = deIso(s), k = d.getDay(); return `${L(DIAS_LARGOS[k].slice(0, 3), ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][k])} ${d.getDate()}`; };
 // lo que ocupa un texto con la letra de la app (para que nada se salga de su rectángulo)
 const medirMc = document.createElement('canvas').getContext('2d');
 let letraMc = '';
@@ -95,7 +99,9 @@ function textoPiezaMc(p) {
   const pesa = S.M && S.M.total ? (p.valor / S.M.total) * 100 : 0;
   if (p.otras) return `${L(`${p.otras.length} posiciones pequeñas`, `${p.otras.length} small holdings`)}: ${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}${p.hoy != null ? `; ${L('hoy', 'today')} ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})` : ''}.`;
   if (p.efectivo) return L(`${eur(p.valor, 0)} en efectivo, el ${fmtNumR(pesa, 1)} % de lo que tienes.`, `${eur(p.valor, 0)} in cash, ${fmtNumR(pesa, 1)}% of what you have.`);
-  const hoy = p.hoy != null ? L(`hoy ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`, `today ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`) : L('sin precio de hoy', 'no price today');
+  const hoy = p.hoy != null ? (p.est ? L(`hoy ≈ ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)}), estimado con ${p.est.nombre || 'su índice'} hasta que llegue su valor liquidativo (el último, del ${diaConSemana(p.est.vlFecha)})`, `today ≈ ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)}), estimated from its index until its NAV comes in (the last one is from ${p.est.vlFecha})`) : L(`hoy ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`, `today ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`))
+    : p.est ? L(`hoy aún sin cambio: vale lo estimado con ${p.est.nombre || 'su índice'} el ${diaConSemana(p.est.fecha)} (su último valor liquidativo es del ${diaConSemana(p.est.vlFecha)})`, `no change yet today: valued at the estimate from its index on ${p.est.fecha} (latest NAV from ${p.est.vlFecha})`)
+    : p.fondo && p.fecha ? L(`hoy aún sin cambio: su último valor liquidativo es del ${diaConSemana(p.fecha)} (los fondos lo publican uno o dos días después)`, `no change yet today: its latest NAV is from ${p.fecha} (funds publish it a day or two later)`) : L('sin precio de hoy', 'no price today');
   const tot = p.total != null ? L(`desde que la compraste ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`, `since you bought it ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`) : '';
   return `${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}; ${hoy}${tot ? `; ${tot}` : ''}.`;
 }
@@ -129,7 +135,7 @@ function pintarMapaCartera(caja, M) {
     const grande = lado >= 86 && w >= 110, pad = grande ? 13 : lado >= 46 ? 8 : 4, aw = w - 2 * pad, ah = h - 2 * pad;
     const fsN = grande ? Math.max(14, Math.min(22, lado / 7.5)) : Math.max(11, Math.min(14, lado / 5));
     const sinDato = !p.efectivo && v == null;
-    const tP = p.efectivo ? '' : sinDato ? (modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')) : pctMc(v, modo);
+    const tP = p.efectivo ? '' : sinDato ? (modo === 'hoy' ? (p.est ? L(`estimado del ${diaMc(p.est.fecha)}`, `estimate of ${diaMc(p.est.fecha)}`) : p.fondo && p.fecha ? L(`valor del ${diaMc(p.fecha)}`, `NAV of ${diaMc(p.fecha)}`) : L('sin precio de hoy', 'no price today')) : L('sin datos', 'no data')) : (modo === 'hoy' && p.est ? '≈ ' : '') + pctMc(v, modo);
     let fsP = sinDato ? fsN * 0.82 : grande ? fsN * 1.5 : fsN * 1.08;
     if (tP) { const a = anchoMc(tP, sinDato ? 600 : 750, fsP); if (a > aw) fsP *= aw / a; }
     const pon = { pct: false, nom: 0, eur: false, logo: false };

@@ -210,6 +210,7 @@ function porqueMovida(f, hoy = hoyIso()) {
   const i = f.inst, p = f.p || {}, ayer2 = iso(new Date(deIso(hoy).getTime() - 2 * 864e5)), MK = (S.precios && S.precios.mercados) || {};
   if (p.ex_dividendo === hoy) return L('Hoy es su fecha de dividendo: el precio baja más o menos lo que reparte.', 'Today is its ex-dividend date: the price drops by roughly what it pays.');
   if (p.proximos_resultados && p.proximos_resultados >= ayer2 && p.proximos_resultados <= hoy) return p.proximos_resultados === hoy ? L('Presenta resultados hoy.', 'It reports results today.') : L(`Presentó resultados el ${fechaCorta(p.proximos_resultados)}.`, `It reported results on ${fechaCorta(p.proximos_resultados)}.`);
+  if (f.est && f.varDia != null) return L(`Estimado con lo que se mueve hoy ${f.est.nombre || 'su índice'}: su valor liquidativo de hoy llega en uno o dos días.`, `Estimated from today’s move in its index: today’s NAV comes in a day or two.`);
   try {
     const inf = informeVisible(), c = inf && inf.posiciones && inf.posiciones[i.id];
     if (c && c.novedades && inf.generado && Date.now() - new Date(inf.generado).getTime() < 30 * 36e5) {
@@ -239,7 +240,7 @@ function htmlMovidasTuyas(M) {
   const vistos = new Set(), mueven = filas.sort((a, b) => Math.abs(b.varDia) - Math.abs(a.varDia)).filter((f) => !vistos.has(f.inst.id) && vistos.add(f.inst.id)).slice(0, 4);
   const cab = `<div class="sec-cab"><h2 id="hMovT">${L('Lo que más se mueve', 'What moves most')}</h2><span class="k">${L('de lo tuyo, hoy', 'of yours, today')}</span></div>`;
   if (!mueven.length) return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<p class="nota">${L('Hoy no se ha movido nada de lo tuyo, o aún no hay precios de hoy.', 'Nothing of yours has moved today, or there are no prices for today yet.')}</p></section>`;
-  return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<ul class="mvt-l">${mueven.map((f) => `<li class="mvt"><span class="mvt-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<b>${esc(f.inst.corto || f.inst.nombre)}</b></span><span class="mvt-v ${cls(f.varDia)}">${pctS(f.varDia, 1)}<small>${esc(eurS(f.dia, 0))}</small></span><p class="mvt-p">${porqueMovida(f)}</p></li>`).join('')}</ul>
+  return `<section class="movidas-tuyas" aria-labelledby="hMovT">${cab}<ul class="mvt-l">${mueven.map((f) => `<li class="mvt"><span class="mvt-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<b>${esc(f.inst.corto || f.inst.nombre)}</b></span><span class="mvt-v ${cls(f.varDia)}">${f.est ? '≈ ' : ''}${pctS(f.varDia, 1)}<small>${esc(eurS(f.dia, 0))}</small></span><p class="mvt-p">${porqueMovida(f)}</p></li>`).join('')}</ul>
     <p class="nota mvt-nota">${L('Lo que más se ha movido hoy de lo que tienes. Que algo se mueva un día no dice nada de tu plan.', 'What moved most today among what you own. A day’s move says nothing about your plan.')}</p></section>`;
 }
 /* 0.9 · lo del día (maqueta del 15 nov, B3), debajo de la gráfica: qué ha pasado hoy y por qué, el último día de bolsa,
@@ -269,7 +270,10 @@ function htmlHoyDia(M) {
   }
   // la bolsa: abierta, antes de abrir, ya cerrada o cerrada todo el día; los fondos dan su valor al día siguiente
   const fondos = M.filas.some((f) => /fondo/i.test(f.inst.tipo || '') && !/ETF|ETC/.test(f.inst.tipo || '')), abre = /abre hoy a las (\d+:\d\d)/.exec(mad.txt);
-  const bolsa = mad.on ? (fondos ? L('Tus fondos todavía no cuentan: su valor de hoy sale mañana.', 'Your funds don’t count yet: today’s value comes out tomorrow.') : '')
+  // 23 nov: los fondos con estimación de hoy (ver calcularPos) ya cuentan, estimados con su índice
+  const fEst = M.filas.some((f) => f.est && f.varDia != null), fSin = M.filas.some((f) => /^Fondo/.test(f.inst.tipo || '') && !(f.est && f.varDia != null));
+  const bolsa = mad.on ? (fEst ? (fSin ? L('Tus fondos indexados van estimados con su índice hasta que salga su valor; los demás fondos aún no cuentan.', 'Your index funds are estimated from their index until their NAV comes out; your other funds don’t count yet.') : L('Tus fondos van estimados con su índice hasta que salga su valor, mañana.', 'Your funds are estimated from their index until their NAV comes out tomorrow.'))
+    : fondos ? L('Tus fondos todavía no cuentan: su valor de hoy sale mañana.', 'Your funds don’t count yet: today’s value comes out tomorrow.') : '')
     : abre ? L(`La bolsa abre a las ${abre[1]}; hasta entonces lo demás no se mueve.`, `The market opens at ${abre[1]}; until then nothing else moves.`)
     : ahora.getDay() % 6 && !/cerrada por/.test(mad.txt) ? L(`La bolsa ya ha cerrado.${fondos ? ' El valor de hoy de tus fondos sale mañana.' : ''}`, `The market has closed.${fondos ? ' Your funds’ value for today comes out tomorrow.' : ''}`)
     : L(`Las bolsas están cerradas${fondos ? ' y tus fondos no dan valor hasta el próximo día de bolsa' : ''}.`, `Markets are closed${fondos ? ' and your funds won’t price until the next trading day' : ''}.`);

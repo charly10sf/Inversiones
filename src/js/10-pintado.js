@@ -279,20 +279,22 @@ function binds(M) {
   for (const f of M.filas) {
     const id = f.pos.id;
     b['pv:' + id] = { txt: eur(f.valor), n: f.valor };
-    b['pp:' + id] = { txt: precioFmt(f.precio), n: f.precio };
+    // 23 nov: un fondo con su valor de ahora estimado (ver calcularPos), con «≈» delante del precio y de lo de hoy
+    const ap = f.est ? '≈ ' : '';
+    b['pp:' + id] = { txt: ap + precioFmt(f.precio), n: f.precio };
     // lo que hoy no ha cotizado (la bolsa sin abrir, un fondo, el fin de semana): una sola raya (salía «hoy — —»)
-    b['pd:' + id] = f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+    b['pd:' + id] = f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: ap + pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     // lo de hoy también en euros (en la tabla sale con el % debajo)
-    b['pdF:' + id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
-    b['pdE:' + id] = { txt: f.varDia == null ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.varDia == null ? null : f.dia, cls: f.varDia == null ? '' : cls(f.dia) };
+    b['pdF:' + id] = { txt: (f.varDia == null ? '' : ap) + pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+    b['pdE:' + id] = { txt: f.varDia == null ? '—' : ap + eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.varDia == null ? null : f.dia, cls: f.varDia == null ? '' : cls(f.dia) };
     b['pw:' + id] = { txt: pct(f.peso, 1), n: f.peso };
     b['pt:' + id] = { txt: pctS(f.plPct, 1), n: f.plPct, cls: cls(f.pl) };
     b['pg:' + id] = { txt: eurS(f.pl, 0), n: f.pl, cls: cls(f.pl) };
     b['pgd:' + id] = { txt: f.coste > 0 ? `${eurS(f.pl, 0)} (${pctS(f.plPct, 1)})` : '—', n: f.pl, cls: cls(f.pl) };
     if (!vistos.has(f.inst.id)) {
       vistos.add(f.inst.id);
-      b['tp:' + f.inst.id] = { txt: precioFmt(f.precio), n: f.precio };
-      b['tv:' + f.inst.id] = { txt: pctS(f.varUlt), n: f.varUlt, cls: cls(f.varUlt) };
+      b['tp:' + f.inst.id] = { txt: ap + precioFmt(f.precio), n: f.precio };
+      b['tv:' + f.inst.id] = { txt: (f.varUlt == null ? '' : ap) + pctS(f.varUlt), n: f.varUlt, cls: cls(f.varUlt) };
     }
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
@@ -541,7 +543,7 @@ function revisarAvisos(M) {
       if (pr <= stop) avisoSistema('stop', L(`${n}: precio de salida roto`, `${n}: exit price broken`), L(`Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, `It's at ${precioFmt(pr)}, below your exit (${precioFmt(stop)}). It's what you told yourself you'd do.`), '#cartera', `stop:${f.inst.id}:${hoy}`);
       else if (pr <= stop * 1.03) avisoSistema('stop', L(`${n} se acerca a tu precio de salida`, `${n} is nearing your exit price`), L(`Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, `It's ${fmtNum((pr / stop - 1) * 100, 1)} % above ${precioFmt(stop)}.`), '#cartera', `stopc:${f.inst.id}:${hoy}`);
     }
-    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre Toisón para ver qué ha pasado y qué dice la IA.', 'Open Toisón to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
+    if (c.mov && f.varDia != null && !f.est && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre Toisón para ver qué ha pasado y qué dice la IA.', 'Open Toisón to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
   // 0.8.2f: tus límites (acciones sueltas, cripto, oro, una empresa). Lo calcula el código con lo que escribiste en Tú:
   // el aviso dice el hecho, sin decirte qué hacer. Una vez por límite cada pocos días mientras siga pasado
@@ -598,7 +600,7 @@ function htmlResumenDia(M) {
   // el análisis de la IA puede ser de otro día: se dice
   const iaVieja = ia && ia.fecha && edadHoras(ia.fecha) > 20 ? haceCuanto(ia.fecha) : '';
   const noticia = (n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}" data-nw="${esc(n.w || '')}"><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
-  const movChip = (f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`;
+  const movChip = (f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${f.est ? '≈ ' : ''}${esc(pctS(f.varDia, 1))}</small></button>`;
   return `<div class="rdia">
     <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}${hp ? ` <span class="rdia-hora">· ${esc(L(`precios de las ${hp}`, `prices at ${hp}`))}</span>` : ''}</p>
     <section class="rdia-car"><span class="k">${L('Tu cartera hoy', 'Your portfolio today')}</span><b class="rdia-tot">${B('total0')}</b>${B('dia0', 'rdia-dia')}

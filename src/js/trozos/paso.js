@@ -103,7 +103,10 @@ function estadoPrecio(fecha, fondo) {
   return n >= (fondo ? 3 : 2) ? 'viejo' : 'ok';
 }
 const ppEsFondo = (i) => /^Fondo/.test((i && i.tipo) || '');
-const datoPrecio = (f) => [`Precio de ${f.inst.corto}`, precioFmt(f.precio), `${ppEsFondo(f.inst) ? 'valor liquidativo' : 'cierre'} del ${diaCorto(f.p && f.p.fecha)}`, estadoPrecio(f.p && f.p.fecha, ppEsFondo(f.inst)), 'precio'];
+// 23 nov: con la estimación (ver calcularPos), el precio es estimado con su índice y el valor liquidativo va detrás
+const datoPrecio = (f) => f.est
+  ? [`Precio de ${f.inst.corto}`, `≈ ${precioFmt(f.precio)}`, `estimado con ${f.est.nombre || 'su índice'} el ${diaCorto(f.est.fecha)}; valor liquidativo ${precioFmt(f.est.vl)} del ${diaCorto(f.est.vlFecha)}`, estadoPrecio(f.est.fecha, true), 'precio']
+  : [`Precio de ${f.inst.corto}`, precioFmt(f.precio), `${ppEsFondo(f.inst) ? 'valor liquidativo' : 'cierre'} del ${diaCorto(f.p && f.p.fecha)}`, estadoPrecio(f.p && f.p.fecha, ppEsFondo(f.inst)), 'precio'];
 const radarViejo = () => { const g = S.precios && S.precios.radar_generado; return !g || Date.now() - new Date(g).getTime() > 48 * 3600e3; };
 // fiscalSinApuntar está en el núcleo (16b-paso-mes.js): la usan también el paso «Apunta tus datos fiscales» y la IA
 // lo de Hacienda de una ganancia: si faltan tus datos fiscales, un rango (si ya pasaras de 6.000 € de ganancias, sube el tipo)

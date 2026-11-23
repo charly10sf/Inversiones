@@ -369,10 +369,36 @@ def intradia(instrumentos, salida):
         except Exception:  # noqa: BLE001
             traceback.print_exc()
     out = {}
+    estimados = {}
     for inst in instrumentos:
         iid = inst["id"]
         v = salida["instrumentos"].get(iid) or {}
         sim = v.get("simbolo") or inst.get("yahoo")
+        # 23 nov: un fondo con estimación (ver estimacion()) lleva los 30 minutos de su índice desde el día de su valor
+        # liquidativo, escalados para acabar en el precio estimado: la gráfica de 1 día cuadra con «Hoy»
+        e = v.get("estimado") or {}
+        if str(inst.get("tipo", "")).startswith("Fondo") and e.get("simbolo") and e.get("precio") and e.get("desde"):
+            try:
+                if e["simbolo"] not in estimados:
+                    te = yf.Ticker(e["simbolo"])
+                    h = te.history(period="5d", interval="30m")
+                    mon = (te.history_metadata or {}).get("currency") or "EUR"
+                    h = h["Close"].dropna()
+                    h.index = pd.to_datetime(h.index).tz_convert("UTC")
+                    if mon != "EUR" and mon in fx:
+                        h = h / fx[mon].reindex(h.index.union(fx[mon].index)).ffill().bfill().reindex(h.index)
+                    elif mon != "EUR":
+                        h = h.iloc[0:0]
+                    estimados[e["simbolo"]] = h
+                    time.sleep(0.2)
+                h = estimados[e["simbolo"]]
+                h = h[[t.date().isoformat() > e["desde"] for t in h.index]]
+                if not h.empty and float(h.iloc[-1]) > 0:
+                    k = float(e["precio"]) / float(h.iloc[-1])
+                    out[iid] = [[t.strftime("%Y-%m-%dT%H:%MZ"), redondeo(float(p) * k, 6)] for t, p in h.items() if p == p]
+            except Exception as ex:  # noqa: BLE001
+                print(f"intradía estimada {iid}: {ex}")
+            continue
         if not sim or str(inst.get("tipo", "")).startswith("Fondo") or sim.startswith("0P"):
             continue
         try:
@@ -968,6 +994,59 @@ def serie_con_proxy(eur, inst, fx):
         return eur, None
 
 
+SESIONES_ESTIMADAS = 3
+ESTIMA_CACHE = {}
+
+
+def estimacion(inst, propio, fx, cache=None):
+    """23 nov (Carlos: «hay muchos valores que llevan sin actualizarse varios días»). Yahoo da el valor liquidativo de
+    los fondos un día hábil tarde o más (el del lunes 16 del fondo del S&P 500 llegó el miércoles a las 6:00 UTC; el del
+    viernes 20, el lunes 23 a las 17:30): casi todo el día la app enseñaba el de dos sesiones antes. Con lo que se ha
+    movido después su índice (el S&P 500 en euros, o un ETF del mismo índice) se estima lo que vale ahora: valor
+    liquidativo × índice ahora / índice el día de ese valor. Un punto por cada sesión del índice desde entonces (como
+    mucho SESIONES_ESTIMADAS: con un valor más viejo, no se estima) y nada si el índice no ha cotizado después. Cuando
+    llega el valor de verdad, la estimación se rehace desde él. Medido con 6 meses de datos (error en un día frente al
+    valor real): S&P 500 con ^GSPC en euros, mediana 0,26 % y p90 0,65 %; Europa con IMAE.AS, 0,05 y 0,24 %; MSCI World
+    con URTH, 0,33 y 0,80 %; pequeñas con IUSN.DE, 0,35 y 0,95 %; emergentes con EUNM.DE, 0,78 y 2,36 %."""
+    e = inst.get("estima") or {}
+    sim = e.get("s")
+    if not sim or propio is None or propio.empty:
+        return None
+    cache = ESTIMA_CACHE if cache is None else cache
+    try:
+        if sim not in cache:
+            _, s, meta = serie_cierres(sim, "1mo")
+            cache[sim] = a_euros(s, meta.get("currency") or "EUR", fx).dropna()
+        ser = cache[sim]
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+        cache[sim] = None
+        return None
+    if ser is None or ser.empty:
+        return None
+    dia_vl = propio.index[-1]
+    base, despues = ser[ser.index <= dia_vl], ser[ser.index > dia_vl]
+    if base.empty or despues.empty or len(despues) > SESIONES_ESTIMADAS:
+        return None
+    vl, eb = float(propio.iloc[-1]), float(base.iloc[-1])
+    if not (vl > 0 and eb > 0):
+        return None
+    puntos = [[d.date().isoformat(), num(vl * float(x) / eb, 6)] for d, x in despues.items()]
+    precio = puntos[-1][1]
+    anterior = puntos[-2][1] if len(puntos) > 1 else num(vl, 6)
+    return {
+        "simbolo": sim,
+        "nombre": e.get("n"),
+        "precio": precio,
+        "cierre_anterior": anterior,
+        "variacion_dia": num((precio / anterior - 1) * 100, 2) if anterior else None,
+        "fecha": puntos[-1][0],
+        "valor_liquidativo": num(vl, 6),
+        "desde": dia_vl.date().isoformat(),
+        "puntos": puntos,
+    }
+
+
 def lento_al_dia(prev):
     try:
         t = dt.datetime.fromisoformat(prev["lento"])
@@ -1038,6 +1117,10 @@ def procesar(inst, fx, prev=None):
         "estado": "ok",
         "actualizado": ahora(),
     }
+    if str(inst.get("tipo", "")).startswith("Fondo"):
+        est = estimacion(inst, propio, fx)
+        if est:
+            out["estimado"] = est
     if prev and lento_al_dia(prev):
         out.update({k: prev[k] for k in CLAVES_LENTAS if k in prev})
         out["lento"] = prev["lento"]
