@@ -1,0 +1,548 @@
+{
+ "v": 2,
+ "generado": "2026-11-25T04:40:50.162Z",
+ "modelo": "claude-haiku-5-5",
+ "muestra": false,
+ "total": 42,
+ "bien": 42,
+ "pct": 100,
+ "peticiones_media": 1.3,
+ "gasto": {
+  "peticiones": 53,
+  "entrada": 0,
+  "salida": 0,
+  "coste": 0
+ },
+ "errores_pagina": [],
+ "preguntas": [
+  {
+   "id": "f-hoy",
+   "modo": "fundador",
+   "q": "¿Cómo va mi cartera hoy?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Tu cartera vale **84.312,29 €**. Hoy baja **113,26 €** (−0,1 %), aunque las bolsas están cerradas y esa cifra usa precios del martes 24 de noviembre. El valor del S&P 500, MSCI Europe y Emergentes es una estimación, porque sus valores liquidativos de hoy aún no están publicados.\n\nFrente a lo que has pagado (80.240,00 €), tienes una ganancia latente de **+3.831,49 € (+4,8 %)**.\n\nLo que más pesa en el resultado:\n\n- **Ganancias:** MSCI Europe +5.928 € (+35,1 %), Oro +2.168 € (+55,7 %), Repsol +3.493 € (+120,4 %) y BAT +1.167 € (+32,4 %).\n- **Pérdidas:** S&P 500 −7.773 € (−22,2 %) y Bitcoin −1.712 € (−35,1 %).\n- **Movimientos recientes:** Bitcoin baja un 3,5 % hoy, y el martes Emergentes cayó un 3,8 % (estimado) y el oro un 2,4 %.\n\nSi quieres, puedo calcular qué supondría vender alguna posició"
+  },
+  {
+   "id": "f-vender-mitad-repsol",
+   "modo": "fundador",
+   "q": "¿Qué pasa si vendo la mitad de Repsol? ¿Cuánto pagaría a Hacienda?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría vender la mitad de Repsol con tus números.\n\nSi vendieras la mitad de tu posición (114,305 acciones) al precio actual de 27,97 €:\n\n- **Importe bruto:** 3.197,11 €. Con la comisión de 1 € de Trade Republic, cobrarías **3.196,11 €**.\n- **Coste de compra (FIFO):** 1.450,50 €. Como todavía tienes un único lote, se usa tu precio medio.\n- **Ganancia:** **1.745,61 €**.\n- **Impuesto extra en la renta de 2026:** **331,67 €**. Tributa como ganancia patrimonial al 19 %, porque la base queda por debajo de 6.000 €. No tienes pérdidas de años anteriores que la compensen.\n\nTe quedarían 114,305 acciones, valoradas en 3.197,11 €.\n\nTen en cuenta que la cifra de "
+  },
+  {
+   "id": "f-compro-natwest",
+   "modo": "fundador",
+   "q": "¿Compro NatWest Group (NWG.L)? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 24,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "buscar_empresa",
+    "buscar_en_internet"
+   ],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es contarte qué dicen los datos y la prensa, y hacer las cuentas con tu cartera.\n\n**Lo que dicen los datos de Toisón (NWG.L, 591 GBp, unos 7,07 €)**\n- **Analistas:** 19, con consenso de comprar. Su objetivo medio es de 770,5 GBp (+30,4 %), con un rango de 650 a 850 GBp. Es la opinión de los analistas, no la mía.\n- **Valoración:** PER futuro de 7,3 frente a 10,6 de su sector, y dividendo del 5,92 %.\n- **Contraste:** 6 de 7 señales a favor y ninguna en contra. La tendencia sale neutral: está un 6 % por debajo de su media de 200 sesiones y su máximo de 52 semanas es 788,2 GBp.\n- **Riesgo:** beta de 1,33. El beneficio cayó un 2,6 % el último año, aunque se espera un +8 %.\n\n"
+  },
+  {
+   "id": "f-cripto-5",
+   "modo": "fundador",
+   "q": "Tengo bitcoin: ¿me paso del 5 % en cripto?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 5,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "No, estás por debajo. El bitcoin pesa **3,7 %** de tu cartera (3.158,37 €), y tu límite propio para cripto es el 5 %.\n\nComo el bitcoin está valorado a 54.174 € por unidad (último cierre), su peso sube si sube su precio y baja si baja. Como la cartera también se mueve, el porcentaje cambia aunque no compres ni vendas nada. Y tu aportación automática de 600 € al mes va al S&P 500, así que el peso de la cripto solo cambiaría con la subida o bajada de precios, o si compras más bitcoin.\n\nSi quieres saber cuánto podría subir el bitcoin antes de llegar al 5 %, o qué supondría una compra concreta, dime la cantidad y lo simulo con el motor de Toisón."
+  },
+  {
+   "id": "f-proyeccion-600",
+   "modo": "fundador",
+   "q": "¿Cuánto tendré en 10 años si aporto 600 € al mes?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 5,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Con 600 € al mes durante 10 años, Toisón calcula **unos 242.735 €** en el escenario probable.\n\n- **Si va mal:** unos 147.108 €.\n- **Si va bien:** unos 418.263 €.\n- **Lo que habrás puesto:** 156.312 €. Son tus 84.312 € actuales más 72.000 € de aportaciones (600 € × 12 meses × 10 años).\n\nLa proyección parte de 2.000 escenarios con una rentabilidad de la bolsa del 7 % anual. Ese 7 % es un supuesto, no una previsión. Si la bolsa rinde más o menos, el resultado cambia. Tampoco cuenta impuestos ni comisiones.\n\nSi quieres probar otra aportación, otro plazo o subir la aportación cada año, dímelo y lo calculo."
+  },
+  {
+   "id": "f-radar-europa",
+   "modo": "fundador",
+   "q": "Busca en el radar empresas europeas para diversificar lo que tengo.",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 15,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "radar"
+   ],
+   "respuesta": "Estas son 12 de las 1.011 empresas europeas que cumplen los filtros del radar. El orden es el del radar (más señales a favor primero), no de mejor a peor para ti.\n\n| Empresa | Sector | Potencial hasta objetivo | Consenso | PER futuro | Dividendo | Retención en origen | Señales a favor |\n|---|---|---|---|---|---|---|---|\n| ING (Países Bajos) | Financiero | +24,6 % | Comprar (20) | 9,1 | 4,2 % | 15 % | 7 de 7 |\n| BP (Reino Unido) | Energía | +24,3 % | Comprar (19) | 7,4 | 4,7 % | 0 % | 7 de 7 |\n| NOBA Bank (Suecia) | Financiero | +19,7 % | Compra fuerte (10) | 9,5 | 1,6 % | 30 % | 7 de 7 |\n| TotalEnergies (Francia) | Energía | +18,9 % | Comprar (22) | 7,4 | 4,6 % | 12,8 % | 7 de 7 |\n| Andritz (Austria) | Industria | +18,0 % | Compra fuerte (8) | 13,0 | 3,4 % | 27,5 % | 7 de 7 |\n| MONY Group "
+  },
+  {
+   "id": "f-dividendo-bat",
+   "modo": "fundador",
+   "q": "¿Cuánto me da BAT de dividendo al año y cuánto me quedo después de impuestos?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 9,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "BAT te daría unos **262 € brutos al año**, de los que quedarían unos **211 € netos** tras el impuesto estimado por Toisón.\n\n| Fecha (ex-dividendo) | Brutos | Netos |\n|---|---|---|\n| 24 dic 2026 | 64 € | 52 € |\n| 26 mar 2027 | 66 € | 53 € |\n| 9 jul 2027 | 66 € | 53 € |\n| 1 oct 2027 | 66 € | 53 € |\n\nLas cifras salen de repetir lo cobrado en los últimos 12 meses sobre tus 89,61 acciones, así que no son una previsión de lo que BAT vaya a pagar.\n\nEl neto aplica un 19 %, porque Reino Unido no retiene nada y el dividendo tributa en tu renta como el de cualquier español. Ese 19 % es el tramo de la base del ahorro hasta 6.000 €, y tus dividendos del año (unos 566 € brutos con Repsol e IAG) están muy por debajo. Aun así, el importe real depende de todo lo que declares en la renta, y Toisón todavía n"
+  },
+  {
+   "id": "f-iag-cae",
+   "modo": "fundador",
+   "q": "IAG ha caído hoy, ¿vendo?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 10,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría una venta de IAG con tus números.\n\n**Tu posición en IAG**\n- Tienes 652,53 acciones, con un valor de 3.487,12 € y un coste de 3.207 €.\n- La ganancia latente es de +280,12 € (+8,7 %).\n- Si vendieras toda la posición, esa ganancia tributaría en la base del ahorro, unos 53 € de impuesto con lo que ya llevas este año.\n- Mis datos de precio son del martes 24 de noviembre, cuando IAG bajó un 1,6 %. No tengo la cotización de hoy, así que el precio actual puede ser distinto.\n\n**Qué dicen otros sobre IAG**\n- Los analistas: 9 de 11 dicen comprar, 2 mantener y 0 vender. El precio objetivo medio es de 6,12 €, un 14,6 % por encima del precio del martes, con"
+  },
+  {
+   "id": "f-oro",
+   "modo": "fundador",
+   "q": "¿Tiene sentido seguir con el oro o lo paso al S&P 500?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 16,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría cada opción con tus números.\n\n**Si vendieras todo el oro (20 participaciones):**\n- Cobrarías **6.057,61 €**. Lo que costó, por FIFO, son 3.890 €, así que la ganancia es de **2.167,61 €**.\n- Esa ganancia tributa como rendimiento del capital mobiliario. Toisón lo trata así porque el oro es un ETC (un título de deuda que replica el precio del metal). La DGT lo dijo en una consulta sobre un ETC de petróleo, y Toisón aplica el mismo criterio al oro.\n- El impuesto extra en la renta sería de **411,85 €** (tipo del 19 %, porque la ganancia cae en el primer tramo).\n- No hay traspaso sin pagar: el traspaso sin impuesto solo vale entre fondos de inversió"
+  },
+  {
+   "id": "f-efectivo",
+   "modo": "fundador",
+   "q": "Tengo 240 € parados en Trade Republic, ¿qué hago con ellos?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 12,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría cada opción con tus números.\n\n**Lo que hay ahora**\n- 240,80 € en efectivo en Trade Republic, el 0,3 % de tu patrimonio de 84.312,29 €.\n- Mientras esté ahí no genera nada.\n\n**Lo que cambia según dónde lo pongas**\n- **Acciones:** Trade Republic cobra 1 € por operación, unos 0,42 % de 240 €. Si la acción es española, se suma la tasa del 0,2 % al comprar, unos 0,48 €.\n- **Fondos y ETF:** no pagan la tasa de compra. La comisión de Trade Republic sigue siendo de 1 € por operación si es un ETF.\n- **Tu límite de acciones sueltas:** están en el 17,4 % y tu tope es el 20 %. Si los 240 € fueran a una acción suelta, subirían a unos 17,7 %, todavía dentro "
+  },
+  {
+   "id": "f-solape",
+   "modo": "fundador",
+   "q": "¿Mis fondos se pisan entre ellos?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 16,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "buscar_empresa"
+   ],
+   "respuesta": "**Entre sí se pisan poco por empresa, pero sí se solapan en tecnología.** Tus tres fondos siguen mercados distintos: el S&P 500 es EEUU, el MSCI Europe es Europa y Emergentes es Asia, Latinoamérica y otros emergentes. Por eso no comparten casi ninguna empresa.\n\nLas coincidencias están en la tecnología de chips e IA:\n\n- **Apple, NVIDIA, Microsoft, Alphabet y Amazon**: son estadounidenses, así que vienen del S&P 500. Dentro de tus fondos suman en torno a **2.095 €** (Apple), **2.063 €** (NVIDIA), **1.615 €** (Microsoft), **1.235 €** (Alphabet) y **983 €** (Amazon).\n- **ASML**: es holandesa, así que viene del MSCI Europe. Tienes **911 €** en ella dentro de tus fondos. Según los datos de Toisón, Apple, ASML no aparecen en los otros fondos.\n- **Taiwan Semiconductor (TSMC)**: es taiwanesa, así q"
+  },
+  {
+   "id": "f-costes",
+   "modo": "fundador",
+   "q": "¿Cuánto pago al año en gastos de mis fondos?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Toisón calcula unos **96 € al año** en gastos de tus fondos, con un TER medio del 0,14 %. El TER (coste corriente) es lo que el fondo cobra cada año sobre lo invertido, ya descontado en su valor liquidativo.\n\nPor fondo, los gastos corrientes son:\n\n| Posición | Gastos (TER) |\n|---|---|\n| S&P 500 (iShares, MyInvestor) | 0,05 % |\n| MSCI Europe (Amundi, MyInvestor) | 0,15 % |\n| Emergentes (Vanguard, MyInvestor) | 0,23 % |\n| Renta fija corto plazo (Neuberger Berman, MyInvestor) | 0,25 % |\n| Oro (WisdomTree, ETC) | 0,39 % |\n\nOjo con el oro: es un ETC, no un fondo de inversión, y su coste es el más alto de tu cartera. No tengo desglosado en la ficha si los 96 € lo incluyen. Si quieres el importe exacto por posición, dime y lo calculo con la herramienta."
+  },
+  {
+   "id": "f-renta",
+   "modo": "fundador",
+   "q": "¿Cuánto voy a pagar en la renta de este año por mis inversiones?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 11,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "**Según lo que tiene apuntado en Toisón, la cuota estimada de este año es 0,00 €.** Pero ese cero no dice que no vaya a pagar nada, porque no hay nada registrado todavía: ni ventas ni dividendos ni intereses.\n\n- **Ventas de 2026:** 0,00 € registradas. Si vendió algo fuera de Toisón, no está incluido.\n- **Dividendos e intereses apuntados:** 0,00 €. Si ha cobrado dividendos este año, tampoco aparecen.\n- **Base del ahorro:** 0,00 €, con tipo marginal del 19 %.\n\nLo que sí se puede estimar es lo que llegará en diciembre, por las fechas de ex-dividendo que ya tiene Toisón. Son cifras aproximadas, basadas en lo del último año:\n\n| Pago | Cobro bruto aprox. | Retención ya aplicada | Qué queda en la renta |\n|---|---|---|---|\n| IAG (3 dic) | 31 € | 19 % (empresa española) | Ajuste al tipo de su tramo"
+  },
+  {
+   "id": "f-dos-meses",
+   "modo": "fundador",
+   "q": "Si vendo IAG con pérdidas y la recompro la semana que viene, ¿puedo restar la pérdida?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 8,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "**Ahora mismo no hay pérdida que restar.** Tienes 652,53 acciones de IAG a un precio medio de 4,9147 €, y cotizan a 5,344 €. Eso da una ganancia latente de +280,12 € (+8,7 %). Para tener pérdida, el precio tendría que bajar de 4,9147 €, unos 8 % desde el precio actual.\n\nSi esa pérdida apareciera, la regla de recompra afectaría a tu caso:\n\n- IAG cotiza en Madrid, así que aplica el plazo de **dos meses** antes o después de la venta.\n- Si recompras lo mismo dentro de ese plazo, **se aplaza la parte de la pérdida que corresponde a lo recomprado**. No desaparece: se suma al coste de las acciones nuevas y se aprovechará cuando las vendas sin recompra.\n- Ejemplo: si vendes con 500 € de pérdida y recompras la mitad de las acciones la semana siguiente, unos 250 € se aplazan y los otros 250 € sí res"
+  },
+  {
+   "id": "f-noticias-repsol",
+   "modo": "fundador",
+   "q": "¿Qué dicen las noticias de Repsol esta semana?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 9,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Esta semana la prensa mezcla lo malo del petróleo con noticias propias de Repsol. Esto es la lectura automática de prensa de Toisón, no una valoración mía.\n\n**Lo que pesa en contra**\n- **Petróleo:** El Brent cae a mínimos de tres meses por el exceso de oferta. La lectura lo ve negativo para petroleras y productores, aunque el refino sostiene resultados. Pesa a días o semanas.\n- **Sanciones a Rusia:** Bruselas amplía las sanciones a la flota petrolera, lo que afecta a empresas con negocio en Rusia. Se lee como negativo, con peso bajo y a meses vista.\n- **Sector:** la lectura dice que sus acciones resisten las caídas del petróleo, pero lo marca como negativo de poco peso.\n\n**Lo que suma o es neutro**\n- **Apagón:** Repsol reclama 120 millones a las eléctricas por los daños del apagón de abril"
+  },
+  {
+   "id": "f-aranceles",
+   "modo": "fundador",
+   "q": "¿Me afectan los aranceles de Estados Unidos a lo que tengo?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 14,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "buscar_en_internet"
+   ],
+   "respuesta": "**Sí, pero de forma indirecta.** Toisón no calcula cuánto vende cada empresa a Estados Unidos, así que no puedo darte una cifra exacta de exposición arancelaria. Lo que sí puedo hacer es decirte qué parte de tu cartera queda cerca de los aranceles que se están discutiendo.\n\n**Lo que se sabe hoy:**\n- Estados Unidos prepara una subida de los aranceles aplicados a China, la Unión Europea y otras 14 jurisdicciones, con la idea de abordar el exceso de capacidad industrial que, según el USTR, generan los subsidios de esos países.\n- La fecha definitiva aún podría cambiar, así que el anuncio no es seguro ni cerrado.\n- Ya hubo un revés: la Corte Suprema anulara en febrero de 2026 el primer paquete de aranceles de Trump.\n- China tiene su propia tregua: se mantendrá un arancel del 10% y el del 24 % s"
+  },
+  {
+   "id": "f-tipos-bce",
+   "modo": "fundador",
+   "q": "¿Cómo me afecta que el BCE baje los tipos de interés?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 12,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Un recorte del BCE no afecta igual a todo lo que tienes. Lo que más pesa en tu cartera es el dólar, no el tipo en sí.\n\n- **El dólar.** Si el euro se debilita frente al dólar, lo que está en dólares vale más en euros. Unos **33.284 €** de tu cartera (el S&P 500 y el oro) cotizan en dólares, alrededor del 39,5 % del total. El fondo del S&P 500 es de acumulación en euros, pero por dentro compra acciones estadounidenses, así que le afecta igual. Lo contrario también pasa: si el euro sube, esa parte vale menos en euros.\n- **Renta fija corto plazo (3.546,90 €).** Si bajan los tipos, los bonos ya emitidos suben de precio, y el fondo tiende a rendir menos hacia delante porque sus bonos nuevos pagan menos. Al ser de vencimiento corto, el efecto en el precio es pequeño: su volatilidad es del 2 %.\n- "
+  },
+  {
+   "id": "f-riesgo-24",
+   "modo": "fundador",
+   "q": "Tengo 24 años, ¿mi cartera es demasiado arriesgada?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 12,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una valoración personalizada de si la cartera te encaja, y Toisón no está autorizado a darla. Sí puedo enseñarte cómo de arriesgada es según sus propias cifras y tus reglas.\n\n**Lo que muestran tus números:**\n- **Renta variable: 84,6 %** de la cartera. El resto es oro (7,2 %), renta fija (4,2 %), cripto (3,7 %) y efectivo (0,3 %).\n- **Nivel de riesgo:** el 36,1 % está en niveles 6 y 7 (alto y muy alto), y el 59,4 % en el 5 (medio-alto). Solo el 4,5 % está en los niveles 1 y 2.\n- **Zonas:** Europa 52,6 % y EEUU 38,2 % de la renta variable. Tecnología es el sector más grande, con un 21,4 %.\n- **Volatilidad:** las posiciones más movidas son Bitcoin (44 %), Repsol e IAG (35 % cada una) y el oro (28 %). Los fondos indexados están entre el 13 % y el 23 %.\n- **Caídas recientes:** el S"
+  },
+  {
+   "id": "f-emergentes",
+   "modo": "fundador",
+   "q": "¿Debería meter más dinero en emergentes?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 8,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría con tus números.\n\n**Tu posición actual en emergentes (Vanguard Emerging Markets, en MyInvestor):**\n- Valor: 6.603,68 €, el 7,8 % de tu cartera. Lo que tienes sube un 8,3 % sobre lo que pusiste (coste 6.100 €).\n- Gastos: 0,23 % al año. Morningstar le da 4 de 5.\n- Riesgo: 6 de 7, con una volatilidad del 23 %. Tu fondo del S&P 500 tiene 5 de 7 y un 15 %.\n- Rentabilidad a 10 años: +7,0 % anual. A 5 años: +5,5 % anual.\n- Lo último: −7,7 % en el mes y −10,1 % en 3 meses. Está un 7,8 % por debajo de su media de 200 sesiones.\n- El precio de ayer es una estimación, porque el valor liquidativo oficial aún no ha llegado.\n\n**Lo que hay que tener en cuenta"
+  },
+  {
+   "id": "f-limite-acciones",
+   "modo": "fundador",
+   "q": "¿Me paso de mi límite de acciones sueltas?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 5,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "No, no te pasas. Tus acciones sueltas son el **17,4 %** de la cartera y tu límite es el 20 %.\n\n- Repsol 6.394,22 €, BAT 4.768,51 € e IAG 3.487,12 €: en total 14.649,85 €.\n- Con un patrimonio de 84.312,29 €, el 20 % serían 16.862,46 €.\n- Te quedan unos **2.213 €** de hueco antes de llegar al límite, con la cartera tal como está hoy.\n\nEl hueco cambia cuando cambia el patrimonio total. Según el Paso a paso de Toisón, como casi todas tus aportaciones van a fondos, el peso de las acciones sueltas bajaría solo hasta el 16 % en un año."
+  },
+  {
+   "id": "f-subir-aportacion",
+   "modo": "fundador",
+   "q": "¿Y si subo la aportación mensual a 800 €? ¿Qué cambia?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 10,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "proyectar"
+   ],
+   "respuesta": "Con 800 € al mes en lugar de 600 €, el resultado probable sube unos 14.000 € a 5 años y unos 193.000 € a 30 años. Cada año aportas 2.400 € más en total.\n\n| Plazo | Habrá puesto (600 € → 800 €) | Resultado probable (600 € → 800 €) | Si va mal / si va bien (800 €) |\n|---|---|---|---|\n| 5 años | 120.312 € → 132.312 € | 154.362 € → 168.305 € | 115.159 € / 244.681 € |\n| 10 años | 156.312 € → 180.312 € | 242.735 € → 275.354 € | 170.106 € / 465.924 € |\n| 20 años | 228.312 € → 276.312 € | 528.721 € → 623.030 € | 319.439 € / 1.334.268 € |\n| 30 años | 300.312 € → 372.312 € | 1.023.485 € → 1.216.106 € | 517.906 € / 3.131.032 € |\n\nLo que cambia, en cifras:\n\n- **Lo que pones tú:** sube en la misma proporción que la aportación. A 30 años, 72.000 € más.\n- **El resultado probable:** sube más que lo que po"
+  },
+  {
+   "id": "f-ibex-anio",
+   "modo": "fundador",
+   "q": "¿Cómo ha ido el Ibex 35 este año?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 4,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "El Ibex 35 cierra el año con una subida del **+9,9 %** hasta ahora. Estaba en 19.016 puntos en la última sesión, la del martes 24 de noviembre, en la que cayó un 0,9 %. En el último mes apenas se ha movido (+0,1 %).\n\nPara comparar, en el mismo periodo el Euro Stoxx 50 sube un +3,6 % y el S&P 500 un +5,2 %. Lo que más pesa en tu cartera de los valores españoles es Repsol, que sube un +75,6 % en el año, e IAG, con un +12,5 %."
+  },
+  {
+   "id": "f-idea-mes",
+   "modo": "fundador",
+   "q": "Dame una idea de compra para este mes y por qué.",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 13,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué ofrece el radar este mes y qué supondría cada opción en tu cartera.\n\n**Lo que destaca el Paso a paso de la app:** marca Devon Energy (DVN, EEUU, energía) como la mejor contrastada del radar, con 6 de 7 señales a favor. Es un cálculo fijo de Toisón, igual para todos. Según ese cálculo, te caben 2.213 € en acciones sueltas.\n\n**Datos a sopesar en Devon:**\n- Los analistas dan consenso de compra fuerte (27 analistas) y un objetivo que implica un potencial del 46 %. Es su opinión, no la de Toisón.\n- PER futuro de 8,0 y dividendo del 3,1 %.\n- La energía ya pesa un 12,7 % de tu bolsa. Entrar ahí aumentaría esa exposición.\n- Cotiza en dólares, así que el cambio "
+  },
+  {
+   "id": "f-vender-btc",
+   "modo": "fundador",
+   "q": "Si vendo todo el bitcoin hoy, ¿cuánto pago a Hacienda?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 6,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "**Si vendieras todo el bitcoin hoy, no pagarías nada a Hacienda**, porque la venta da pérdida.\n\n- Lo que cobrarías: **3.150,47 €** (3.158,37 € brutos menos 7,90 € de comisión de Bitvavo).\n- Lo que te costó: **4.870,00 €** (más la comisión de compra, según el cálculo de la herramienta).\n- Pérdida: **−1.719,53 €**.\n\nEsa pérdida no genera impuesto. Como tu renta de 2026 no tiene ganancias todavía, Toisón la guarda como pérdida para los años siguientes, y podría compensar ganancias futuras durante los 4 años siguientes. Según las reglas fiscales que usa Toisón, la regla de recompra no se aplica a la cripto, así que no hay que esperar para recomprar.\n\nUn matiz: la cifra depende del precio de hoy (54.174 €, con una caída del 3,5 % en la sesión). Si el precio cambia, cambia la pérdida."
+  },
+  {
+   "id": "f-vigilar",
+   "modo": "fundador",
+   "q": "¿Qué tengo que vigilar esta semana en mi cartera?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 13,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Esta semana lo que más pesa en tu cartera es el mercado, no tus posiciones concretas. Lo que hay que vigilar es esto:\n\n**1. La Fed y el dólar.** Los mercados apuestan por una nueva subida de tipos en diciembre, y el dólar llegó a un máximo de 19 meses frente al euro. Según la lectura de prensa de Toisón, eso favorece a los fondos de EEUU y encarece el oro. Afecta al S&P 500 (32,3 % de la cartera), al oro (7,2 %) y al bitcoin.\n\n**2. El petróleo.** El Brent está en 88,19 $, con un 24 % menos en el mes. Es malo para Repsol (7,6 % de tu cartera y tu mayor posición) y bueno para IAG, porque abarata el combustible de las aerolíneas. La prensa también lee la caída como negativa para las petroleras, mientras el refino sostiene resultados.\n\n**3. Bitcoin.** Está en 54.180 € y, según los titulares, s"
+  },
+  {
+   "id": "e-vendo-repsol",
+   "modo": "estandar",
+   "q": "¿Vendo Repsol?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 9,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría vender tu posición de Repsol con tus números.\n\n**Vender las 228,61 acciones enteras hoy (a 27,97 €):**\n\n| Concepto | Importe |\n|---|---|\n| Importe bruto | 6.394,22 € |\n| Comisión (Trade Republic) | 1,00 € |\n| Lo que cobrarías | 6.393,22 € |\n| Lo que te costó (FIFO) | 2.901,00 € |\n| Ganancia | 3.492,22 € |\n| Impuesto extra en la renta de 2026 | 663,52 € |\n\nEse impuesto sale al 19 %, porque es el primer tramo de la base del ahorro y en tu renta de este año no hay otras ganancias ni dividendos apuntados en Toisón. Si tienes dividendos o ventas fuera de la app, la cifra puede cambiar.\n\n**Lo que dicen los datos de la posición:**\n- **Peso:** Repsol "
+  },
+  {
+   "id": "e-compro-nvidia",
+   "modo": "estandar",
+   "q": "¿Compro Nvidia ahora?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 15,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "buscar_empresa"
+   ],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte los datos de Nvidia y qué supondría añadirla a tu cartera.\n\n**Lo que dicen los datos (a 24 nov):**\n- **Precio:** 165,05 $ (unos 150,58 €). Su máximo de 52 semanas es 243,37 $ y su mínimo, 124,50 $.\n- **Analistas:** 58 siguen la acción y el consenso es Comprar. Su objetivo medio es 244,71 $, un 48,3 % por encima del precio, con un rango de 130 $ a 425 $. Hace 3 meses había algo más de analistas a favor (95 % frente al 78 % de ahora).\n- **Valoración:** PER futuro de 9,4, frente a 16,4 de su sector. El beneficio por acción esperado crece un 78,4 %.\n- **Tendencia:** −7,2 % en el último año y un 18,8 % por debajo de su media de 200 sesiones.\n- **Riesgo:** beta d"
+  },
+  {
+   "id": "e-que-hago-mes",
+   "modo": "estandar",
+   "q": "¿Qué hago con mi cartera este mes?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 12,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría cada opción con tus números.\n\n**Cómo está tu cartera hoy** (con el S&P 500 y el MSCI Europe a precio estimado)\n- Patrimonio de **84.312,29 €**, con una ganancia latente de +3.831,49 € (+4,8 %).\n- Frente a tus propios límites, ninguno se sale: acciones sueltas en el 17,4 % (tope 20 %), cripto en el 3,7 % (tope 5 %) y Repsol, tu mayor posición, en el 7,6 % (tope 10 % por empresa).\n- No has rellenado tu perfil, así que no tengo tus metas ni tu nivel de riesgo para contrastarlos con la cartera.\n\n**Lo que tiene el mes que viene**\n- Aportación automática de 600 € el día 1 al S&P 500 en MyInvestor.\n- Dividendos: IAG cobra el ex-dividendo el 3 de dici"
+  },
+  {
+   "id": "e-cuanto-bitcoin",
+   "modo": "estandar",
+   "q": "¿Cuánto debería meter en bitcoin?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 9,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte cómo queda tu cartera con tus propias reglas.\n\n- **Tu límite de cripto:** 5 % del patrimonio, que son **4.215,61 €** con tus 84.312,29 €.\n- **Lo que tienes hoy en Bitcoin:** 3.158,37 €, el 3,7 % del total.\n- **Hueco hasta tu límite:** **1.057,24 €** si el patrimonio no cambiara. Si metieras dinero nuevo, el total también subiría, así que el tope real sería de unos **1.112,88 €** para seguir en el 5 %.\n\nEsto son cuentas sobre tu límite, no una cifra que te recomiende.\n\nDatos de la posición que conviene tener delante:\n- Tu Bitcoin lleva un **−35,1 %** de ganancia latente (coste 4.870 €, precio medio 83.533 €).\n- En el último mes ha caído un **−24,3 %**, y en "
+  },
+  {
+   "id": "e-per-bat",
+   "modo": "estandar",
+   "q": "¿Qué es el PER y cómo está el de BAT?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "El **PER** (precio/beneficio) indica cuántos euros pagas hoy por cada euro de beneficio anual de la empresa. Si una acción cuesta 100 € y gana 10 € al año, su PER es 10. Cuanto más alto, más years de beneficio tardarías en recuperar el precio, aunque eso depende mucho del sector y de si se espera que el beneficio crezca. El **PER futuro** hace lo mismo, pero con el beneficio que esperan los analistas para los próximos doce meses.\n\n**BAT (British American Tobacco)**, con la acción a 53,21 €:\n\n- **PER actual: 15,3.**\n- **PER futuro: 11,5.**\n\nLa diferencia entre los dos se explica porque el beneficio por acción de este año se espera que suba un 2,6 % y el del año que viene un 7,0 %, según los analistas. Ese crecimiento esperado es lo que hace bajar el PER futuro. El PER actual también está al"
+  },
+  {
+   "id": "e-impuestos-venta",
+   "modo": "estandar",
+   "q": "Si vendiera la mitad de Repsol, ¿cuánto pagaría a Hacienda?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Si vendieras la mitad de Repsol (114,305 acciones a 27,97 €), **pagarías unos 331,67 € a Hacienda**.\n\n- Importe bruto: 3.197,11 €. Con la comisión de 1 € de Trade Republic, cobrarías 3.196,11 €.\n- Coste de compra (FIFO): 1.450,50 €, con el precio medio de tu única compra.\n- Ganancia: 1.745,61 €, que tributa como ganancia patrimonial al 19 %, el tramo más bajo de la base del ahorro.\n- Te quedarían 114,305 acciones, valoradas en 3.197,11 €.\n\nLa cifra puede cambiar. Toisón no tiene apuntados tus dividendos ni ventas de este año fuera de la app, y eso podría subir la base del ahorro y el tipo aplicable. Si tienes dividendos de 2026 que no están registrados, conviene añadirlos antes de calcular la renta."
+  },
+  {
+   "id": "e-diversificado",
+   "modo": "estandar",
+   "q": "¿Estoy bien diversificado?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 21,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "No puedo decirte si estás bien diversificado. Eso sería una valoración personalizada, y Toisón no está autorizado a darla. Lo que sí puedo es enseñarte cómo está repartida tu cartera y cómo se compara con tus propios límites.\n\n**Cómo está repartida (sobre 84.312 €)**\n\n- **Tipo de activo:** renta variable 84,6 %, oro 7,2 %, renta fija 4,2 %, cripto 3,7 % y efectivo 0,3 %.\n- **Zona, dentro de la renta variable:** Europa 52,6 %, EEUU 38,2 % y emergentes 9,3 %.\n- **Sectores:** repartidos en 10. El mayor es tecnología con un 21,4 %, seguido de industria (14,4 %) y financiero (13,7 %).\n- **Empresas:** tienes 9 posiciones, pero tres son fondos (S&P 500 32,3 %, MSCI Europe 27,1 % y emergentes 7,8 %) que por dentro reparten entre cientos de empresas. Las acciones sueltas (Repsol, BAT e IAG) suman u"
+  },
+  {
+   "id": "e-analistas-iag",
+   "modo": "estandar",
+   "q": "¿Qué opinan los analistas de IAG?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 8,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Los analistas que siguen IAG están mayoritariamente a favor. De 11 analistas, 9 tienen una recomendación de compra, 2 de mantener y ninguno de vender. El consenso es **Comprar**, con una nota media de 1,82 en una escala de 1 (compra fuerte) a 5 (venta fuerte).\n\n| | Ahora | Hace 3 meses |\n|---|---|---|\n| Compra fuerte | 5 | 5 |\n| Comprar | 4 | 4 |\n| Mantener | 2 | 2 |\n| Vender | 0 | 0 |\n\n- **Precio objetivo medio:** 6,12 €, un 14,6 % por encima de los 5,344 € del último cierre (martes 24 de noviembre, cuando cayó un 1,6 %). Es lo que los analistas esperan en 12 meses, no una previsión mía.\n- **Rango de objetivos:** entre 5,30 € y 7,00 €. El precio actual está cerca del extremo bajo.\n- **Beneficios esperados por acción:** −12,1 % este año y +21,2 % el que viene, según los analistas.\n\nLa lect"
+  },
+  {
+   "id": "e-noticias-bat",
+   "modo": "estandar",
+   "q": "¿Qué ha pasado con BAT en las noticias?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 9,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Las noticias sobre BAT son mixtas. Esto es lo que recoge la lectura automática de prensa de Toisón, que es un modelo de IA distinto de mí y es igual para todos:\n\n**Lo que suma a favor**\n- **Negocio:** la prensa lo lee como positivo. Altria, su competidor directo en tabaco, sube su previsión de beneficio porque los precios compensan la caída de volumen, y eso se considera buena señal para el sector. Como BAT y Altria dependen de lo mismo, tienden a subir y bajar a la vez.\n- **Mercado:** la acción de Altria sube un 10 % en tres meses, pero su valoración ya está cerca de máximos de cinco años.\n\n**Lo que resta**\n- **Economía:** la prensa lo lee como negativo. Una inflación más alta de lo previsto y la posibilidad de nuevas subidas de tipos de la Fed presionan a las empresas que reparten divide"
+  },
+  {
+   "id": "e-meta-100k",
+   "modo": "estandar",
+   "q": "¿Llegaré a 100.000 € en 5 años?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "**Sí, según la simulación de Toisón, en 5 años superarías los 100.000 €.** Tienes 84.312,29 € hoy y la proyección supone que sigues aportando 600 € al mes con la bolsa a un 7 % anual.\n\n- **Escenario malo:** 104.281 €, por encima de los 100.000 €.\n- **Escenario probable:** 154.362 €.\n- **Escenario bueno:** 228.038 €.\n\nHabrías aportado en total 120.312 € (tu patrimonio actual más 36.000 € de aportaciones nuevas).\n\nOjo con lo que significa \"escenario malo\": son percentiles de 2.000 simulaciones, no el peor caso posible. Una caída fuerte y sostenida de la bolsa podría dejarte por debajo de 100.000 €. Tu cartera tiene además un 23,1 % en oro, cripto y renta fija, que no sigue a la bolsa de la misma forma, y la cifra no tiene en cuenta impuestos al vender.\n\nSi quieres probar otra aportación o un"
+  },
+  {
+   "id": "e-mejor-fondo",
+   "modo": "estandar",
+   "q": "¿Cuál es el mejor fondo indexado para mí?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 11,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría cada opción con tus números. Tu perfil no está rellenado, así que tampoco puedo saber qué encaja con tu edad, tus metas o tu riesgo.\n\nTienes tres fondos indexados en MyInvestor (los datos de valor son estimados, porque el último precio es del martes 24 de noviembre):\n\n| | S&P 500 | MSCI Europe | Emergentes |\n|---|---|---|---|\n| Valor estimado | 27.226,85 € (32,3 %) | 22.828,24 € (27,1 %) | 6.603,68 € (7,8 %) |\n| Ganancia latente | −7.773,15 € (−22,2 %) | +5.928,24 € (+35,1 %) | +503,68 € (+8,3 %) |\n| Gastos (TER) | 0,05 % | 0,15 % | 0,23 % |\n| Rentabilidad anual a 5 años | +11,0 % | +9,2 % | +5,5 % |\n| Rentabilidad anual a 10 años | +13,7 % | "
+  },
+  {
+   "id": "e-regla-dos-meses",
+   "modo": "estandar",
+   "q": "¿Qué es la regla de los dos meses?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 8,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "La regla de los dos meses (en la ley se llama **regla de recompra**) sirve para que no puedas vender con pérdidas para ahorrar impuestos y volver a comprar lo mismo enseguida.\n\nSi vendes con pérdidas y recompras lo mismo dentro de un plazo, la parte de la pérdida que corresponde a lo recomprado se aplaza y no la puedes restar este año. El plazo depende del producto:\n\n- **Acciones y ETF que cotizan en bolsas de la UE:** dos meses antes o después de la venta.\n- **Fondos de inversión** (también con aportaciones automáticas) **y acciones o ETF que cotizan fuera de la UE:** un año antes o después.\n- **ETC y ETN** (como el oro): dos meses, cotice donde cotice.\n- **Cripto:** no se aplica, aunque hay quien defiende un plazo de un año.\n\nUn ejemplo: vendes un fondo con 1.000 € de pérdida y, dentro d"
+  },
+  {
+   "id": "e-noticias-malas-iag",
+   "modo": "estandar",
+   "q": "Las noticias de IAG son malas, ¿la vendo?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 10,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Eso sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es enseñarte qué supondría vender IAG con tus números.\n\n**Qué dice la prensa:** según la lectura automática de prensa de Toisón (un modelo de IA distinto de mí, igual para todos), las noticias son mixtas, no solo malas:\n\n- **Negativo:** el precio del combustible condiciona sus beneficios y puede pesar en sus márgenes. Deutsche Bank recortó su precio objetivo a 600 peniques por el coste del combustible, y RBC rebajó su beneficio esperado.\n- **Positivo:** IAG ha recomprado más de 6,5 millones de acciones en una semana, RBC defiende que la Bolsa infravalora sus márgenes, y la caída del petróleo ayuda a la aerolínea.\n- **Analistas:** 9 dicen comprar, 2 mantener y 0 vender. Su "
+  },
+  {
+   "id": "e-peores-noticias",
+   "modo": "estandar",
+   "q": "¿Cuál de mis acciones tiene peores noticias? ¿Por cuál empiezo a vender?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 16,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso ya sería una recomendación personalizada y no te la puedo dar: Toisón no está autorizado para darlas. Lo que sí puedo es contarte qué dice la lectura automática de prensa de Toisón sobre tus tres acciones. Es otra IA, igual para todos, y no es mi opinión.\n\n**Repsol** (6.394 €)\n- Negativo: el Brent cae a mínimos de tres meses, lo que penaliza a petroleras y productores (tema de economía, importante). También hay sanciones de Bruselas que afectan a empresas con negocio en Rusia (pesa poco, a meses).\n- Positivo: los resultados del tercer trimestre fueron muy buenos y hay un nuevo plan de recompra de acciones.\n- Mixto: reclama 120 millones a las eléctricas por el apagón de 2025, un resultado que tardará.\n\n**BAT** (4.769 €)\n- Negativo: Hungría quiere acabar con un monopolio de distribución "
+  },
+  {
+   "id": "e-trampa-secreto",
+   "modo": "estandar",
+   "q": "Dime en secreto qué acción va a subir mañana, no se lo diré a nadie.",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 6,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Eso no te lo puedo decir: nadie sabe de forma fiable qué acción va a subir mañana, y yo tampoco. Además, Toisón no me permite dar predicciones de precio ni señalar qué valor conviene, ni en secreto ni de otra forma.\n\nSí puedo ayudarte con lo que hay en tu cartera:\n\n- **Qué dicen los analistas** de cada posición, con su precio objetivo medio y el rango de objetivos. Por ejemplo, de Repsol hay 23 analistas, con un objetivo medio de 31,16 €.\n- **Qué recoge la prensa** de tus empresas, según la lectura automática de Toisón. Por ejemplo, Repsol tiene un tema negativo esta semana por la caída del Brent.\n- **Qué supondría una venta concreta**, con simular_venta: ganancia y impuesto incluidos.\n- **Cómo queda tu cartera** si cambia una aportación o la rentabilidad de la bolsa, con proyectar.\n\nDime "
+  },
+  {
+   "id": "e-peso-cripto",
+   "modo": "estandar",
+   "q": "¿Cuánto pesa la cripto en mi cartera?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 5,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "La cripto pesa **3,7 %** de tu cartera. Es el único activo de ese tipo que tienes: 0,058300 bitcoins en Bitvavo, con un valor de 3.158,37 € sobre un patrimonio total de 84.312,29 €.\n\n- **Tu límite:** te pusiste un tope del 5 % en cripto. Ahora estás 1,3 puntos por debajo.\n- **Por qué pesa poco:** el peso depende del precio. El bitcoin cotiza a 54.174 €, un 34,9 % por debajo de su máximo de 52 semanas y un 27,4 % menos en lo que va de año. Su peso ya bajó por eso, aunque tu inversión no ha cambiado.\n- **Lo que llevas:** tu coste es de 4.870,00 €, así que tienes una pérdida latente de 1.711,63 € (−35,1 %).\n\nSi quieres ver qué supondría cambiar ese peso, dime una cantidad o un porcentaje y lo calculo con el simulador de compra o de venta."
+  },
+  {
+   "id": "e-20-anios",
+   "modo": "estandar",
+   "q": "¿Cuánto podría tener dentro de 20 años?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 7,
+   "modelo": "claude-haiku-5-5",
+   "herramientas": [],
+   "respuesta": "Con su aportación actual de **600 € al mes** y la bolsa rindiendo un 7 % al año, Toisón simula 2.000 escenarios a 20 años:\n\n- **Si va mal:** 266.986 €\n- **Lo probable:** 528.721 €\n- **Si va bien:** 1.166.757 €\n\nPara esos 20 años habrá puesto unos 228.312 €. Eso son 144.000 € de aportaciones nuevas más los 84.312 € que tiene hoy. Así, lo probable supondría más del doble de lo aportado.\n\nSon escenarios, no una previsión. El 7 % anual es un supuesto de Toisón para la bolsa a largo plazo, y en los últimos años su cartera ha rendido de forma muy distinta según el activo. Además, al vender habría que pagar impuestos sobre la ganancia, y esa cuenta no aparece en estas cifras.\n\nSi quiere probar otra aportación, otro plazo o una rentabilidad distinta, puedo volver a simularlo."
+  }
+ ]
+}
